@@ -111,24 +111,29 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
 .esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 .estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 
+st.markdown(f"""
+<style>
 /* --- NOVO CSS PARA O CARD DO PRODUTO (CORREÇÃO DE LAYOUT) --- */
-.price-action-flex {
+.price-action-flex {{
     display: flex;
     justify-content: space-between; 
     align-items: flex-end; 
     margin-top: 1rem;
     gap: 10px; 
-}
+}}
 
-.action-buttons-container {
+.action-buttons-container {{
     flex-shrink: 0;
     width: 45%; 
-}
+}}
 
 /* Garante que o input de número se ajuste dentro da coluna de 45% */
-.action-buttons-container div[data-testid="stNumberInput"] {
+.action-buttons-container div[data-testid="stNumberInput"] {{
     width: 100%;
-}
+}}
+</style>
+""", unsafe_allow_html=True)
+
 /* ----------------------------------------------------------- */
 
 /* --- CSS para o Botão Flutuante --- */
@@ -521,3 +526,4 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
