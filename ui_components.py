@@ -162,74 +162,80 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
                     else:
                         st.markdown(detalhes_str)
 
-
-        col_preco, col_botao = st.columns([2, 2])
-
-        condicao_pagamento = row.get('CONDICAOPAGAMENTO', 'Preço à vista')
+        # --- SEÇÃO CORRIGIDA: Preço e Ação (Usando Flexbox) ---
         
-        with col_preco:
-            cashback_percent = pd.to_numeric(row.get('CASHBACKPERCENT'), errors='coerce')
-            cashback_html = ""
-
-            if pd.notna(cashback_percent) and cashback_percent > 0:
-                cashback_valor_calculado = (cashback_percent / 100) * preco_final
-                cashback_html = f"""
-                <span style='color: #2E7D32; font-size: 0.8rem; font-weight: bold; display: block; margin-top: 5px;'>
-                    Cashback: R$ {cashback_valor_calculado:.2f}
-                </span>
-                """
-                
-            condicao_html = f"""
-            <span style='color: #757575; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: block;'>
-                ({condicao_pagamento})
+        # Obtém os dados de preço/cashback
+        condicao_pagamento = row.get('CONDICAOPAGAMENTO', 'Preço à vista')
+        cashback_percent = pd.to_numeric(row.get('CASHBACKPERCENT'), errors='coerce')
+        
+        cashback_html = ""
+        if pd.notna(cashback_percent) and cashback_percent > 0:
+            cashback_valor_calculado = (cashback_percent / 100) * preco_final
+            cashback_html = f"""
+            <span style='color: #2E7D32; font-size: 0.8rem; font-weight: bold; display: block; margin-top: 5px;'>
+                Cashback: R$ {cashback_valor_calculado:.2f}
             </span>
             """
+            
+        condicao_html = f"""
+        <span style='color: #757575; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: block;'>
+            ({condicao_pagamento})
+        </span>
+        """
 
-            if is_promotion:
-                st.markdown(f"""
-                <div style="line-height: 1.2;">
-                    <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
-                    <h4 style='color: #D32F2F; margin:0;'>R$ {preco_final:.2f}</h4>
-                    {condicao_html}
-                    {cashback_html}
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                <div style='display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px;'>
-                    <h4 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final:.2f}</h4>
-                </div>
+        # Prepara o bloco de HTML do Preço (lado esquerdo)
+        if is_promotion:
+            preco_bloco_html = f"""
+            <div style="line-height: 1.2;">
+                <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
+                <h4 style='color: #D32F2F; margin:0;'>R$ {preco_final:.2f}</h4>
                 {condicao_html}
                 {cashback_html}
-                """, unsafe_allow_html=True)
+            </div>
+            """
+        else:
+            preco_bloco_html = f"""
+            <div style='display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px;'>
+                <h4 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final:.2f}</h4>
+            </div>
+            {condicao_html}
+            {cashback_html}
+            """
+        
+        # Injeta o HTML do Preço e inicia o container da área de botões (lado direito)
+        # O CSS 'price-action-flex' no catalogo_app.py faz o alinhamento
+        st.markdown(f'<div class="price-action-flex">{preco_bloco_html}<div class="action-buttons-container">', unsafe_allow_html=True)
+        
+        # --- Lógica do Botão ---
+        item_ja_no_carrinho = prod_id in st.session_state.carrinho
+        esgotado = estoque_atual <= 0
 
-
-        with col_botao:
-            item_ja_no_carrinho = prod_id in st.session_state.carrinho
-
-            if esgotado:
-                st.empty() 
-                
-            elif item_ja_no_carrinho:
-                qtd_atual = st.session_state.carrinho[prod_id]['quantidade']
-                st.button(
-                    f"✅ {qtd_atual}x NO PEDIDO", 
-                    key=f'btn_add_qtd_{key_prefix}', 
-                    use_container_width=True, 
-                    disabled=True 
-                )
-            else:
-                qtd_a_adicionar = st.number_input(
-                    label=f'Qtd_Input_{key_prefix}',
-                    min_value=1,
-                    max_value=estoque_atual, 
-                    value=1,
-                    step=1,
-                    key=f'qtd_input_{key_prefix}',
-                    label_visibility="collapsed"
-                )
-                
-                if st.button(f"🛒 Adicionar {qtd_a_adicionar} un.", key=f'btn_add_qtd_{key_prefix}', use_container_width=True):
-                    if qtd_a_adicionar >= 1:
-                        adicionar_qtd_ao_carrinho(prod_id, row, qtd_a_adicionar)
-                        st.rerun()
+        if esgotado:
+            st.empty() 
+            
+        elif item_ja_no_carrinho:
+            qtd_atual = st.session_state.carrinho[prod_id]['quantidade']
+            st.button(
+                f"✅ {qtd_atual}x NO PEDIDO", 
+                key=f'btn_add_qtd_{key_prefix}', 
+                use_container_width=True, 
+                disabled=True 
+            )
+        else:
+            qtd_a_adicionar = st.number_input(
+                label=f'Qtd_Input_{key_prefix}',
+                min_value=1,
+                max_value=estoque_atual, 
+                value=1,
+                step=1,
+                key=f'qtd_input_{key_prefix}',
+                label_visibility="collapsed"
+            )
+            
+            if st.button(f"🛒 Adicionar {qtd_a_adicionar} un.", key=f'btn_add_qtd_{key_prefix}', use_container_width=True):
+                if qtd_a_adicionar >= 1:
+                    adicionar_qtd_ao_carrinho(prod_id, row, qtd_a_adicionar)
+                    st.rerun()
+        
+        # Fecha a div do container de botões e o container flex
+        st.markdown('</div></div>', unsafe_allow_html=True)
