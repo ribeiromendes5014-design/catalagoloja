@@ -8,6 +8,7 @@ from streamlit_autorefresh import st_autorefresh
 import requests
 
 # Importa as funções e constantes dos novos módulos
+# CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
     carregar_catalogo, carregar_cupons, carregar_clientes_cashback, buscar_cliente_cashback, 
     salvar_pedido, BACKGROUND_IMAGE_URL, LOGO_DOCEBELLA_URL, NUMERO_WHATSAPP
