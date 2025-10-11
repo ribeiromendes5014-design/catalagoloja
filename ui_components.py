@@ -63,7 +63,7 @@ def adicionar_qtd_ao_carrinho(produto_id, produto_row, quantidade):
 def remover_do_carrinho(produto_id):
     if produto_id in st.session_state.carrinho:
         nome = st.session_state.carrinho[produto_id]['nome']
-        del st.session_state.carrinho[produto_id]
+        del st.session_state.carrinho[prod_id]
         st.toast(f"❌ {nome} removido.", icon="🗑️")
 
 def limpar_carrinho():
