@@ -77,7 +77,7 @@ def copy_to_clipboard_js(text_to_copy):
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS ---
+# --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown(f"""
 <style>
 #MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
@@ -109,6 +109,26 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
 .product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
 .esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 .estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
+
+/* --- NOVO CSS PARA O CARD DO PRODUTO (CORREÇÃO DE LAYOUT) --- */
+.price-action-flex {
+    display: flex;
+    justify-content: space-between; 
+    align-items: flex-end; 
+    margin-top: 1rem;
+    gap: 10px; 
+}
+
+.action-buttons-container {
+    flex-shrink: 0;
+    width: 45%; 
+}
+
+/* Garante que o input de número se ajuste dentro da coluna de 45% */
+.action-buttons-container div[data-testid="stNumberInput"] {
+    width: 100%;
+}
+/* ----------------------------------------------------------- */
 
 /* --- CSS para o Botão Flutuante --- */
 .whatsapp-float {{
@@ -309,7 +329,7 @@ with col_carrinho:
             with cupom_col2:
                 if st.button("Aplicar", key="aplicar_cupom_btn", use_container_width=True):
                     if codigo_cupom_input:
-                        df_cupons_validos = carregar_cupons() # Chamada para a função em data_handler
+                        df_cupons_validos = carregar_cupons() 
                         cupom_encontrado = df_cupons_validos[df_cupons_validos['NOME_CUPOM'] == codigo_cupom_input]
                         
                         if not cupom_encontrado.empty:
@@ -362,7 +382,7 @@ with col_carrinho:
             saldo_cashback = 0.00
             
             if nome_input and contato_input and DF_CLIENTES_CASH is not None and not DF_CLIENTES_CASH.empty:
-                existe, nome_encontrado, saldo_cashback, nivel_cliente = buscar_cliente_cashback(contato_input, DF_CLIENTES_CASH) # Chamada para a função em data_handler
+                existe, nome_encontrado, saldo_cashback, nivel_cliente = buscar_cliente_cashback(contato_input, DF_CLIENTES_CASH) 
 
                 if existe:
                     st.success(
@@ -402,7 +422,7 @@ with col_carrinho:
                             "cashback_a_ganhar": cashback_a_ganhar,
                         }
                         
-                        if salvar_pedido(nome_input, contato_limpo, total_com_desconto, json.dumps(detalhes, ensure_ascii=False), detalhes): # Chamada para a função em data_handler
+                        if salvar_pedido(nome_input, contato_limpo, total_com_desconto, json.dumps(detalhes, ensure_ascii=False), detalhes): 
                             st.session_state.carrinho = {}
                             st.session_state.cupom_aplicado = None
                             st.session_state.desconto_cupom = 0.0
@@ -487,7 +507,7 @@ else:
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
-            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado) # Chamada para a função em ui_components
+            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
 
 # --- Botão Flutuante do WhatsApp ---
