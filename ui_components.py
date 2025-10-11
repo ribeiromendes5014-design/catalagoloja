@@ -14,12 +14,10 @@ def calcular_cashback_total(carrinho, df_catalogo_indexado):
     """Calcula o total de cashback a ser ganho pelos itens no carrinho."""
     cashback_total = 0.0
     for prod_id, item in carrinho.items():
-        # Converte prod_id para o tipo correto (Int64)
         if prod_id in df_catalogo_indexado.index:
             row = df_catalogo_indexado.loc[prod_id]
-            # Usar .get para evitar KeyError se a coluna não for carregada
             cashback_percent = pd.to_numeric(row.get('CASHBACKPERCENT'), errors='coerce') 
-            preco_final = item['preco'] # Já é o preço final com promoção
+            preco_final = item['preco'] 
             
             if pd.notna(cashback_percent) and cashback_percent > 0:
                 cashback_valor_unitario = (cashback_percent / 100) * preco_final
@@ -32,10 +30,8 @@ def adicionar_qtd_ao_carrinho(produto_id, produto_row, quantidade):
     produto_preco = produto_row['PRECO_FINAL']
     produto_imagem = produto_row.get('LINKIMAGEM', '')
     
-    # Busca a quantidade máxima do catálogo indexado no session_state
     df_catalogo = st.session_state.df_catalogo_indexado
     
-    # Busca a quantidade diretamente no catálogo indexado
     quantidade_max = int(df_catalogo.loc[produto_id, 'QUANTIDADE'] if produto_id in df_catalogo.index else 999999)
     
     if quantidade_max <= 0:
@@ -162,7 +158,7 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
                     else:
                         st.markdown(detalhes_str)
 
-        # --- SEÇÃO CORRIGIDA: Preço e Ação (Usando Flexbox) ---
+        # --- SEÇÃO CORRIGIDA: Preço e Ação (Usando Flexbox via HTML/CSS) ---
         
         # Obtém os dados de preço/cashback
         condicao_pagamento = row.get('CONDICAOPAGAMENTO', 'Preço à vista')
@@ -203,10 +199,9 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
             """
         
         # Injeta o HTML do Preço e inicia o container da área de botões (lado direito)
-        # O CSS 'price-action-flex' no catalogo_app.py faz o alinhamento
         st.markdown(f'<div class="price-action-flex">{preco_bloco_html}<div class="action-buttons-container">', unsafe_allow_html=True)
         
-        # --- Lógica do Botão ---
+        # --- Lógica do Botão (Dentro do container de ação) ---
         item_ja_no_carrinho = prod_id in st.session_state.carrinho
         esgotado = estoque_atual <= 0
 
@@ -238,4 +233,4 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
                     st.rerun()
         
         # Fecha a div do container de botões e o container flex
-        st.markdown('</div></div>', unsafe_allow_html=True)
+        st.markdown('</div></div>', unsafe_allow_html=True) 
