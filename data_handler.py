@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 import json
 import pytz
-import streamlit as st # Necessário para st.cache_data, st.error, st.warning
+import streamlit as st 
 
 
 # --- Variáveis de Configuração ---
@@ -31,7 +31,7 @@ BACKGROUND_IMAGE_URL = 'https://i.ibb.co/x8HNtgxP/Без-na-zvania-3.jpg'
 LOGO_DOCEBELLA_URL = "https://i.ibb.co/S9kT5nS/logo_docebella.png"
 
 # NÚMERO DE TELEFONE PARA O BOTÃO FLUTUANTE DO WHATSAPP
-NUMERO_WHATSAPP = "5541987876191" # SEU DDD + Número
+NUMERO_WHATSAPP = "5541987876191" 
 
 
 # --- Funções de Conexão GITHUB ---
@@ -82,7 +82,6 @@ def get_data_from_github(file_name):
         return None
 
 
-# === FUNÇÃO DE CUPONS ATUALIZADA COM CORREÇÃO DE FUSO HORÁRIO ===
 @st.cache_data(ttl=30)
 def carregar_cupons():
     """Carrega os cupons do 'cupons.csv' do GitHub, validando com fuso horário do Brasil."""
@@ -127,7 +126,7 @@ def carregar_cupons():
     df_ativo = df_ativo[df_ativo['USOS_ATUAIS'] < df_ativo['LIMITE_USOS']]
 
     return df_ativo.dropna(subset=['NOME_CUPOM', 'VALOR_DESCONTO']).reset_index(drop=True)
-# =======================================
+
 
 @st.cache_data(ttl=5)
 def carregar_promocoes():
