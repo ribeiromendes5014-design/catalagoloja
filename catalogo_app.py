@@ -520,8 +520,3 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
-O erro `NameError` foi corrigido garantindo que o CSS estivesse encapsulado. O layout do card de produto também foi corrigido usando classes flexbox no CSS em vez de colunas aninhadas no Streamlit, o que era a origem do problema visual anterior.
-
-Agora o aplicativo deve carregar e exibir os produtos corretamente em quatro colunas!
