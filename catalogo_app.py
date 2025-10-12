@@ -111,8 +111,6 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
 .esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 .estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 
-st.markdown(f"""
-<style>
 /* --- NOVO CSS PARA O CARD DO PRODUTO (CORREÇÃO DE LAYOUT) --- */
 .price-action-flex {{
     display: flex;
@@ -131,10 +129,6 @@ st.markdown(f"""
 .action-buttons-container div[data-testid="stNumberInput"] {{
     width: 100%;
 }}
-</style>
-""", unsafe_allow_html=True)
-
-/* ----------------------------------------------------------- */
 
 /* --- CSS para o Botão Flutuante --- */
 .whatsapp-float {{
@@ -149,6 +143,11 @@ st.markdown(f"""
     text-align: center;
     font-size: 30px;
     box-shadow: 2px 2px 3px #999;
+}}
+.whatsapp-float span {{
+    color: white !important;
+    margin-top: 15px;
+    display: block;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -522,8 +521,7 @@ LINK_WHATSAPP = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(MEN
 
 whatsapp_button_html = f"""
 <a href="{LINK_WHATSAPP}" class="whatsapp-float" target="_blank" title="Fale Conosco pelo WhatsApp">
-    <span style="margin-top: -5px;">📞</span>
+    <span>📞</span>
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
