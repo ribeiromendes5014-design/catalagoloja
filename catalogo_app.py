@@ -102,16 +102,26 @@ div[data-testid="stPopover"] > div:first-child > button {{
     background-attachment: fixed;
 }}
 
-/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura */
+/* ALTERAÇÃO 1: Container principal agora é transparente e sem padding */
 div.block-container {{ 
-    background-color: rgba(255, 255, 255, 0.95); 
-    border-radius: 10px; 
-    padding: 2rem; 
+    background-color: transparent !important; /* Fundo transparente */
+    border-radius: 0px; 
+    padding: 0 !important; /* Removemos o padding para o banner colar nas bordas */
     margin-top: 1rem; 
     color: #262626;
 }}
-div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, 
-div.block-container h4, div.block-container h5, div.block-container h6, div.block-container span {{
+
+/* NOVO: Wrapper para o conteúdo que ficará na caixa branca */
+.content-wrapper {{
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 0rem; /* O espaçamento já está no container principal */
+}}
+
+/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura DENTRO DO WRAPPER */
+.content-wrapper p, .content-wrapper h1, .content-wrapper h2, .content-wrapper h3, 
+.content-wrapper h4, .content-wrapper h5, .content-wrapper h6, .content-wrapper span {{
     color: #262626 !important;
 }}
 
@@ -393,10 +403,11 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner de Black Friday EXPANDIDO (COM CORREÇÃO DE LARGURA) ---
+# --- Banner de Black Friday EXPANDO (COM CORREÇÃO DE LARGURA) ---
 URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" 
 
 # CSS para o banner ocupar a largura total sem padding interno
+# (Este bloco de style pode ser removido daqui e unificado com o CSS principal no início do arquivo)
 st.markdown("""
 <style>
 .full-width-banner-container {
@@ -421,8 +432,10 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# --- Início do conteúdo que ficará dentro da caixa branca ---
+st.markdown('<div class="content-wrapper">', unsafe_allow_html=True) # <--- ADICIONE ESTA LINHA
+
 # --- Barra de Busca (Movida para baixo do Banner) ---
-# Use a classe original da barra de busca para mantê-la expandida (mas agora preta ou vermelha, como você configurou)
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
 st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
 st.markdown("</div></div>", unsafe_allow_html=True)
@@ -458,7 +471,7 @@ else:
         'Lançamento': (['RECENCIA', 'EM_PROMOCAO'], [False, False]),
         'Promoção': (['EM_PROMOCAO', 'RECENCIA'], [False, False]),
         'Menor Preço': (['EM_PROMOCAO', 'PRECO_FINAL'], [False, True]),
-        'Maior Preço': (['EM_PROMOCAO', 'PRECO_FINAL'], [False, False]),
+        'Maior Preço': (['EM_PROMOCIONA', 'PRECO_FINAL'], [False, False]),
         'Nome do Produto (A-Z)': (['EM_PROMOCAO', 'NOME'], [False, True])
     }
     if ordem_selecionada in sort_map:
@@ -471,6 +484,9 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
+# --- Fim do conteúdo da caixa branca ---
+st.markdown('</div>', unsafe_allow_html=True) # <--- ADICIONE ESTA LINHA
 
 # --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
@@ -524,4 +540,5 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
