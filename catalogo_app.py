@@ -467,7 +467,7 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner rotativo (carrossel automático) ---
+# --- Banner rotativo (carrossel funcional no Streamlit) ---
 st.markdown(
     """
     <style>
@@ -485,7 +485,7 @@ st.markdown(
         position: absolute;
         width: 100%;
         opacity: 0;
-        transition: opacity 1.2s ease-in-out;
+        transition: opacity 1s ease-in-out;
     }
     .banner-slide.active {
         opacity: 1;
@@ -499,27 +499,43 @@ st.markdown(
     }
     </style>
 
-    <div class="banner-slider">
+    <div id="banner-slider" class="banner-slider">
         <div class="banner-slide active">
-            <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 2">
+            <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
         </div>
         <div class="banner-slide">
-            <https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 1">
+            <https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
+        </div>
+        <div class="banner-slide">
+            <img src="https://i.ibb.co/NjxQqMq/banner-natal.png" alt="Banner 3">
         </div>
     </div>
 
     <script>
-    let slideIndex = 0;
-    const slides = document.querySelectorAll('.banner-slide');
-    setInterval(() => {
-        slides[slideIndex].classList.remove('active');
-        slideIndex = (slideIndex + 1) % slides.length;
-        slides[slideIndex].classList.add('active');
-    }, 5000); // Troca a cada 5 segundos
+    function startBannerSlider() {
+        let index = 0;
+        const slides = document.querySelectorAll('#banner-slider .banner-slide');
+        if (slides.length === 0) return;
+
+        setInterval(() => {
+            slides[index].classList.remove('active');
+            index = (index + 1) % slides.length;
+            slides[index].classList.add('active');
+        }, 5000); // Troca a cada 5 segundos
+    }
+
+    // Espera o DOM do Streamlit carregar
+    const intervalCheck = setInterval(() => {
+        if (document.readyState === "complete") {
+            startBannerSlider();
+            clearInterval(intervalCheck);
+        }
+    }, 500);
     </script>
     """,
     unsafe_allow_html=True
 )
+
 
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
@@ -625,6 +641,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
