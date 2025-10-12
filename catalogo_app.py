@@ -471,6 +471,7 @@ if st.session_state.pedido_confirmado:
 st.markdown(
     """
     <style>
+    /* ... (Mantenha o seu CSS atual aqui) ... */
     .banner-slider {
         position: relative;
         width: 100vw;
@@ -489,7 +490,7 @@ st.markdown(
     }
     .banner-slide.active {
         opacity: 1;
-        position: relative;
+        position: relative; /* Importante para ocupar espaço e não sobrepor */
     }
     .banner-slide img {
         width: 100%;
@@ -514,23 +515,60 @@ st.markdown(
     <script>
     function startBannerSlider() {
         let index = 0;
+        // Seleciona diretamente os slides
         const slides = document.querySelectorAll('#banner-slider .banner-slide');
-        if (slides.length === 0) return;
+        
+        // Verifica se realmente encontramos os slides
+        if (slides.length === 0) {
+            console.error("Não foram encontrados slides no elemento #banner-slider.");
+            return false; // Indica falha
+        }
 
+        console.log("Slider Iniciado com " + slides.length + " slides.");
+        
+        // Garante que apenas o primeiro slide está ativo ao iniciar
+        slides.forEach((slide, i) => {
+            if (i === 0) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+
+
+        // Inicia o intervalo de transição
         setInterval(() => {
-            slides[index].classList.remove('active');
-            index = (index + 1) % slides.length;
-            slides[index].classList.add('active');
+            // Remove 'active' do slide atual
+            slides[index].classList.remove('active'); 
+            
+            // Calcula o índice do próximo slide (loop)
+            index = (index + 1) % slides.length; 
+            
+            // Adiciona 'active' ao próximo slide
+            slides[index].classList.add('active'); 
         }, 5000); // Troca a cada 5 segundos
+        
+        return true; // Indica sucesso
     }
 
-    // Espera o DOM do Streamlit carregar
-    const intervalCheck = setInterval(() => {
-        if (document.readyState === "complete") {
-            startBannerSlider();
-            clearInterval(intervalCheck);
+    // Função de espera aprimorada para o Streamlit
+    function checkAndStart() {
+        if (document.getElementById('banner-slider')) {
+            // Tenta iniciar o slider
+            if (startBannerSlider()) {
+                // Se o slider iniciou com sucesso, para o loop de verificação
+                clearInterval(intervalCheck);
+            }
         }
-    }, 500);
+    }
+
+    // Inicia a checagem a cada 500ms
+    const intervalCheck = setInterval(checkAndStart, 500); 
+
+    // Adicionalmente, tenta iniciar após o carregamento completo da página (fallback)
+    window.addEventListener('load', function() {
+        checkAndStart();
+    });
     </script>
     """,
     unsafe_allow_html=True
@@ -641,6 +679,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
