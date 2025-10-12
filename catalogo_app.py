@@ -82,6 +82,8 @@ st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sid
 st.markdown(f"""
 <style>
 #MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
+[data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"],
+[data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
 
 /* Tornamos o botão do popover invisível visualmente mas ainda clicável */
 div[data-testid="stPopover"] > div:first-child > button {{
@@ -136,6 +138,8 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     flex-shrink: 0;
     width: 45%; 
 }}
+</style>
+""", unsafe_allow_html=True)
 
 /* Garante que o input de número se ajuste dentro da coluna de 45% */
 .action-buttons-container div[data-testid="stNumberInput"] {{
@@ -446,4 +450,5 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
