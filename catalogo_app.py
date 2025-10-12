@@ -393,19 +393,19 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner Principal ---
-# --- Banner Principal - Black Friday ---
-URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" # COLOQUE A URL DA IMAGEM AQUI
+# --- Banner de Black Friday EXPANDIDO ---
+URL_BLACK_FRIDAY = "SUA_URL_DA_IMAGEM_DE_BLACK_FRIDAY_AQUI" 
 
 st.markdown(f"""
-<div style="margin-bottom: 20px;">
+<div class="pink-bar-container" style="background-color: transparent; padding: 0; margin-bottom: 20px; box-shadow: none;">
     <img src="{URL_BLACK_FRIDAY}" 
          alt="Esquenta Black Friday - Ofertas Imperdíveis" 
-         style="width: 100%; max-width: 1200px; height: auto; border-radius: 10px; display: block; margin: 0 auto;">
+         style="width: 100%; max-width: 1200px; height: auto; display: block; margin: 0 auto; border-radius: 10px;">
 </div>
 """, unsafe_allow_html=True)
 
-# --- Barra de Busca ---
+# --- Barra de Busca (Movida para baixo do Banner) ---
+# Use a classe original da barra de busca para mantê-la expandida (mas agora preta ou vermelha, como você configurou)
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
 st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
 st.markdown("</div></div>", unsafe_allow_html=True)
@@ -507,6 +507,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
