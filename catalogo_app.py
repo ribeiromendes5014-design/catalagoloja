@@ -432,25 +432,16 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner de Black Friday EXPANDO (COM CORREÇÃO DE LARGURA) ---
+# --- Banner de Black Friday EXPANDIDO (COM CORREÇÃO DE LARGURA) ---
 URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" 
 
-# CSS para o banner ocupar a largura total sem padding interno
-# (Este bloco de style pode ser removido daqui e unificado com o CSS principal no início do arquivo)
-st.markdown("""
-<style>
-.full-width-banner-container {
-    width: 100vw;
-    position: relative; 
-    left: 50%; 
-    right: 50%; 
-    margin-left: -50vw; 
-    margin-right: -50vw; 
-    padding: 0 !important; /* Remove o padding do block-container */
-    margin-top: -2rem !important; /* Anula o padding de cima do bloco e puxa para cima */
-    margin-bottom: 0 !important;
-}
-</style>
+# O banner agora é apenas o HTML, sem o <style> junto.
+st.markdown(f"""
+<div class="full-width-banner-container">
+    <img src="{URL_BLACK_FRIDAY}" 
+         alt="Esquenta Black Friday - Ofertas Imperdíveis" 
+         style="width: 100%; height: auto; display: block;">
+</div>
 """, unsafe_allow_html=True)
 
 st.markdown(f"""
@@ -515,7 +506,7 @@ else:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
 # --- Fim do conteúdo da caixa branca ---
-st.markdown('</div>', unsafe_allow_html=True) # <--- ADICIONE ESTA LINHA
+st.markdown('</div>', unsafe_allow_html=True) 
 
 # --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
@@ -569,6 +560,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
