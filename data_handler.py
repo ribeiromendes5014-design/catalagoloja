@@ -28,7 +28,7 @@ SHEET_NAME_VIDEOS_CSV = "video.csv"
 SHEET_NAME_CLIENTES_CASHBACK_CSV = "clientes_cash.csv"
 SHEET_NAME_CUPONS_CSV = "cupons.csv"
 BACKGROUND_IMAGE_URL = 'https://i.ibb.co/x8HNtgxP/Без-na-zvania-3.jpg'
-LOGO_DOCEBELLA_URL = "https://i.ibb.co/HDKhY2n3/logo_docebella.png"
+LOGO_DOCEBELLA_URL = "https://i.ibb.co/sdMgFXmT/logo_docebella.png"
 
 # NÚMERO DE TELEFONE PARA O BOTÃO FLUTUANTE DO WHATSAPP
 NUMERO_WHATSAPP = "5541987876191" 
@@ -414,6 +414,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False
+
 
 
 
