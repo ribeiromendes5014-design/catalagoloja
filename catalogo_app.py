@@ -93,8 +93,6 @@ div[data-testid="stPopover"] > div:first-child > button {{
     opacity: 0 !important;
     pointer-events: auto !important;
 }}
-</style>
-""", unsafe_allow_html=True)
 
 .stApp {{ background-image: url({BACKGROUND_IMAGE_URL}) !important; background-size: cover; background-attachment: fixed; }}
 
@@ -446,8 +444,3 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
-
-
-
