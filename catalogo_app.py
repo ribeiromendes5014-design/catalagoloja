@@ -368,12 +368,24 @@ if st.session_state.pedido_confirmado:
         f"Obrigado por seu pedido!"
     )
     st.text_area("Resumo do Pedido (Clique para copiar)", resumo_texto, height=300)
-    copy_to_clipboard_js(resumo_texto)
-    st.markdown(f'<button class="cart-badge-button" style="background-color: #25D366; width: 100%; margin-bottom: 15px;" onclick="copyTextToClipboard(\'{resumo_texto.replace(\"'\", \"\\'\")}\')">✅ Copiar Resumo</button>', unsafe_allow_html=True)
+    
+    safe_resumo = resumo_texto.replace("'", "\\'").replace('"', '\\"')
+    st.markdown(
+        f"""
+        <button class="cart-badge-button"
+                style="background-color: #25D366; width: 100%; margin-bottom: 15px;"
+                onclick="copyTextToClipboard('{safe_resumo}')">
+            ✅ Copiar Resumo
+        </button>
+        """,
+        unsafe_allow_html=True
+    )
+    
     if st.button("Voltar ao Catálogo"):
         st.session_state.pedido_confirmado = None
         limpar_carrinho()
         st.rerun()
+    
     st.stop()
 
 # --- Banner Principal ---
@@ -493,3 +505,4 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
