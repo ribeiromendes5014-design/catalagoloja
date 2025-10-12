@@ -77,7 +77,7 @@ def copy_to_clipboard_js(text_to_copy):
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS (COM CORREÇÃO DE LAYOUT) ---
+# --- CSS (COM CORREÇÃO DE LAYOUT E BANNER FULL WIDTH) ---
 st.markdown(f"""
 <style>
 #MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
@@ -102,32 +102,40 @@ div[data-testid="stPopover"] > div:first-child > button {{
     background-attachment: fixed;
 }}
 
-/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura */
+/* --- CORREÇÃO DE CONTAINER: remove margens e padding do Streamlit --- */
 div.block-container {{ 
     background-color: rgba(255, 255, 255, 0.95); 
-    border-radius: 10px; 
-    padding: 2rem; 
-    margin-top: 1rem; /* <-- ESTA É A LINHA QUE CAUSA O ESPAÇO EXTRA NO TOPO */
+    border-radius: 0 !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
     color: #262626;
 }}
+
 div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, 
 div.block-container h4, div.block-container h5, div.block-container h6, div.block-container span {{
     color: #262626 !important;
 }}
 
-/* === NOVO CSS PARA EXPANDIR O BANNER (FULL WIDTH) === */
-.full-width-element {{
+/* --- NOVO CSS PARA O BANNER DE PONTA A PONTA --- */
+.fullscreen-banner {{
     width: 100vw !important;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
+    position: relative !important;
+    left: 50% !important;
+    right: 50% !important;
+    margin-left: -50vw !important;
+    margin-right: -50vw !important;
+    margin-top: -100px !important;  /* remove completamente o espaço branco */
+    padding: 0 !important;
+    z-index: 1;
+}}
+.fullscreen-banner img {{
+    width: 100%;
+    height: auto;
+    display: block;
 }}
 
 /* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
 .pink-bar-container {{ 
-    /* Cor de fundo da barra de busca alterada para Preto */
     background-color: #000000; 
     padding: 10px 0; 
     width: 100vw; 
@@ -137,10 +145,17 @@ div.block-container h4, div.block-container h5, div.block-container h6, div.bloc
     margin-right: -50vw; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.4); 
 }}
-.pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
+.pink-bar-content {{ 
+    width: 100%; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 0 2rem; 
+    display: flex; 
+    align-items: center; 
+}}
 
+/* --- BOTÕES DE CARRINHO E CUPOM --- */
 .cart-badge-button {{ 
-    /* Botão de resumo no topo e checkout */
     background-color: #D32F2F; 
     color: white; 
     border-radius: 12px; 
@@ -160,7 +175,6 @@ div.block-container h4, div.block-container h5, div.block-container h6, div.bloc
     background-color: #FF4500; 
 }}
 .cart-count {{ 
-    /* Contador de itens no carrinho */
     background-color: white; 
     color: #D32F2F; 
     border-radius: 50%; 
@@ -171,7 +185,6 @@ div.block-container h4, div.block-container h5, div.block-container h6, div.bloc
 }}
 
 div[data-testid="stButton"] > button {{ 
-    /* Botões 'Adicionar ao Carrinho' e 'Aplicar Cupom' */
     background-color: #D32F2F; 
     color: white; 
     border-radius: 10px; 
@@ -179,20 +192,46 @@ div[data-testid="stButton"] > button {{
     font-weight: bold; 
 }}
 div[data-testid="stButton"] > button:hover {{ 
-    /* Cor de hover preta */
     background-color: #000000; 
     color: white; 
     border: 1px solid #FF4500; 
 }}
 
-/* === Estilos de Produtos e Estoque === */
-
-.product-image-container {{ height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }}
-.product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
-
-.esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
-.estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
-
+/* === ESTILOS DE PRODUTOS E ESTOQUE === */
+.product-image-container {{ 
+    height: 220px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 1rem; 
+    overflow: hidden; 
+}}
+.product-image-container img {{ 
+    max-height: 100%; 
+    max-width: 100%; 
+    object-fit: contain; 
+    border-radius: 8px; 
+}}
+.esgotado-badge {{ 
+    background-color: #757575; 
+    color: white; 
+    font-weight: bold; 
+    padding: 3px 8px; 
+    border-radius: 5px; 
+    font-size: 0.9rem; 
+    margin-bottom: 0.5rem; 
+    display: block; 
+}}
+.estoque-baixo-badge {{ 
+    background-color: #FFC107; 
+    color: black; 
+    font-weight: bold; 
+    padding: 3px 8px; 
+    border-radius: 5px; 
+    font-size: 0.9rem; 
+    margin-bottom: 0.5rem; 
+    display: block; 
+}}
 .price-action-flex {{
     display: flex;
     justify-content: space-between; 
@@ -208,7 +247,7 @@ div[data-testid="stButton"] > button:hover {{
     width: 100%;
 }}
 
-/* --- CSS para o Botão Flutuante do WhatsApp --- */
+/* --- BOTÃO FLUTUANTE WHATSAPP --- */
 .whatsapp-float {{
     position: fixed;
     bottom: 40px;
@@ -228,7 +267,7 @@ div[data-testid="stButton"] > button:hover {{
     display: block;
 }}
 
-/* --- CSS para o Botão Flutuante do Carrinho --- */
+/* --- BOTÃO FLUTUANTE DO CARRINHO --- */
 .cart-float {{
     position: fixed;
     bottom: 110px; 
@@ -265,6 +304,7 @@ div[data-testid="stButton"] > button:hover {{
 }}
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # --- Cálculos iniciais do carrinho ---
@@ -585,6 +625,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
