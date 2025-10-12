@@ -147,10 +147,13 @@ def carregar_cupons():
 
 @st.cache_data(ttl=5)
 def carregar_promocoes():
-    """Carrega as promoções do 'promocoes.csv' do GitHub."""
+    """
+    Carrega as promoções do 'promocoes.csv', valida datas e retorna apenas as ativas.
+    """
     df = get_data_from_github(SHEET_NAME_PROMOCOES_CSV)
 
-    colunas_essenciais = ['ID_PRODUTO', 'PRECO_PROMOCIONAL', 'STATUS']
+    # Adicionando DATA_INICIO e DATA_FIM como colunas essenciais
+    colunas_essenciais = ['ID_PRODUTO', 'PRECO_PROMOCIONAL', 'STATUS', 'DATA_INICIO', 'DATA_FIM']
     if df is None or df.empty:
         return pd.DataFrame(columns=colunas_essenciais)
 
@@ -159,13 +162,36 @@ def carregar_promocoes():
             st.error(f"Coluna essencial '{col}' não encontrada no 'promocoes.csv'. Verifique o cabeçalho.")
             return pd.DataFrame(columns=colunas_essenciais)
 
-    df = df[df['STATUS'].astype(str).str.strip().str.upper() == 'ATIVO'].copy()
-    df_essencial = df[colunas_essenciais].copy()
+    df_ativo = df[df['STATUS'].astype(str).str.strip().str.upper() == 'ATIVO'].copy()
+    
+    if df_ativo.empty:
+        return pd.DataFrame(columns=colunas_essenciais)
 
-    df_essencial['PRECO_PROMOCIONAL'] = pd.to_numeric(df_essencial['PRECO_PROMOCIONAL'].astype(str).str.replace(',', '.'), errors='coerce')
-    df_essencial['ID_PRODUTO'] = pd.to_numeric(df_essencial['ID_PRODUTO'], errors='coerce').astype('Int64')
+    df_ativo['PRECO_PROMOCIONAL'] = pd.to_numeric(df_ativo['PRECO_PROMOCIONAL'].astype(str).str.replace(',', '.'), errors='coerce')
+    df_ativo['ID_PRODUTO'] = pd.to_numeric(df_ativo['ID_PRODUTO'], errors='coerce').astype('Int64')
+    
+    # Validação e Filtragem de Datas
+    tz_brasil = pytz.timezone('America/Sao_Paulo')
+    hoje_brasil = pd.Timestamp.now(tz=tz_brasil).normalize()
+    
+    # Converte as colunas de data (assumindo formato YYYY-MM-DD)
+    # Ignoramos o fuso horário aqui, pois vamos usar .dt.normalize() para comparar apenas as datas
+    df_ativo['DATA_INICIO_DT'] = pd.to_datetime(df_ativo['DATA_INICIO'], errors='coerce').dt.normalize().dt.tz_localize(tz_brasil, errors='coerce')
+    df_ativo['DATA_FIM_DT'] = pd.to_datetime(df_ativo['DATA_FIM'], errors='coerce').dt.normalize().dt.tz_localize(tz_brasil, errors='coerce')
+    
+    # Filtra: Início <= Hoje E Fim >= Hoje
+    # Usamos o >= hoje para que o último dia da promoção seja contado.
+    df_ativo = df_ativo[
+        (df_ativo['DATA_INICIO_DT'].notna()) & (df_ativo['DATA_FIM_DT'].notna()) & # Ambas as datas são válidas
+        (df_ativo['DATA_INICIO_DT'] <= hoje_brasil) & 
+        (df_ativo['DATA_FIM_DT'] >= hoje_brasil)
+    ].copy()
+    
+    # Renomeia DATA_FIM para o nome que o carregar_catalogo vai usar, mantendo a string original
+    df_ativo.rename(columns={'DATA_FIM': 'DATA_FIM_PROMOCAO'}, inplace=True)
 
-    return df_essencial.dropna(subset=['ID_PRODUTO', 'PRECO_PROMOCIONAL']).reset_index(drop=True)
+    # Retorna as colunas essenciais para o merge
+    return df_ativo[['ID_PRODUTO', 'PRECO_PROMOCIONAL', 'DATA_FIM_PROMOCAO']].dropna(subset=['ID_PRODUTO', 'PRECO_PROMOCIONAL']).reset_index(drop=True)
 
 
 @st.cache_data(ttl=2)
@@ -249,13 +275,21 @@ def carregar_catalogo():
     df_promocoes = carregar_promocoes()
 
     if not df_promocoes.empty:
-        df_final = pd.merge(df_produtos.reset_index(), df_promocoes[['ID_PRODUTO', 'PRECO_PROMOCIONAL']], left_on='ID', right_on='ID_PRODUTO', how='left')
+        # Merge incluindo a nova coluna DATA_FIM_PROMOCAO
+        df_final = pd.merge(
+            df_produtos.reset_index(), 
+            df_promocoes[['ID_PRODUTO', 'PRECO_PROMOCIONAL', 'DATA_FIM_PROMOCAO']], 
+            left_on='ID', 
+            right_on='ID_PRODUTO', 
+            how='left'
+        )
         df_final['PRECO_FINAL'] = df_final['PRECO_PROMOCIONAL'].fillna(df_final['PRECO']) 
         df_final.drop(columns=['ID_PRODUTO'], inplace=True, errors='ignore')
     else:
         df_final = df_produtos.reset_index()
         df_final['PRECO_FINAL'] = df_final['PRECO']
         df_final['PRECO_PROMOCIONAL'] = None
+        df_final['DATA_FIM_PROMOCAO'] = None # Garante que a coluna existe, mesmo vazia
 
     df_videos = get_data_from_github(SHEET_NAME_VIDEOS_CSV)
 
@@ -414,7 +448,3 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False
-
-
-
-
