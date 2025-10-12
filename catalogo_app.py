@@ -517,10 +517,12 @@ st.markdown(f"""
 }}
 </style>
 
+st.markdown(f"""
 <div class="fullscreen-banner">
-    <img src="{URL_BLACK_FRIDAY}" alt="Esquenta Black Friday - Ofertas Imperdíveis">
+    <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
+         alt="Black Friday Doce&Bella">
 </div>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True))
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
 # Use a classe original da barra de busca para mantê-la expandida (mas agora preta ou vermelha, como você configurou)
@@ -625,6 +627,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
