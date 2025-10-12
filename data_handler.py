@@ -113,15 +113,29 @@ def carregar_cupons():
     df_ativo['LIMITE_USOS'] = pd.to_numeric(df_ativo['LIMITE_USOS'], errors='coerce').fillna(999999)
     df_ativo['USOS_ATUAIS'] = pd.to_numeric(df_ativo['USOS_ATUAIS'], errors='coerce').fillna(0)
     
-    # --- Validação da DATA_VALIDADE com FUSO HORÁRIO ---
-    df_ativo['DATA_VALIDADE'] = pd.to_datetime(df_ativo['DATA_VALIDADE'], errors='coerce')
-    df_ativo = df_ativo.dropna(subset=['DATA_VALIDADE'])
+    # --- INÍCIO DA CORREÇÃO: Validação de DATA_VALIDADE (Permite Datas Vazias) ---
     
+    # Tenta converter a data, especificando o formato, mas mantém os erros como NaT (Not a Time)
+    df_ativo['DATA_VALIDADE'] = pd.to_datetime(df_ativo['DATA_VALIDADE'], format='%d/%m/%Y', errors='coerce')
+
+    # Define o fuso horário e a data atual
     tz_brasil = pytz.timezone('America/Sao_Paulo')
-    df_ativo['DATA_VALIDADE'] = df_ativo['DATA_VALIDADE'].dt.tz_localize(tz_brasil)
     hoje_brasil = pd.Timestamp.now(tz=tz_brasil).normalize()
-    df_ativo = df_ativo[df_ativo['DATA_VALIDADE'].dt.normalize() >= hoje_brasil]
-    # --- Fim da Validação de Data ---
+
+    # Localiza o fuso horário apenas para as datas que são válidas (não são NaT)
+    datas_validas = df_ativo['DATA_VALIDADE'].notna()
+    df_ativo.loc[datas_validas, 'DATA_VALIDADE'] = df_ativo.loc[datas_validas, 'DATA_VALIDADE'].dt.tz_localize(tz_brasil)
+
+    # Cria a condição para manter o cupom:
+    # 1. A data de validade é NULA (vazia)
+    # OU
+    # 2. A data de validade (já com fuso) é maior ou igual a hoje
+    condicao_data_valida = (df_ativo['DATA_VALIDADE'].isnull()) | (df_ativo['DATA_VALIDADE'].dt.normalize() >= hoje_brasil)
+
+    # Aplica o filtro
+    df_ativo = df_ativo[condicao_data_valida]
+    
+    # --- FIM DA CORREÇÃO ---
 
     df_ativo = df_ativo[df_ativo['USOS_ATUAIS'] < df_ativo['LIMITE_USOS']]
 
@@ -397,3 +411,4 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False
+
