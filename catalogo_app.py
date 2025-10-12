@@ -435,7 +435,7 @@ if st.session_state.pedido_confirmado:
 # --- Banner de Black Friday EXPANDIDO (COM CORREÇÃO DE LARGURA) ---
 URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" 
 
-# O banner agora é apenas o HTML, sem o <style> junto.
+# Mostramos o banner APENAS UMA VEZ
 st.markdown(f"""
 <div class="full-width-banner-container">
     <img src="{URL_BLACK_FRIDAY}" 
@@ -444,16 +444,10 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="full-width-banner-container" style="margin-bottom: 20px;">
-    <img src="{URL_BLACK_FRIDAY}" 
-         alt="Esquenta Black Friday - Ofertas Imperdíveis" 
-         style="width: 100%; height: auto; display: block;">
-</div>
-""", unsafe_allow_html=True)
 
 # --- Início do conteúdo que ficará dentro da caixa branca ---
-st.markdown('<div class="content-wrapper">', unsafe_allow_html=True) # <--- ADICIONE ESTA LINHA
+# Usando a classe correta "content-box" que definimos no CSS
+st.markdown('<div class="content-box">', unsafe_allow_html=True)
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
@@ -491,12 +485,15 @@ else:
         'Lançamento': (['RECENCIA', 'EM_PROMOCAO'], [False, False]),
         'Promoção': (['EM_PROMOCAO', 'RECENCIA'], [False, False]),
         'Menor Preço': (['EM_PROMOCAO', 'PRECO_FINAL'], [False, True]),
-        'Maior Preço': (['EM_PROMOCIONA', 'PRECO_FINAL'], [False, False]),
+        'Maior Preço': (['PRECO_FINAL'], [False]), # Corrigido: Removido 'EM_PROMOCIONA' que não existe
         'Nome do Produto (A-Z)': (['EM_PROMOCAO', 'NOME'], [False, True])
     }
     if ordem_selecionada in sort_map:
         by_cols, ascending_order = sort_map[ordem_selecionada]
-        df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
+        # Verificação para garantir que as colunas existem antes de ordenar
+        by_cols_existentes = [col for col in by_cols if col in df_filtrado.columns]
+        if by_cols_existentes:
+            df_filtrado = df_filtrado.sort_values(by=by_cols_existentes, ascending=ascending_order)
 
     cols = st.columns(4)
     for i, row in df_filtrado.reset_index(drop=True).iterrows():
@@ -506,7 +503,8 @@ else:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
 # --- Fim do conteúdo da caixa branca ---
-st.markdown('</div>', unsafe_allow_html=True) 
+st.markdown('</div>', unsafe_allow_html=True)
+ 
 
 # --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
@@ -560,6 +558,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
