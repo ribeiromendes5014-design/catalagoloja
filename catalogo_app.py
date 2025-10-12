@@ -472,16 +472,25 @@ import streamlit.components.v1 as components
 
 html_code = """
 <style>
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 .banner-slider {
     position: relative;
+    width: 100vw;
+    height: auto;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+    z-index: 999;
+}
+.banner-slider {
     width: 100%;
     overflow: hidden;
-}
-.banner-slide {
-    position: absolute;
-    width: 100%;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
 }
 .banner-slide.active {
     opacity: 1;
@@ -511,7 +520,7 @@ html_code = """
 function startBannerSlider() {
     let index = 0;
     const slides = document.querySelectorAll('#banner-slider .banner-slide');
-    if (slides.length === 0) return false;
+    if (slides.length === 0) return;
     slides.forEach((slide, i) => {
         slide.classList.toggle('active', i === 0);
     });
@@ -520,14 +529,14 @@ function startBannerSlider() {
         index = (index + 1) % slides.length; 
         slides[index].classList.add('active'); 
     }, 5000);
-    return true;
 }
 window.onload = startBannerSlider;
 </script>
 """
 
-# Renderiza o carrossel no Streamlit com JavaScript funcional
+
 components.html(html_code, height=400)
+
 
 
 
@@ -635,6 +644,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
