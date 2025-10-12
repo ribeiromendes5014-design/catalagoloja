@@ -7,9 +7,6 @@ import ast
 import requests
 import json
 from data_handler import ESTOQUE_BAIXO_LIMITE # Importa a constante de limite
-from datetime import datetime # NOVA IMPORTAÇÃO
-import pytz # NOVA IMPORTAÇÃO
-import math # NOVA IMPORTAÇÃO
 
 # --- Funções de Manipulação do Carrinho e Estado ---
 
@@ -93,152 +90,8 @@ def render_product_image(link_imagem):
         st.markdown(placeholder_html, unsafe_allow_html=True)
 
 
-# --- NOVA FUNÇÃO DE CONTADOR REGRESSIVO ---
-def render_countdown_timer(data_fim_str):
-    """
-    Renderiza um contador regressivo HTML/CSS para a data/hora final da promoção.
-    O JavaScript é usado para atualizar o contador a cada segundo no frontend.
-    Assume que 'data_fim_str' está no formato 'YYYY-MM-DD'.
-    """
-    try:
-        # 1. Definir o fuso horário (é crucial que seja o mesmo do seu sistema ou base de dados)
-        # Usaremos America/Sao_Paulo (Horário de Brasília)
-        fuso_horario = pytz.timezone('America/Sao_Paulo') 
-        
-        # Define a data de término para 23:59:59 do dia especificado
-        data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').replace(
-            hour=23, minute=59, second=59
-        )
-        
-        # Converte para o fuso horário definido
-        data_fim_tz = fuso_horario.localize(data_fim)
-        
-        agora_tz = datetime.now(fuso_horario)
-        
-        # Calcula a diferença em segundos
-        tempo_restante_segundos = (data_fim_tz - agora_tz).total_seconds()
-        
-        if tempo_restante_segundos <= 0:
-            return '<div style="color: red; font-weight: bold; text-align: center; border: 1px solid #D32F2F; border-radius: 4px; padding: 5px; margin-bottom: 10px; background-color: #fce4e4;">⏳ PROMOÇÃO ENCERRADA</div>'
-
-        # Calcula dias, horas, minutos e segundos restantes (para a primeira exibição)
-        dias = math.floor(tempo_restante_segundos / (60 * 60 * 24))
-        horas = math.floor((tempo_restante_segundos % (60 * 60 * 24)) / (60 * 60))
-        minutos = math.floor((tempo_restante_segundos % (60 * 60)) / 60)
-        segundos = math.floor(tempo_restante_segundos % 60)
-        
-        # Geração do HTML e JavaScript do contador
-        # O JavaScript é necessário para que a contagem atualize *no cliente*
-        timer_html = f"""
-        <style>
-            .countdown-timer-container {{
-                background-color: #f7e2e5; /* Cor de fundo suave (rosa claro) */
-                border: 2px solid #e91e63; /* Borda rosa vibrante */
-                border-radius: 8px;
-                padding: 5px 10px;
-                margin-bottom: 10px;
-                text-align: center;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            }}
-            .countdown-title {{
-                font-weight: bold;
-                color: #e91e63; /* Rosa vibrante */
-                margin-bottom: 5px;
-                font-size: 0.9em;
-            }}
-            .countdown-time-unit {{
-                display: inline-block;
-                margin: 0 5px;
-            }}
-            .countdown-time-value {{
-                font-size: 1.2em;
-                font-weight: 900;
-                color: #333;
-                display: block;
-            }}
-            .countdown-time-label {{
-                font-size: 0.7em;
-                color: #555;
-                display: block;
-            }}
-        </style>
-        
-        <div class="countdown-timer-container">
-            <div class="countdown-title">⏰ FIM DA PROMOÇÃO EM:</div>
-            <div id="countdown-timer-{data_fim_str.replace('-', '_')}" class="timer-display">
-                <span class="countdown-time-unit"><span class="countdown-time-value">{dias:02}</span><span class="countdown-time-label">Dias</span></span>
-                <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                <span class="countdown-time-unit"><span class="countdown-time-value">{horas:02}</span><span class="countdown-time-label">Horas</span></span>
-                <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                <span class="countdown-time-unit"><span class="countdown-time-value">{minutos:02}</span><span class="countdown-time-label">Mins</span></span>
-                <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                <span class="countdown-time-unit"><span class="countdown-time-value">{segundos:02}</span><span class="countdown-time-label">Segs</span></span>
-            </div>
-        </div>
-        
-        <script>
-        function startCountdown(elementId, endTimeStr) {{
-            const countdownEl = document.getElementById(elementId);
-            if (!countdownEl) return;
-            
-            // Pega a data de fim (YYYY-MM-DD)
-            const [year, month, day] = endTimeStr.split('-').map(Number);
-            
-            // Define a data de término (23:59:59) no fuso horário local do navegador.
-            // Isso evita problemas de fuso horário entre o servidor (Python) e o cliente (JS).
-            const endTime = new Date(year, month - 1, day, 23, 59, 59);
-
-            function updateCountdown() {{
-                const now = new Date();
-                const timeRemaining = endTime.getTime() - now.getTime();
-                
-                if (timeRemaining <= 0) {{
-                    countdownEl.innerHTML = '<span style="color: red; font-weight: bold;">PROMOÇÃO ENCERRADA!</span>';
-                    clearInterval(interval);
-                    return;
-                }}
-
-                let seconds = Math.floor(timeRemaining / 1000);
-                const days = Math.floor(seconds / (60 * 60 * 24));
-                seconds -= days * (60 * 60 * 24);
-                const hours = Math.floor(seconds / (60 * 60));
-                seconds -= hours * (60 * 60);
-                const minutes = Math.floor(seconds / 60);
-                seconds -= minutes * 60;
-                
-                const format = (value) => String(value).padStart(2, '0');
-                
-                countdownEl.innerHTML = `
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(days)}</span><span class="countdown-time-label">Dias</span></span>
-                    <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(hours)}</span><span class="countdown-time-label">Horas</span></span>
-                    <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(minutes)}</span><span class="countdown-time-label">Mins</span></span>
-                    <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(seconds)}</span><span class="countdown-time-label">Segs</span></span>
-                `;
-            }}
-
-            // Atualiza a cada segundo
-            const interval = setInterval(updateCountdown, 1000);
-            updateCountdown(); // Chama imediatamente para inicializar
-        }}
-        
-        // Inicializa o contador
-        startCountdown('countdown-timer-{data_fim_str.replace('-', '_')}', '{data_fim_str}');
-        </script>
-        """
-        
-        return timer_html
-        
-    except Exception as e:
-        # Em caso de erro (ex: data_fim_str inválida), retorna uma string vazia
-        # print(f"Erro ao calcular contador: {e}") 
-        return "" 
-
-
 def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
-    """Renderiza um card de produto com suporte para abas de foto e vídeo, seletor de quantidade e feedback de estoque, incluindo o contador regressivo."""
+    """Renderiza um card de produto com suporte para abas de foto e vídeo, seletor de quantidade e feedback de estoque."""
     with st.container(border=True):
         
         produto_nome = str(row['NOME'])
@@ -259,33 +112,6 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         youtube_url = row.get('YOUTUBE_URL')
 
-        preco_final = row['PRECO_FINAL']
-        preco_original = row['PRECO']
-        
-        # --- Lógica do Contador Regressivo e Badge de Promoção ---
-        # A coluna 'DATA_FIM_PROMOCAO' é fundamental para o contador
-        data_fim_promocao = row.get('DATA_FIM_PROMOCAO')
-        
-        # Verifica se é uma promoção (usando PRECO_PROMOCIONAL ou DATA_FIM_PROMOCAO)
-        is_promotion = pd.notna(row.get('PRECO_PROMOCIONAL')) or (pd.notna(data_fim_promocao) and data_fim_promocao)
-
-        if is_promotion:
-            # 1. Renderiza o Contador Regressivo SE houver uma data de fim válida
-            if pd.notna(data_fim_promocao) and isinstance(data_fim_promocao, str):
-                st.markdown(render_countdown_timer(data_fim_promocao), unsafe_allow_html=True)
-            
-            # 2. Renderiza o Badge "PROMOÇÃO" (abaixo do contador, se houver)
-            st.markdown(f"""
-            <div style="margin-bottom: 0.5rem; text-align: center;">
-                <span style="background-color: #D32F2F; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem;">
-                    🔥 PROMOÇÃO
-                </span>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # --- FIM da Lógica do Contador Regressivo e Badge de Promoção ---
-        
-        # --- Renderização da Imagem/Vídeo ---
         if youtube_url and isinstance(youtube_url, str) and youtube_url.strip().startswith('http'):
             tab_foto, tab_video = st.tabs(["📷 Foto", "▶️ Vídeo"])
             with tab_foto:
@@ -294,6 +120,19 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
                 st.video(youtube_url)
         else:
             render_product_image(row.get('LINKIMAGEM'))
+
+        preco_final = row['PRECO_FINAL']
+        preco_original = row['PRECO']
+        is_promotion = pd.notna(row.get('PRECO_PROMOCIONAL'))
+
+        if is_promotion:
+            st.markdown(f"""
+            <div style="margin-bottom: 0.5rem;">
+                <span style="background-color: #D32F2F; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem;">
+                    🔥 PROMOÇÃO
+                </span>
+            </div>
+            """, unsafe_allow_html=True)
 
         st.markdown(f"**{produto_nome}**")
         if descricao_curta:
@@ -380,143 +219,3 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
-
-def render_countdown_timer(data_fim_str):
-    """
-    Renderiza um contador regressivo HTML/CSS para a data/hora final.
-    O JavaScript é usado para atualizar o contador a cada segundo no frontend.
-    """
-    try:
-        # 1. Definir o fuso horário (ex: 'America/Sao_Paulo' ou 'UTC' se for a preferência)
-        # É CRUCIAL que o fuso horário aqui e o usado ao salvar a promoção sejam os mesmos!
-        # Vamos assumir UTC se você estiver lidando com strings simples de data.
-        # Se você estiver no Brasil (SP), use 'America/Sao_Paulo'
-        fuso_horario = pytz.timezone('America/Sao_Paulo') 
-        
-        data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').replace(
-            hour=23, minute=59, second=59
-        )
-        
-        # Converte para o fuso horário definido
-        data_fim_tz = fuso_horario.localize(data_fim)
-        
-        agora_tz = datetime.now(fuso_horario)
-        
-        # Calcula a diferença em segundos
-        tempo_restante_segundos = (data_fim_tz - agora_tz).total_seconds()
-        
-        if tempo_restante_segundos <= 0:
-            return '<div style="color: red; font-weight: bold; text-align: center;">⏳ PROMOÇÃO ENCERRADA</div>'
-
-        # Calcula dias, horas, minutos e segundos restantes (para a primeira exibição)
-        dias = math.floor(tempo_restante_segundos / (60 * 60 * 24))
-        horas = math.floor((tempo_restante_segundos % (60 * 60 * 24)) / (60 * 60))
-        minutos = math.floor((tempo_restante_segundos % (60 * 60)) / 60)
-        segundos = math.floor(tempo_restante_segundos % 60)
-        
-        # Geração do HTML e JavaScript do contador
-        timer_html = f"""
-        <style>
-            .countdown-timer-container {{
-                background-color: #f7e2e5; /* Cor de fundo suave (rosa claro) */
-                border: 2px solid #e91e63; /* Borda rosa vibrante */
-                border-radius: 8px;
-                padding: 5px 10px;
-                margin-bottom: 10px;
-                text-align: center;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            }}
-            .countdown-title {{
-                font-weight: bold;
-                color: #e91e63; /* Rosa vibrante */
-                margin-bottom: 5px;
-                font-size: 0.9em;
-            }}
-            .countdown-time-unit {{
-                display: inline-block;
-                margin: 0 5px;
-            }}
-            .countdown-time-value {{
-                font-size: 1.2em;
-                font-weight: 900;
-                color: #333;
-                display: block;
-            }}
-            .countdown-time-label {{
-                font-size: 0.7em;
-                color: #555;
-                display: block;
-            }}
-        </style>
-        
-        <div class="countdown-timer-container">
-            <div class="countdown-title">⏰ FIM DA PROMOÇÃO EM:</div>
-            <div id="countdown-timer-{data_fim_str.replace('-', '_')}" style="font-size: 1.1em; color: #333;">
-                <span class="countdown-time-unit"><span class="countdown-time-value">{dias:02}</span><span class="countdown-time-label">Dias</span></span>
-                <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                <span class="countdown-time-unit"><span class="countdown-time-value">{horas:02}</span><span class="countdown-time-label">Horas</span></span>
-                <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                <span class="countdown-time-unit"><span class="countdown-time-value">{minutos:02}</span><span class="countdown-time-label">Mins</span></span>
-                <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                <span class="countdown-time-unit"><span class="countdown-time-value">{segundos:02}</span><span class="countdown-time-label">Segs</span></span>
-            </div>
-        </div>
-        
-        <script>
-        function startCountdown(elementId, endTimeStr, timeZone) {{
-            const countdownEl = document.getElementById(elementId);
-            if (!countdownEl) return;
-            
-            const [year, month, day] = endTimeStr.split('-').map(Number);
-            // Cria a data de término (23:59:59) no fuso horário local do navegador para evitar desync.
-            const endTime = new Date(year, month - 1, day, 23, 59, 59);
-
-            function updateCountdown() {{
-                const now = new Date();
-                const timeRemaining = endTime.getTime() - now.getTime();
-                
-                if (timeRemaining <= 0) {{
-                    countdownEl.innerHTML = '<span style="color: red; font-weight: bold;">PROMOÇÃO ENCERRADA!</span>';
-                    clearInterval(interval);
-                    return;
-                }}
-
-                let seconds = Math.floor(timeRemaining / 1000);
-                const days = Math.floor(seconds / (60 * 60 * 24));
-                seconds -= days * (60 * 60 * 24);
-                const hours = Math.floor(seconds / (60 * 60));
-                seconds -= hours * (60 * 60);
-                const minutes = Math.floor(seconds / 60);
-                seconds -= minutes * 60;
-                
-                const format = (value) => String(value).padStart(2, '0');
-                
-                countdownEl.innerHTML = `
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(days)}</span><span class="countdown-time-label">Dias</span></span>
-                    <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(hours)}</span><span class="countdown-time-label">Horas</span></span>
-                    <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(minutes)}</span><span class="countdown-time-label">Mins</span></span>
-                    <span style="font-size: 1.2em; font-weight: bold;">:</span>
-                    <span class="countdown-time-unit"><span class="countdown-time-value">${format(seconds)}</span><span class="countdown-time-label">Segs</span></span>
-                `;
-            }}
-
-            const interval = setInterval(updateCountdown, 1000);
-            updateCountdown(); // Chama imediatamente para evitar atraso
-        }}
-        
-        // Inicializa o contador
-        startCountdown('countdown-timer-{data_fim_str.replace('-', '_')}', '{data_fim_str}', 'America/Sao_Paulo');
-        </script>
-        """
-        
-        return timer_html
-        
-    except Exception as e:
-        # st.error(f"Erro ao calcular contador: {e}") # Descomente para debug
-        return "" # Não mostra nada em caso de erro
-
-
-
-
