@@ -467,6 +467,9 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
+# URL do banner de Black Friday
+URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
+
 # --- Banner Black Friday full width (sem margens brancas) ---
 st.markdown(
     f"""
@@ -477,12 +480,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # --- Barra de Busca (Movida para baixo do Banner) ---
-# Use a classe original da barra de busca para mantê-la expandida (mas agora preta ou vermelha, como você configurou)
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
 st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
 st.markdown("</div></div>", unsafe_allow_html=True)
+
 
 # --- Filtros e Exibição dos Produtos ---
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
@@ -581,6 +583,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
