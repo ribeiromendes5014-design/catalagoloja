@@ -468,39 +468,40 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-import streamlit.components.v1 as components
+
+
+
+
 
 html_code = """
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-}
-
 .banner-slider {
-    position: relative;
     width: 100vw;
-    height: auto;
+    position: relative;
     left: 50%;
-    right: 50%;
     margin-left: -50vw;
-    margin-right: -50vw;
     overflow: hidden;
+    max-height: 400px; /* Ajuste como quiser */
     z-index: 999;
 }
-.banner-slider {
+
+.banner-slide {
+    position: absolute;
     width: 100%;
-    overflow: hidden;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
 }
+
 .banner-slide.active {
     opacity: 1;
     position: relative;
 }
+
 .banner-slide img {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: cover;
+    object-fit: contain;  /* ou 'cover' se quiser preencher o espaço */
 }
 </style>
 
@@ -534,8 +535,9 @@ window.onload = startBannerSlider;
 </script>
 """
 
+components.html(html_code, height=420)
 
-components.html(html_code, height=400)
+
 
 
 
@@ -644,6 +646,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
