@@ -115,8 +115,8 @@ div.block-container h4, div.block-container h5, div.block-container h6, div.bloc
     color: #262626 !important;
 }}
 
-/* NOVO CSS: Garante que elementos fora do container principal ocupem a largura total */
-.full-width-element {
+/* === NOVO CSS PARA EXPANDIR O BANNER (FULL WIDTH) === */
+.full-width-element {{
     width: 100vw !important;
     position: relative;
     left: 50%;
@@ -125,17 +125,67 @@ div.block-container h4, div.block-container h5, div.block-container h6, div.bloc
     margin-right: -50vw;
 }}
 
-.pink-bar-container {{ background-color: #E91E63; padding: 10px 0; width: 100vw; position: relative; 
-    left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+/* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
+.pink-bar-container {{ 
+    /* Cor de fundo da barra de busca alterada para Preto */
+    background-color: #000000; 
+    padding: 10px 0; 
+    width: 100vw; 
+    position: relative; 
+    left: 50%; right: 50%; 
+    margin-left: -50vw; 
+    margin-right: -50vw; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4); 
+}}
 .pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
 
-.cart-badge-button {{ background-color: #C2185B; color: white; border-radius: 12px; padding: 8px 15px;
-    font-size: 16px; font-weight: bold; cursor: pointer; border: none; transition: background-color 0.3s;
-    display: inline-flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; justify-content: center; }}
-.cart-badge-button:hover {{ background-color: #C2185B; }}
-.cart-count {{ background-color: white; color: #E91E63; border-radius: 50%; padding: 2px 7px; margin-left: 8px; font-size: 14px; line-height: 1; }}
-div[data-testid="stButton"] > button {{ background-color: #E91E63; color: white; border-radius: 10px; border: 1px solid #C2185B; font-weight: bold; }}
-div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: white; border: 1px solid #E91E63; }}
+.cart-badge-button {{ 
+    /* Botão de resumo no topo e checkout */
+    background-color: #D32F2F; 
+    color: white; 
+    border-radius: 12px; 
+    padding: 8px 15px;
+    font-size: 16px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border: none; 
+    transition: background-color 0.3s;
+    display: inline-flex; 
+    align-items: center; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    min-width: 150px; 
+    justify-content: center; 
+}}
+.cart-badge-button:hover {{ 
+    background-color: #FF4500; 
+}}
+.cart-count {{ 
+    /* Contador de itens no carrinho */
+    background-color: white; 
+    color: #D32F2F; 
+    border-radius: 50%; 
+    padding: 2px 7px; 
+    margin-left: 8px; 
+    font-size: 14px; 
+    line-height: 1; 
+}}
+
+div[data-testid="stButton"] > button {{ 
+    /* Botões 'Adicionar ao Carrinho' e 'Aplicar Cupom' */
+    background-color: #D32F2F; 
+    color: white; 
+    border-radius: 10px; 
+    border: 1px solid #000000; 
+    font-weight: bold; 
+}}
+div[data-testid="stButton"] > button:hover {{ 
+    /* Cor de hover preta */
+    background-color: #000000; 
+    color: white; 
+    border: 1px solid #FF4500; 
+}}
+
+/* === Estilos de Produtos e Estoque === */
 
 .product-image-container {{ height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }}
 .product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
@@ -183,7 +233,7 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     position: fixed;
     bottom: 110px; 
     right: 40px;
-    background-color: #E91E63;
+    background-color: #D32F2F;
     color: white;
     border-radius: 50%;
     width: 60px;
@@ -517,6 +567,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
