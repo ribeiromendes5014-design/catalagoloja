@@ -85,16 +85,16 @@ st.markdown(f"""
 [data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"],
 [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
 
-/* Tornamos o botão do popover invisível visualmente mas ainda clicável */
-div[data-testid="stPopover"] > div:first-child > button {{
-    position: absolute !important;
-    left: -9999px !important;
-    width: 1px !important;
-    height: 1px !important;
-    overflow: hidden !important;
-    opacity: 0 !important;
+div[data-testid="stPopover"] > div:first-child > button {
+    position: fixed !important;
+    bottom: 110px; /* mesmo nível do botão flutuante */
+    right: 40px;
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 0 !important; /* invisível mas clicável */
+    z-index: 1001 !important;
     pointer-events: auto !important;
-}}
+}
 
 .stApp {{
     background-image: url({BACKGROUND_IMAGE_URL}) !important;
@@ -496,5 +496,6 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
