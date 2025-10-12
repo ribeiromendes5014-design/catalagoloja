@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # catalogo_app.py
 
 import streamlit as st
@@ -629,6 +630,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
