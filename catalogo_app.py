@@ -432,45 +432,42 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# 1. Banner (fora da caixa de conteúdo)
-URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
-st.markdown(f'<div class="full-width-banner-container"><img src="{URL_BLACK_FRIDAY}" alt="Banner Black Friday"></div>', unsafe_allow_html=True)
+# --- Banner full width ---
+st.markdown(
+    """
+    <div class="fullwidth-banner">
+        <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Black Friday">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-# 2. Abre a caixa de conteúdo
-st.markdown('<div class="content-box">', unsafe_allow_html=True)
+# --- Conteúdo ---
+st.title("Catálogo de Pedidos")
+termo = st.text_input("Buscar produtos...", key='termo_pesquisa')
 
-# 3. Conteúdo (dentro da caixa)
-# Barra de Busca
-st.markdown("<div class='pink-bar-container'>", unsafe_allow_html=True)
-termo = st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
-st.markdown("</div>", unsafe_allow_html=True)
+if df_catalogo_completo is None or df_catalogo_completo.empty:
+    st.error("O catálogo não está disponível no momento.")
+    st.stop()
 
-# Filtros e Grade de Produtos
-df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
-categorias = sorted(df_catalogo['CATEGORIA'].dropna().unique().tolist())
-categorias.insert(0, "TODAS AS CATEGORIAS")
-
-col_filtro_cat, col_select_ordem = st.columns([1, 1])
-categoria_selecionada = col_filtro_cat.selectbox("Filtrar por:", categorias, key='filtro_categoria_barra')
+df_catalogo = df_catalogo_completo.reset_index()
+categorias = ["TODAS"] + sorted(df_catalogo['CATEGORIA'].dropna().unique().tolist())
+categoria = st.selectbox("Filtrar por Categoria:", categorias)
 
 df_filtrado = df_catalogo.copy()
+if categoria != "TODAS":
+    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'] == categoria]
 if termo:
-    df_filtrado = df_filtrado[df_filtrado.apply(lambda row: termo.lower() in str(row['NOME']).lower(), axis=1)]
-elif categoria_selecionada != "TODAS AS CATEGORIAS":
-    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'] == categoria_selecionada]
+    df_filtrado = df_filtrado[df_filtrado['NOME'].str.lower().str.contains(termo.lower())]
 
 if df_filtrado.empty:
     st.info("Nenhum produto encontrado.")
 else:
-    opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome (A-Z)']
-    ordem_selecionada = col_select_ordem.selectbox("Ordenar por:", opcoes_ordem, key='ordem_produtos')
-    # Lógica de ordenação (seu código existente)
-    # ...
-
     cols = st.columns(4)
     for i, row in df_filtrado.iterrows():
+        product_id = row['ID']
         with cols[i % 4]:
-            render_product_card(row['ID'], row, f"prod_{row['ID']}_{i}", df_catalogo_completo)
+            render_product_card(product_id, row, key_prefix=f'prod_{product_id}', df_catalogo_indexado=df_catalogo_completo)
 
 # 4. Fecha a caixa de conteúdo
 st.markdown('</div>', unsafe_allow_html=True)
@@ -528,6 +525,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
