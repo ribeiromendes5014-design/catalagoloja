@@ -481,7 +481,7 @@ html_code = """
     left: 50%;
     margin-left: -50vw;
     overflow: hidden;
-    max-height: 400px; /* Ajuste como quiser */
+    max-height: 100px; /* Ajuste como quiser */
     z-index: 999;
 }
 
@@ -646,6 +646,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
