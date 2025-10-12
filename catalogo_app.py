@@ -467,18 +467,60 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# URL do banner de Black Friday
-URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
-
-# --- Banner Black Friday full width (sem margens brancas) ---
+# --- Banner rotativo (carrossel automático) ---
 st.markdown(
-    f"""
-    <div class="fullwidth-banner">
-        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
+    """
+    <style>
+    .banner-slider {
+        position: relative;
+        width: 100vw;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        overflow: hidden;
+        height: auto;
+    }
+    .banner-slide {
+        position: absolute;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 1.2s ease-in-out;
+    }
+    .banner-slide.active {
+        opacity: 1;
+        position: relative;
+    }
+    .banner-slide img {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+    }
+    </style>
+
+    <div class="banner-slider">
+        <div class="banner-slide active">
+            <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
+        </div>
+        <div class="banner-slide">
+            <img src="https://i.ibb.co/W2CFQdh/banner-promocional.png" alt="Banner 2">
+        </div>
     </div>
+
+    <script>
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.banner-slide');
+    setInterval(() => {
+        slides[slideIndex].classList.remove('active');
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex].classList.add('active');
+    }, 5000); // Troca a cada 5 segundos
+    </script>
     """,
     unsafe_allow_html=True
 )
+
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
@@ -583,6 +625,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
