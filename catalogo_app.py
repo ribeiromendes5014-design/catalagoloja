@@ -115,6 +115,16 @@ div.block-container h4, div.block-container h5, div.block-container h6, div.bloc
     color: #262626 !important;
 }}
 
+/* NOVO CSS: Garante que elementos fora do container principal ocupem a largura total */
+.full-width-element {
+    width: 100vw !important;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}}
+
 .pink-bar-container {{ background-color: #E91E63; padding: 10px 0; width: 100vw; position: relative; 
     left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
 .pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
@@ -393,11 +403,11 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner de Black Friday EXPANDIDO ---
+# --- Banner de Black Friday: FORÇA LARGURA TOTAL DA TELA (100vw) ---
 URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" 
 
 st.markdown(f"""
-<div class="pink-bar-container" style="background-color: transparent; padding: 0; margin-bottom: 20px; box-shadow: none;">
+<div class="full-width-element" style="padding: 0; margin-bottom: 20px;">
     <img src="{URL_BLACK_FRIDAY}" 
          alt="Esquenta Black Friday - Ofertas Imperdíveis" 
          style="width: 100%; height: auto; display: block;">
@@ -507,6 +517,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
