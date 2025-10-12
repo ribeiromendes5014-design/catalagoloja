@@ -454,13 +454,31 @@ if st.session_state.pedido_confirmado:
     st.stop()
 
 # --- Banner de Black Friday: FORÇA LARGURA TOTAL DA TELA (100vw) ---
-URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" 
+
+URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
 
 st.markdown(f"""
-<div class="full-width-element" style="padding: 0; margin-top: -20px; margin-bottom: 20px;">
-    <img src="{URL_BLACK_FRIDAY}" 
-         alt="Esquenta Black Friday - Ofertas Imperdíveis" 
-         style="width: 100%; height: auto; display: block;">
+<style>
+.fullscreen-banner {{
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: -4rem;  /* remove espaço superior */
+    margin-bottom: 0;
+    padding: 0;
+}}
+.fullscreen-banner img {{
+    width: 100%;
+    height: auto;
+    display: block;
+}}
+</style>
+
+<div class="fullscreen-banner">
+    <img src="{URL_BLACK_FRIDAY}" alt="Esquenta Black Friday - Ofertas Imperdíveis">
 </div>
 """, unsafe_allow_html=True)
 
@@ -567,6 +585,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
