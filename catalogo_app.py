@@ -504,7 +504,7 @@ st.markdown(
             <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
         </div>
         <div class="banner-slide">
-            <https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
+            <img src="https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
         </div>
         <div class="banner-slide">
             <img src="https://i.ibb.co/NjxQqMq/banner-natal.png" alt="Banner 3">
@@ -641,6 +641,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
