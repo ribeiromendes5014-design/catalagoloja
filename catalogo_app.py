@@ -585,4 +585,3 @@ whatsapp_button_html = f"""
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
 
 
-
