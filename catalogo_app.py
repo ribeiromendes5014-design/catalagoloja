@@ -390,12 +390,49 @@ else:
 # CORREÇÃO: O JavaScript agora usa um seletor mais simples e robusto.
 if num_itens > 0:
     floating_cart_html = f"""
-    <div class="cart-float" onclick='document.querySelector("[data-testid=\\"stPopover\\"] button").click();' title="Ver seu pedido">
+    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
         🛒
         <span class="cart-float-count">{num_itens}</span>
     </div>
+    <script>
+    (function() {{
+        const floatBtn = document.getElementById("floating_cart_btn");
+        floatBtn.addEventListener("click", function(e) {{
+            try {{
+                // 1) Tenta encontrar e clicar no botão nativo do st.popover
+                let popBtn = document.querySelector('[data-testid="stPopover"] button');
+                if(popBtn) {{
+                    popBtn.click();
+                    return;
+                }}
+
+                // 2) Se não existir, tenta alternar o conteúdo do popover diretamente
+                let pop = document.querySelector('[data-testid="stPopover"]');
+                if(pop) {{
+                    // encontrou a área do popover — busca o corpo (varia conforme versão)
+                    let body = pop.querySelector('[data-testid="stPopoverBody"], div[role="dialog"], div[role="menu"]');
+                    if(body) {{
+                        if(window.getComputedStyle(body).display === 'none' || body.style.display === '') {{
+                            body.style.display = 'block';
+                            body.style.zIndex = 2000;
+                        }} else {{
+                            body.style.display = 'none';
+                        }}
+                        return;
+                    }}
+                }}
+
+                // 3) Se nada funcionar, log para devtools
+                console.warn("Botão do popover não encontrado — verifique o selector [data-testid=stPopover]");
+            }} catch(err) {{
+                console.error("Erro ao tentar abrir o popover do carrinho:", err);
+            }}
+        }});
+    }})();
+    </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
+)
 
 
 # --- Botão Flutuante do WhatsApp ---
@@ -407,5 +444,6 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
