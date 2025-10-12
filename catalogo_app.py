@@ -400,7 +400,7 @@ st.markdown(f"""
 <div class="pink-bar-container" style="background-color: transparent; padding: 0; margin-bottom: 20px; box-shadow: none;">
     <img src="{URL_BLACK_FRIDAY}" 
          alt="Esquenta Black Friday - Ofertas Imperdíveis" 
-         style="width: 100%; max-width: 1200px; height: auto; display: block; margin: 0 auto; border-radius: 10px;">
+         style="width: 100%; height: auto; display: block;">
 </div>
 """, unsafe_allow_html=True)
 
@@ -507,6 +507,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
