@@ -301,7 +301,10 @@ with st.container():
                 st.rerun()
 
             if st.session_state.cupom_mensagem:
-                st.success(st.session_state.cupom_mensagem) if "✅" in st.session_state.cupom_mensagem else st.error(st.session_state.cupom_mensagem)
+                if "✅" in st.session_state.cupom_mensagem:
+                    st.success(st.session_state.cupom_mensagem)
+                else:
+                    st.error(st.session_state.cupom_mensagem)
 
             st.markdown("---")
             st.button("🗑️ Limpar Pedido", on_click=limpar_carrinho, use_container_width=True)
@@ -499,6 +502,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
