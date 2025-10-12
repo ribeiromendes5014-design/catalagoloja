@@ -6,7 +6,6 @@ import json
 import time
 from streamlit_autorefresh import st_autorefresh
 import requests
-import streamlit.components.v1 as components
 
 # Importa as funções e constantes dos novos módulos
 # CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
@@ -468,94 +467,18 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
+# URL do banner de Black Friday
+URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
 
-
-
-import streamlit as st
-import streamlit.components.v1 as
-
-# 1. Ajuste no CSS para garantir a largura total e a altura adequada
-#    * Usamos 'height: auto' para a altura, como no Código 1.
-#    * O 'left: 50%; margin-left: -50vw;' é o que garante a largura total.
-html_code_corrigido = """
-<style>
-.banner-slider {
-    position: relative;
-    width: 100vw;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    overflow: hidden;
-    height: auto; /* Garante que a altura se ajuste ao conteúdo */
-}
-.banner-slide {
-    position: absolute;
-    width: 100%;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-}
-.banner-slide.active {
-    opacity: 1;
-    position: relative; /* Importante para o slide ativo ocupar espaço */
-}
-.banner-slide img {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-}
-</style>
-
-<div id="banner-slider" class="banner-slider">
-    <div class="banner-slide active">
-        <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
+# --- Banner Black Friday full width (sem margens brancas) ---
+st.markdown(
+    f"""
+    <div class="fullwidth-banner">
+        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
     </div>
-    <div class="banner-slide">
-        <img src="https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
-    </div>
-    <div class="banner-slide">
-        <img src="https://i.ibb.co/NjxQqMq/banner-natal.png" alt="Banner 3">
-    </div>
-</div>
-
-<script>
-// 2. Lógica de carrossel do Código 1, mas com a inicialização mais robusta do Código 2.
-function startBannerSlider() {
-    let index = 0;
-    const slides = document.querySelectorAll('#banner-slider .banner-slide');
-    if (slides.length === 0) return;
-
-    // Garante que apenas o primeiro slide esteja ativo no início
-    slides.forEach((slide, i) => {
-        slide.classList.toggle('active', i === 0);
-    });
-
-    setInterval(() => {
-        slides[index].classList.remove('active');
-        index = (index + 1) % slides.length;
-        slides[index].classList.add('active');
-    }, 5000); // Troca a cada 5 segundos
-}
-
-// 3. Execução do JS. Como estamos no components.html, o 'window.onload' 
-//    ou a checagem de 'document.readyState' do Código 1 são boas opções.
-//    Manteremos a inicialização simples, pois o 'components.html' renderiza seu próprio iframe.
-window.onload = startBannerSlider;
-
-</script>
-"""
-
-# 4. Exibição do componente
-# O Código 2 usou 'components.html', o que é bom para JS, mas exige uma 'height' explícita.
-# O valor '420' é um bom ponto de partida (altura média dos seus banners).
-components.html(html_code_corrigido, height=420)
-
-
-
-
-
-
+    """,
+    unsafe_allow_html=True
+)
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
@@ -660,17 +583,6 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
-
-
-
-
-
-
-
-
-
 
 
 
