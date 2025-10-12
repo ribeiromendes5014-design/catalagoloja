@@ -15,7 +15,7 @@ import streamlit as st
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 DATA_REPO_NAME = os.environ.get("DATA_REPO_NAME", os.environ.get("REPO_NAME"))
 BRANCH = os.environ.get("BRANCH")
-ESTOQUE_BAIXO_LIMITE = 5 
+ESTOQUE_BAIXO_LIMITE = 2 
 
 # URLs da API
 GITHUB_BASE_API = f"https://api.github.com/repos/{DATA_REPO_NAME}/contents/"
@@ -414,5 +414,6 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False
+
 
 
