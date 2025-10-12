@@ -78,14 +78,14 @@ def copy_to_clipboard_js(text_to_copy):
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
-# Usamos f-string porque precisamos injetar BACKGROUND_IMAGE_URL
 st.markdown(f"""
 <style>
 #MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
 [data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"],
 [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
 
-div[data-testid="stPopover"] > div:first-child > button {
+/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
+div[data-testid="stPopover"] > div:first-child > button {{
     position: fixed !important;
     bottom: 110px; /* mesmo nível do botão flutuante */
     right: 40px;
@@ -94,7 +94,7 @@ div[data-testid="stPopover"] > div:first-child > button {
     opacity: 0 !important; /* invisível mas clicável */
     z-index: 1001 !important;
     pointer-events: auto !important;
-}
+}}
 
 .stApp {{
     background-image: url({BACKGROUND_IMAGE_URL}) !important;
@@ -102,32 +102,37 @@ div[data-testid="stPopover"] > div:first-child > button {
     background-attachment: fixed;
 }}
 
-/* CORREÇÃO PARA MODO ESCURO: Força a cor do texto para ser escura dentro do container principal */
+/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura */
 div.block-container {{ 
     background-color: rgba(255, 255, 255, 0.95); 
     border-radius: 10px; 
     padding: 2rem; 
     margin-top: 1rem; 
-    color: #262626; /* Cor de texto padrão forçada para preto escuro */
+    color: #262626;
 }}
-/* Garante que o texto em parágrafos e títulos também seja escuro, superando o modo escuro do celular */
-div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, div.block-container h4, div.block-container h5, div.block-container h6, div.block-container span {{
+div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, 
+div.block-container h4, div.block-container h5, div.block-container h6, div.block-container span {{
     color: #262626 !important;
 }}
 
-.pink-bar-container {{ background-color: #E91E63; padding: 10px 0; width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+.pink-bar-container {{ background-color: #E91E63; padding: 10px 0; width: 100vw; position: relative; 
+    left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
 .pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
-.cart-badge-button {{ background-color: #C2185B; color: white; border-radius: 12px; padding: 8px 15px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; transition: background-color 0.3s; display: inline-flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; justify-content: center; }}
+
+.cart-badge-button {{ background-color: #C2185B; color: white; border-radius: 12px; padding: 8px 15px;
+    font-size: 16px; font-weight: bold; cursor: pointer; border: none; transition: background-color 0.3s;
+    display: inline-flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; justify-content: center; }}
 .cart-badge-button:hover {{ background-color: #C2185B; }}
 .cart-count {{ background-color: white; color: #E91E63; border-radius: 50%; padding: 2px 7px; margin-left: 8px; font-size: 14px; line-height: 1; }}
 div[data-testid="stButton"] > button {{ background-color: #E91E63; color: white; border-radius: 10px; border: 1px solid #C2185B; font-weight: bold; }}
 div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: white; border: 1px solid #E91E63; }}
+
 .product-image-container {{ height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }}
 .product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
+
 .esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 .estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
 
-/* --- NOVO CSS PARA O CARD DO PRODUTO (CORREÇÃO DE LAYOUT) --- */
 .price-action-flex {{
     display: flex;
     justify-content: space-between; 
@@ -135,13 +140,10 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     margin-top: 1rem;
     gap: 10px; 
 }}
-
 .action-buttons-container {{
     flex-shrink: 0;
     width: 45%; 
 }}
-
-/* Garante que o input de número se ajuste dentro da coluna de 45% */
 .action-buttons-container div[data-testid="stNumberInput"] {{
     width: 100%;
 }}
@@ -167,21 +169,21 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     display: block;
 }}
 
-/* --- NOVO CSS para o Botão Flutuante do Carrinho --- */
+/* --- CSS para o Botão Flutuante do Carrinho --- */
 .cart-float {{
     position: fixed;
-    bottom: 110px; /* Acima do botão WhatsApp (40px + 60px + 10px de espaço) */
+    bottom: 110px; 
     right: 40px;
-    background-color: #E91E63; /* Cor rosa principal */
+    background-color: #E91E63;
     color: white;
-    border-radius: 50%; /* Círculo perfeito */
+    border-radius: 50%;
     width: 60px;
     height: 60px;
     text-align: center;
-    font-size: 28px; /* Tamanho do ícone do carrinho */
+    font-size: 28px;
     box-shadow: 2px 2px 5px #999;
     cursor: pointer;
-    z-index: 1000; /* Para ficar sobre outros elementos */
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -190,7 +192,7 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     position: absolute;
     top: -5px;
     right: -5px;
-    background-color: #FFD600; /* Amarelo para destaque */
+    background-color: #FFD600;
     color: black;
     border-radius: 50%;
     width: 24px;
@@ -204,6 +206,7 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
 }}
 </style>
 """, unsafe_allow_html=True)
+
 
 # --- Cálculos iniciais do carrinho ---
 total_acumulado = sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values())
@@ -496,6 +499,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
