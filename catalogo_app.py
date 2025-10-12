@@ -153,19 +153,18 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     position: fixed;
     bottom: 40px;
     right: 40px;
-    background-color: #25D366;
-    color: white;
-    border-radius: 50px;
-    width: 60px;
-    height: 60px;
-    text-align: center;
-    font-size: 30px;
-    box-shadow: 2px 2px 3px #999;
+    background: none;
+    border: none;
+    width: auto;
+    height: auto;
+    padding: 0;
+    box-shadow: none;
     z-index: 999;
 }}
-.whatsapp-float span {{
-    color: white !important;
-    margin-top: 15px;
+.whatsapp-float img {{
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
     display: block;
 }}
 
@@ -500,10 +499,12 @@ whatsapp_button_html = f"""
 <a href="{LINK_WHATSAPP}" class="whatsapp-float" target="_blank" title="Fale Conosco pelo WhatsApp">
     <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-whats.png"
          alt="WhatsApp"
-         style="width: 35px; height: 35px; margin-top: 12px;" />
+         style="width: 60px; height: 60px;" />
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
+
 
 
 
