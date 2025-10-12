@@ -447,9 +447,7 @@ else:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
 # --- Botão Flutuante do Carrinho ---
-# CORREÇÃO: O JavaScript agora usa um seletor mais simples e robusto.
 if num_itens > 0:
-    # note: o bloco JS usa chaves; como estamos em f-string, as chaves literais no JS/CSS foram duplicadas acima.
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
         🛒
@@ -457,36 +455,28 @@ if num_itens > 0:
     </div>
     <script>
     (function() {{
+        const waitForPopoverButton = () => {{
+            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
+            if (popoverButton) {{
+                return popoverButton;
+            }}
+            // Tenta encontrar botão por outras abordagens (compatibilidade)
+            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
+            if (alt) return alt;
+            return null;
+        }};
         const floatBtn = document.getElementById("floating_cart_btn");
         if (floatBtn) {{
-            floatBtn.addEventListener("click", function(e) {{
+            floatBtn.addEventListener("click", function() {{
                 try {{
-                    // 1) Tenta encontrar e clicar no botão nativo do st.popover
-                    let popBtn = document.querySelector('[data-testid="stPopover"] button');
-                    if(popBtn) {{
+                    const popBtn = waitForPopoverButton();
+                    if (popBtn) {{
                         popBtn.click();
-                        return;
+                    }} else {{
+                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
                     }}
-
-                    // 2) Se não existir, tenta alternar o conteúdo do popover diretamente
-                    let pop = document.querySelector('[data-testid="stPopover"]');
-                    if(pop) {{
-                        // encontrou a área do popover — busca o corpo (varia conforme versão)
-                        let body = pop.querySelector('[data-testid="stPopoverBody"], div[role="dialog"], div[role="menu"]');
-                        if(body) {{
-                            if(window.getComputedStyle(body).display === 'none' || body.style.display === '') {{
-                                body.style.display = 'block';
-                                body.style.zIndex = 2000;
-                            }} else {{
-                                body.style.display = 'none';
-                            }}
-                            return;
-                        }}
-                    }}
-
-                    // 3) Se nada funcionar, log para devtools
-                    console.warn("Botão do popover não encontrado — verifique o selector [data-testid=stPopover]");
-                }} catch(err) {{
+                }} catch (err) {{
                     console.error("Erro ao tentar abrir o popover do carrinho:", err);
                 }}
             }});
@@ -495,6 +485,7 @@ if num_itens > 0:
     </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
+                               
 
 # --- Botão Flutuante do WhatsApp ---
 MENSAGEM_PADRAO = "Olá, vi o catálogo de pedidos da Doce&Bella e gostaria de ajuda!"
@@ -505,4 +496,5 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
