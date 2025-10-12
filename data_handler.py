@@ -82,67 +82,52 @@ def get_data_from_github(file_name):
         return None
 
 
-@st.cache_data(ttl=30)
-def carregar_cupons():
-    """Carrega os cupons do 'cupons.csv' do GitHub, validando com fuso horário do Brasil."""
-    df = get_data_from_github(SHEET_NAME_CUPONS_CSV)
-    
-    colunas_essenciais = ['CODIGO', 'TIPO_DESCONTO', 'VALOR', 'DATA_VALIDADE', 
-                           'VALOR_MINIMO_PEDIDO', 'LIMITE_USOS', 'USOS_ATUAIS', 'STATUS']
-                           
+@st.cache_data(ttl=5)
+def carregar_promocoes():
+    """
+    Carrega as promoções do 'promocoes.csv', valida datas e retorna apenas as ativas.
+    """
+    df = get_data_from_github(SHEET_NAME_PROMOCOES_CSV)
+
+    # Adicionando DATA_INICIO e DATA_FIM como colunas essenciais
+    colunas_essenciais = ['ID_PRODUTO', 'PRECO_PROMOCIONAL', 'STATUS', 'DATA_INICIO', 'DATA_FIM']
     if df is None or df.empty:
         return pd.DataFrame(columns=colunas_essenciais)
 
-    df.rename(columns={'CODIGO': 'NOME_CUPOM', 'VALOR': 'VALOR_DESCONTO'}, inplace=True)
-    colunas_essenciais_renomeadas = ['NOME_CUPOM', 'TIPO_DESCONTO', 'VALOR_DESCONTO', 'DATA_VALIDADE', 
-                                    'VALOR_MINIMO_PEDIDO', 'LIMITE_USOS', 'USOS_ATUAIS', 'STATUS']
-
-    for col in colunas_essenciais_renomeadas:
+    for col in colunas_essenciais:
         if col not in df.columns:
-            st.warning(f"A planilha de cupons existe, mas a coluna essencial '{col}' não foi encontrada.")
-            return pd.DataFrame(columns=colunas_essenciais_renomeadas)
+            st.error(f"Coluna essencial '{col}' não encontrada no 'promocoes.csv'. Verifique o cabeçalho.")
+            return pd.DataFrame(columns=colunas_essenciais)
 
     df_ativo = df[df['STATUS'].astype(str).str.strip().str.upper() == 'ATIVO'].copy()
+    
     if df_ativo.empty:
-        return pd.DataFrame(columns=colunas_essenciais_renomeadas)
+        return pd.DataFrame(columns=colunas_essenciais)
 
-    df_ativo['NOME_CUPOM'] = df_ativo['NOME_CUPOM'].astype(str).str.strip().str.upper()
-    df_ativo['TIPO_DESCONTO'] = df_ativo['TIPO_DESCONTO'].astype(str).str.strip().str.upper()
-    df_ativo['VALOR_DESCONTO'] = pd.to_numeric(df_ativo['VALOR_DESCONTO'].astype(str).str.replace(',', '.'), errors='coerce')
-    df_ativo['VALOR_MINIMO_PEDIDO'] = pd.to_numeric(df_ativo['VALOR_MINIMO_PEDIDO'].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
-    df_ativo['LIMITE_USOS'] = pd.to_numeric(df_ativo['LIMITE_USOS'], errors='coerce').fillna(999999)
-    df_ativo['USOS_ATUAIS'] = pd.to_numeric(df_ativo['USOS_ATUAIS'], errors='coerce').fillna(0)
+    df_ativo['PRECO_PROMOCIONAL'] = pd.to_numeric(df_ativo['PRECO_PROMOCIONAL'].astype(str).str.replace(',', '.'), errors='coerce')
+    df_ativo['ID_PRODUTO'] = pd.to_numeric(df_ativo['ID_PRODUTO'], errors='coerce').astype('Int64')
     
-    # --- INÍCIO DA CORREÇÃO: Validação Segura da DATA_VALIDADE ---
-    
-    # Tenta converter a data para o formato datetime. Falhas viram NaT (Not a Time).
-    df_ativo['DATA_VALIDADE'] = pd.to_datetime(df_ativo['DATA_VALIDADE'], format='%d/%m/%Y', errors='coerce')
-
-    # Define o fuso horário e a data atual
+    # Validação e Filtragem de Datas
     tz_brasil = pytz.timezone('America/Sao_Paulo')
     hoje_brasil = pd.Timestamp.now(tz=tz_brasil).normalize()
+    
+    # Converte as colunas de data (assumindo formato YYYY-MM-DD)
+    # CORREÇÃO APLICADA AQUI: Removido 'errors='coerce'' de .dt.tz_localize()
+    df_ativo['DATA_INICIO_DT'] = pd.to_datetime(df_ativo['DATA_INICIO'], errors='coerce').dt.normalize().dt.tz_localize(tz_brasil)
+    df_ativo['DATA_FIM_DT'] = pd.to_datetime(df_ativo['DATA_FIM'], errors='coerce').dt.normalize().dt.tz_localize(tz_brasil)
+    
+    # Filtra: Início <= Hoje E Fim >= Hoje
+    df_ativo = df_ativo[
+        (df_ativo['DATA_INICIO_DT'].notna()) & (df_ativo['DATA_FIM_DT'].notna()) & # Ambas as datas são válidas
+        (df_ativo['DATA_INICIO_DT'] <= hoje_brasil) & 
+        (df_ativo['DATA_FIM_DT'] >= hoje_brasil)
+    ].copy()
+    
+    # Renomeia DATA_FIM para o nome que o carregar_catalogo vai usar, mantendo a string original
+    df_ativo.rename(columns={'DATA_FIM': 'DATA_FIM_PROMOCAO'}, inplace=True)
 
-    # 1. Cria uma máscara para identificar quais linhas TÊM uma data válida (não são NaT).
-    datas_validas_mask = df_ativo['DATA_VALIDADE'].notna()
-
-    # 2. Somente para as linhas com datas válidas, aplica o fuso horário.
-    if datas_validas_mask.any():
-        df_ativo.loc[datas_validas_mask, 'DATA_VALIDADE'] = df_ativo.loc[datas_validas_mask, 'DATA_VALIDADE'].dt.tz_localize(tz_brasil)
-
-        # 3. Cria uma máscara para identificar os cupons que estão expirados.
-        # Um cupom é expirado SE ele tem uma data VÁLIDA E essa data é ANTERIOR a hoje.
-        cupons_expirados_mask = datas_validas_mask & (df_ativo['DATA_VALIDADE'].dt.normalize() < hoje_brasil)
-
-        # 4. Mantém todos os cupons que NÃO estão na lista de expirados.
-        # A negação (~) garante que cupons sem data (onde a máscara era False)
-        # e cupons com data futura sejam mantidos.
-        df_ativo = df_ativo[~cupons_expirados_mask]
-
-    # --- FIM DA CORREÇÃO ---
-
-    df_ativo = df_ativo[df_ativo['USOS_ATUAIS'] < df_ativo['LIMITE_USOS']]
-
-    return df_ativo.dropna(subset=['NOME_CUPOM', 'VALOR_DESCONTO']).reset_index(drop=True)
+    # Retorna as colunas essenciais para o merge
+    return df_ativo[['ID_PRODUTO', 'PRECO_PROMOCIONAL', 'DATA_FIM_PROMOCAO']].dropna(subset=['ID_PRODUTO', 'PRECO_PROMOCIONAL']).reset_index(drop=True)
 
 
 @st.cache_data(ttl=5)
@@ -448,3 +433,4 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False
+
