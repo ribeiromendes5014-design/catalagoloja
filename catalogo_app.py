@@ -580,7 +580,7 @@ else:
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
-        <span style="font-size: 28px;">🛒</span>
+        <span style="font-size: 28px;">&#128722;</span>
         <span class="cart-float-count">{num_itens}</span>
     </div>
     <script>
@@ -630,6 +630,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
