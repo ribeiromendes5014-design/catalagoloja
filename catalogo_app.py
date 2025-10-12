@@ -107,7 +107,7 @@ div.block-container {{
     background-color: rgba(255, 255, 255, 0.95); 
     border-radius: 10px; 
     padding: 2rem; 
-    margin-top: 1rem; 
+    margin-top: 1rem; /* <-- ESTA É A LINHA QUE CAUSA O ESPAÇO EXTRA NO TOPO */
     color: #262626;
 }}
 div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, 
@@ -457,7 +457,7 @@ if st.session_state.pedido_confirmado:
 URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" 
 
 st.markdown(f"""
-<div class="full-width-element" style="padding: 0; margin-bottom: 20px;">
+<div class="full-width-element" style="padding: 0; margin-top: -20px; margin-bottom: 20px;">
     <img src="{URL_BLACK_FRIDAY}" 
          alt="Esquenta Black Friday - Ofertas Imperdíveis" 
          style="width: 100%; height: auto; display: block;">
@@ -567,6 +567,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
