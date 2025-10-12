@@ -82,17 +82,20 @@ st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sid
 st.markdown(f"""
 <style>
 #MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
-[data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
-/* Esta regra oculta o botão padrão do popover para que possamos usar nosso próprio botão flutuante */
-div[data-testid="stPopover"] > div:first-child > button {
+
+/* Tornamos o botão do popover invisível visualmente mas ainda clicável */
+div[data-testid="stPopover"] > div:first-child > button {{
     position: absolute !important;
     left: -9999px !important;
     width: 1px !important;
     height: 1px !important;
     overflow: hidden !important;
     opacity: 0 !important;
-    pointer-events: auto !important; /* garante que o click via JS funcione */
-}
+    pointer-events: auto !important;
+}}
+</style>
+""", unsafe_allow_html=True)
+
 .stApp {{ background-image: url({BACKGROUND_IMAGE_URL}) !important; background-size: cover; background-attachment: fixed; }}
 
 /* CORREÇÃO PARA MODO ESCURO: Força a cor do texto para ser escura dentro do container principal */
@@ -443,6 +446,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
