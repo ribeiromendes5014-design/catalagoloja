@@ -10,11 +10,11 @@ import requests
 # Importa as funções e constantes dos novos módulos
 # CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
-    carregar_catalogo, carregar_cupons, carregar_clientes_cashback, buscar_cliente_cashback, 
+    carregar_catalogo, carregar_cupons, carregar_clientes_cashback, buscar_cliente_cashback,
     salvar_pedido, BACKGROUND_IMAGE_URL, LOGO_DOCEBELLA_URL, NUMERO_WHATSAPP
 )
 from ui_components import (
-    adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho, 
+    adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
     calcular_cashback_total, render_product_card
 )
 
@@ -29,11 +29,10 @@ if 'desconto_cupom' not in st.session_state:
     st.session_state.desconto_cupom = 0.0
 if 'cupom_mensagem' not in st.session_state:
     st.session_state.cupom_mensagem = ""
-    
+
 # OTIMIZAÇÃO: Cache do catálogo principal no estado da sessão para evitar re-leitura constante
 if 'df_catalogo_indexado' not in st.session_state:
     st.session_state.df_catalogo_indexado = None
-
 
 # --- Inicializa Dados (Uma vez) ---
 if st.session_state.df_catalogo_indexado is None:
@@ -79,6 +78,7 @@ def copy_to_clipboard_js(text_to_copy):
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
+# Usamos f-string porque precisamos injetar BACKGROUND_IMAGE_URL
 st.markdown(f"""
 <style>
 #MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
@@ -95,10 +95,12 @@ div[data-testid="stPopover"] > div:first-child > button {{
     opacity: 0 !important;
     pointer-events: auto !important;
 }}
-</style>
-""", unsafe_allow_html=True)
 
-.stApp {{ background-image: url({BACKGROUND_IMAGE_URL}) !important; background-size: cover; background-attachment: fixed; }}
+.stApp {{
+    background-image: url({BACKGROUND_IMAGE_URL}) !important;
+    background-size: cover;
+    background-attachment: fixed;
+}}
 
 /* CORREÇÃO PARA MODO ESCURO: Força a cor do texto para ser escura dentro do container principal */
 div.block-container {{ 
@@ -138,8 +140,6 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     flex-shrink: 0;
     width: 45%; 
 }}
-</style>
-""", unsafe_allow_html=True)
 
 /* Garante que o input de número se ajuste dentro da coluna de 45% */
 .action-buttons-container div[data-testid="stNumberInput"] {{
@@ -205,11 +205,11 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
 </style>
 """, unsafe_allow_html=True)
 
-
+# --- Cálculos iniciais do carrinho ---
 total_acumulado = sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values())
 num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
 carrinho_vazio = not st.session_state.carrinho
-df_catalogo_completo = st.session_state.df_catalogo_indexado 
+df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
 # --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
@@ -223,64 +223,75 @@ with st.container():
         else:
             desconto_cupom = st.session_state.get('desconto_cupom', 0.0)
             total_com_desconto = total_acumulado - desconto_cupom
-            if total_com_desconto < 0: total_com_desconto = 0
+            if total_com_desconto < 0:
+                total_com_desconto = 0
 
             st.markdown(f"Subtotal: `R$ {total_acumulado:.2f}`")
             if desconto_cupom > 0:
                 st.markdown(f"Desconto (`{st.session_state.cupom_aplicado}`): <span style='color: #D32F2F;'>- R$ {desconto_cupom:.2f}</span>", unsafe_allow_html=True)
-            
+
             st.markdown(f"<span style='color: #2E7D32; font-weight: bold;'>Cashback a Ganhar: R$ {cashback_a_ganhar:.2f}</span>", unsafe_allow_html=True)
             st.markdown(f"<h3 style='color: #E91E63; margin-top: 0;'>Total: R$ {total_com_desconto:.2f}</h3>", unsafe_allow_html=True)
             st.markdown("---")
-            
+
             col_h1, col_h2, col_h3, col_h4 = st.columns([3, 1.5, 2.5, 1])
-            col_h2.markdown("**Qtd**"); col_h3.markdown("**Subtotal**"); col_h4.markdown("")
+            col_h2.markdown("**Qtd**")
+            col_h3.markdown("**Subtotal**")
+            col_h4.markdown("")
             st.markdown('<div style="margin-top: -10px; border-top: 1px solid #ccc;"></div>', unsafe_allow_html=True)
-            
+
             for prod_id, item in list(st.session_state.carrinho.items()):
                 c1, c2, c3, c4 = st.columns([3, 1.5, 2.5, 1])
                 c1.write(f"*{item['nome']}*")
-                
-                max_qtd = int(df_catalogo_completo.loc[prod_id, 'QUANTIDADE']) if prod_id in df_catalogo_completo.index else 999999
-                
+
+                max_qtd = int(df_catalogo_completo.loc[prod_id, 'QUANTIDADE']) if (df_catalogo_completo is not None and prod_id in df_catalogo_completo.index) else 999999
+
                 if item['quantidade'] > max_qtd:
-                    st.session_state.carrinho[prod_id]['quantidade'] = max_qtd; item['quantidade'] = max_qtd
-                    st.toast(f"Ajustado: {item['nome']} ao estoque máximo de {max_qtd}.", icon="⚠️"); st.rerun()
-                    
+                    st.session_state.carrinho[prod_id]['quantidade'] = max_qtd
+                    item['quantidade'] = max_qtd
+                    st.toast(f"Ajustado: {item['nome']} ao estoque máximo de {max_qtd}.", icon="⚠️")
+                    st.rerun()
+
                 nova_quantidade = c2.number_input(label=f'Qtd_{prod_id}', min_value=1, max_value=max_qtd, value=item['quantidade'], step=1, key=f'qtd_{prod_id}_popover', label_visibility="collapsed")
-                
+
                 if nova_quantidade != item['quantidade']:
-                    st.session_state.carrinho[prod_id]['quantidade'] = nova_quantidade; st.rerun()
+                    st.session_state.carrinho[prod_id]['quantidade'] = nova_quantidade
+                    st.rerun()
 
                 subtotal_item = item['preco'] * item['quantidade']
                 preco_unitario = item['preco']
                 c3.markdown(f"<div style='text-align: left; white-space: nowrap;'><strong>R$ {subtotal_item:.2f}</strong><br><span style='font-size: 0.8rem; color: #757575;'>(R$ {preco_unitario:.2f} un.)</span></div>", unsafe_allow_html=True)
-                
+
                 if c4.button("X", key=f'rem_{prod_id}_popover'):
-                    remover_do_carrinho(prod_id); st.rerun()
-            
+                    remover_do_carrinho(prod_id)
+                    st.rerun()
+
             st.markdown("---")
             st.subheader("🎟️ Cupom de Desconto")
             cupom_col1, cupom_col2 = st.columns([3, 1])
             codigo_cupom_input = cupom_col1.text_input("Código do Cupom", key="cupom_input", label_visibility="collapsed").upper()
-            
+
             if cupom_col2.button("Aplicar", key="aplicar_cupom_btn", use_container_width=True):
                 if codigo_cupom_input:
-                    df_cupons_validos = carregar_cupons() 
+                    df_cupons_validos = carregar_cupons()
                     cupom_encontrado = df_cupons_validos[df_cupons_validos['NOME_CUPOM'] == codigo_cupom_input]
                     if not cupom_encontrado.empty:
                         cupom_info = cupom_encontrado.iloc[0]
                         valor_minimo = cupom_info['VALOR_MINIMO_PEDIDO']
                         if float(total_acumulado) >= float(valor_minimo):
-                            tipo = cupom_info['TIPO_DESCONTO']; valor = cupom_info['VALOR_DESCONTO']
+                            tipo = cupom_info['TIPO_DESCONTO']
+                            valor = cupom_info['VALOR_DESCONTO']
                             desconto = (valor / 100) * total_acumulado if tipo == 'PERCENTUAL' else valor
-                            st.session_state.cupom_aplicado = codigo_cupom_input; st.session_state.desconto_cupom = desconto
+                            st.session_state.cupom_aplicado = codigo_cupom_input
+                            st.session_state.desconto_cupom = desconto
                             st.session_state.cupom_mensagem = f"✅ Cupom '{codigo_cupom_input}' aplicado!"
                         else:
-                            st.session_state.cupom_aplicado = None; st.session_state.desconto_cupom = 0.0
+                            st.session_state.cupom_aplicado = None
+                            st.session_state.desconto_cupom = 0.0
                             st.session_state.cupom_mensagem = f"❌ O valor mínimo para este cupom é de R$ {valor_minimo:.2f}."
                     else:
-                        st.session_state.cupom_aplicado = None; st.session_state.desconto_cupom = 0.0
+                        st.session_state.cupom_aplicado = None
+                        st.session_state.desconto_cupom = 0.0
                         st.session_state.cupom_mensagem = "❌ Cupom inválido, expirado ou esgotado."
                 else:
                     st.session_state.cupom_mensagem = "⚠️ Digite um código de cupom."
@@ -292,14 +303,14 @@ with st.container():
             st.markdown("---")
             st.button("🗑️ Limpar Pedido", on_click=limpar_carrinho, use_container_width=True)
             st.markdown("---")
-            
+
             st.subheader("Finalizar Pedido")
             nome_input = st.text_input("Seu Nome Completo:", key='checkout_nome_dynamic')
             contato_input = st.text_input("Seu Contato (WhatsApp - apenas números, com DDD):", key='checkout_contato_dynamic')
-            
+
             nivel_cliente, saldo_cashback = 'N/A', 0.00
             if nome_input and contato_input and DF_CLIENTES_CASH is not None and not DF_CLIENTES_CASH.empty:
-                existe, nome_encontrado, saldo_cashback, nivel_cliente = buscar_cliente_cashback(contato_input, DF_CLIENTES_CASH) 
+                existe, nome_encontrado, saldo_cashback, nivel_cliente = buscar_cliente_cashback(contato_input, DF_CLIENTES_CASH)
                 if existe:
                     st.success(f"🎉 **Bem-vindo(a) de volta, {nome_encontrado}!** Nível: **{nivel_cliente.upper()}**. Saldo de Cashback: **R$ {saldo_cashback:.2f}**.")
                 elif contato_input.strip():
@@ -311,9 +322,27 @@ with st.container():
                 if st.form_submit_button("✅ Enviar Pedido", type="primary", use_container_width=True):
                     if nome_input and contato_input:
                         contato_limpo = ''.join(filter(str.isdigit, contato_input))
-                        detalhes = { "subtotal": total_acumulado, "desconto_cupom": st.session_state.desconto_cupom, "cupom_aplicado": st.session_state.cupom_aplicado, "total": total_com_desconto, "itens": [ {"id": int(k), "nome": v['nome'], "preco": v['preco'], "quantidade": v['quantidade'], "imagem": v.get('imagem', '')} for k, v in st.session_state.carrinho.items() ], "nome": nome_input, "contato": contato_limpo, "cliente_nivel_atual": nivel_cliente, "cliente_saldo_cashback": saldo_cashback, "cashback_a_ganhar": cashback_a_ganhar }
-                        if salvar_pedido(nome_input, contato_limpo, total_com_desconto, json.dumps(detalhes, ensure_ascii=False), detalhes): 
-                            st.session_state.carrinho = {}; st.session_state.cupom_aplicado = None; st.session_state.desconto_cupom = 0.0; st.session_state.cupom_mensagem = ""; st.rerun()
+                        detalhes = {
+                            "subtotal": total_acumulado,
+                            "desconto_cupom": st.session_state.desconto_cupom,
+                            "cupom_aplicado": st.session_state.cupom_aplicado,
+                            "total": total_com_desconto,
+                            "itens": [
+                                {"id": int(k), "nome": v['nome'], "preco": v['preco'], "quantidade": v['quantidade'], "imagem": v.get('imagem', '')}
+                                for k, v in st.session_state.carrinho.items()
+                            ],
+                            "nome": nome_input,
+                            "contato": contato_limpo,
+                            "cliente_nivel_atual": nivel_cliente,
+                            "cliente_saldo_cashback": saldo_cashback,
+                            "cashback_a_ganhar": cashback_a_ganhar
+                        }
+                        if salvar_pedido(nome_input, contato_limpo, total_com_desconto, json.dumps(detalhes, ensure_ascii=False), detalhes):
+                            st.session_state.carrinho = {}
+                            st.session_state.cupom_aplicado = None
+                            st.session_state.desconto_cupom = 0.0
+                            st.session_state.cupom_mensagem = ""
+                            st.rerun()
                     else:
                         st.warning("Preencha seu nome e contato.")
 
@@ -324,15 +353,28 @@ if st.session_state.pedido_confirmado:
     st.balloons()
     st.success("🎉 Pedido enviado com sucesso! Utilize o resumo abaixo para confirmar o pedido pelo WhatsApp.")
     pedido = st.session_state.pedido_confirmado
-    itens_formatados = '\n'.join([ f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens'] ])
-    resumo_texto = ( f"***📝 RESUMO DO PEDIDO - DOCE&BELLA ***\n\n" f"🛒 Cliente: {pedido['nome']}\n" f"📞 Contato: {pedido['contato']}\n" f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n" f"💰 Saldo Cashback: R$ {pedido.get('cliente_saldo_cashback', 0.00):.2f}\n\n" f"📦 Itens Pedidos:\n{itens_formatados}\n\n" f"🎟️ Cupom Aplicado: {pedido.get('cupom_aplicado', 'Nenhum')}\n" f"📉 Desconto Total: R$ {pedido.get('desconto_cupom', 0.0):.2f}\n\n" f"✅ CASHBACK A SER GANHO: R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}\n"  f"💰 VALOR TOTAL A PAGAR: R$ {pedido['total']:.2f}\n\n" f"Obrigado por seu pedido!" )
+    itens_formatados = '\n'.join([f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
+    resumo_texto = (
+        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA ***\n\n"
+        f"🛒 Cliente: {pedido['nome']}\n"
+        f"📞 Contato: {pedido['contato']}\n"
+        f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n"
+        f"💰 Saldo Cashback: R$ {pedido.get('cliente_saldo_cashback', 0.00):.2f}\n\n"
+        f"📦 Itens Pedidos:\n{itens_formatados}\n\n"
+        f"🎟️ Cupom Aplicado: {pedido.get('cupom_aplicado', 'Nenhum')}\n"
+        f"📉 Desconto Total: R$ {pedido.get('desconto_cupom', 0.0):.2f}\n\n"
+        f"✅ CASHBACK A SER GANHO: R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}\n"
+        f"💰 VALOR TOTAL A PAGAR: R$ {pedido['total']:.2f}\n\n"
+        f"Obrigado por seu pedido!"
+    )
     st.text_area("Resumo do Pedido (Clique para copiar)", resumo_texto, height=300)
     copy_to_clipboard_js(resumo_texto)
-    st.markdown( f'<button class="cart-badge-button" style="background-color: #25D366; width: 100%; margin-bottom: 15px;" onclick="copyTextToClipboard(\'{resumo_texto.replace("'", "\\'")}\')">✅ Copiar Resumo</button>', unsafe_allow_html=True )
+    st.markdown(f'<button class="cart-badge-button" style="background-color: #25D366; width: 100%; margin-bottom: 15px;" onclick="copyTextToClipboard(\'{resumo_texto.replace(\"'\", \"\\'\")}\')">✅ Copiar Resumo</button>', unsafe_allow_html=True)
     if st.button("Voltar ao Catálogo"):
-        st.session_state.pedido_confirmado = None; limpar_carrinho(); st.rerun()
+        st.session_state.pedido_confirmado = None
+        limpar_carrinho()
+        st.rerun()
     st.stop()
-
 
 # --- Banner Principal ---
 st.markdown(f"""
@@ -342,23 +384,23 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-
 # --- Barra de Busca ---
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
 st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
 st.markdown("</div></div>", unsafe_allow_html=True)
 
-
 # --- Filtros e Exibição dos Produtos ---
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
-categorias.sort(); categorias.insert(0, "TODAS AS CATEGORIAS")
+categorias.sort()
+categorias.insert(0, "TODAS AS CATEGORIAS")
 
 col_filtro_cat, col_select_ordem, _ = st.columns([1, 1, 3])
 termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 
 categoria_selecionada = col_filtro_cat.selectbox("Filtrar por:", categorias, key='filtro_categoria_barra')
-if termo: col_filtro_cat.markdown(f'<div style="font-size: 0.8rem; color: #E91E63;">Busca ativa desabilita filtro.</div>', unsafe_allow_html=True)
+if termo:
+    col_filtro_cat.markdown(f'<div style="font-size: 0.8rem; color: #E91E63;">Busca ativa desabilita filtro.</div>', unsafe_allow_html=True)
 
 df_filtrado = df_catalogo.copy()
 if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
@@ -373,7 +415,7 @@ else:
     opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome do Produto (A-Z)']
     ordem_selecionada = col_select_ordem.selectbox("Ordenar por:", opcoes_ordem, key='ordem_produtos')
     df_filtrado['EM_PROMOCAO'] = df_filtrado['PRECO_PROMOCIONAL'].notna()
-    
+
     sort_map = {
         'Lançamento': (['RECENCIA', 'EM_PROMOCAO'], [False, False]),
         'Promoção': (['EM_PROMOCAO', 'RECENCIA'], [False, False]),
@@ -392,10 +434,10 @@ else:
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
-
 # --- Botão Flutuante do Carrinho ---
 # CORREÇÃO: O JavaScript agora usa um seletor mais simples e robusto.
 if num_itens > 0:
+    # note: o bloco JS usa chaves; como estamos em f-string, as chaves literais no JS/CSS foram duplicadas acima.
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
         🛒
@@ -404,42 +446,43 @@ if num_itens > 0:
     <script>
     (function() {{
         const floatBtn = document.getElementById("floating_cart_btn");
-        floatBtn.addEventListener("click", function(e) {{
-            try {{
-                // 1) Tenta encontrar e clicar no botão nativo do st.popover
-                let popBtn = document.querySelector('[data-testid="stPopover"] button');
-                if(popBtn) {{
-                    popBtn.click();
-                    return;
-                }}
-
-                // 2) Se não existir, tenta alternar o conteúdo do popover diretamente
-                let pop = document.querySelector('[data-testid="stPopover"]');
-                if(pop) {{
-                    // encontrou a área do popover — busca o corpo (varia conforme versão)
-                    let body = pop.querySelector('[data-testid="stPopoverBody"], div[role="dialog"], div[role="menu"]');
-                    if(body) {{
-                        if(window.getComputedStyle(body).display === 'none' || body.style.display === '') {{
-                            body.style.display = 'block';
-                            body.style.zIndex = 2000;
-                        }} else {{
-                            body.style.display = 'none';
-                        }}
+        if (floatBtn) {{
+            floatBtn.addEventListener("click", function(e) {{
+                try {{
+                    // 1) Tenta encontrar e clicar no botão nativo do st.popover
+                    let popBtn = document.querySelector('[data-testid="stPopover"] button');
+                    if(popBtn) {{
+                        popBtn.click();
                         return;
                     }}
-                }}
 
-                // 3) Se nada funcionar, log para devtools
-                console.warn("Botão do popover não encontrado — verifique o selector [data-testid=stPopover]");
-            }} catch(err) {{
-                console.error("Erro ao tentar abrir o popover do carrinho:", err);
-            }}
-        }});
+                    // 2) Se não existir, tenta alternar o conteúdo do popover diretamente
+                    let pop = document.querySelector('[data-testid="stPopover"]');
+                    if(pop) {{
+                        // encontrou a área do popover — busca o corpo (varia conforme versão)
+                        let body = pop.querySelector('[data-testid="stPopoverBody"], div[role="dialog"], div[role="menu"]');
+                        if(body) {{
+                            if(window.getComputedStyle(body).display === 'none' || body.style.display === '') {{
+                                body.style.display = 'block';
+                                body.style.zIndex = 2000;
+                            }} else {{
+                                body.style.display = 'none';
+                            }}
+                            return;
+                        }}
+                    }}
+
+                    // 3) Se nada funcionar, log para devtools
+                    console.warn("Botão do popover não encontrado — verifique o selector [data-testid=stPopover]");
+                }} catch(err) {{
+                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
+                }}
+            }});
+        }}
     }})();
     </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
-
 
 # --- Botão Flutuante do WhatsApp ---
 MENSAGEM_PADRAO = "Olá, vi o catálogo de pedidos da Doce&Bella e gostaria de ajuda!"
@@ -450,5 +493,3 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
