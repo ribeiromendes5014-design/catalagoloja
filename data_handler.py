@@ -113,28 +113,31 @@ def carregar_cupons():
     df_ativo['LIMITE_USOS'] = pd.to_numeric(df_ativo['LIMITE_USOS'], errors='coerce').fillna(999999)
     df_ativo['USOS_ATUAIS'] = pd.to_numeric(df_ativo['USOS_ATUAIS'], errors='coerce').fillna(0)
     
-    # --- INÍCIO DA CORREÇÃO: Validação de DATA_VALIDADE (Permite Datas Vazias) ---
+    # --- INÍCIO DA CORREÇÃO: Validação Segura da DATA_VALIDADE ---
     
-    # Tenta converter a data, especificando o formato, mas mantém os erros como NaT (Not a Time)
+    # Tenta converter a data para o formato datetime. Falhas viram NaT (Not a Time).
     df_ativo['DATA_VALIDADE'] = pd.to_datetime(df_ativo['DATA_VALIDADE'], format='%d/%m/%Y', errors='coerce')
 
     # Define o fuso horário e a data atual
     tz_brasil = pytz.timezone('America/Sao_Paulo')
     hoje_brasil = pd.Timestamp.now(tz=tz_brasil).normalize()
 
-    # Localiza o fuso horário apenas para as datas que são válidas (não são NaT)
-    datas_validas = df_ativo['DATA_VALIDADE'].notna()
-    df_ativo.loc[datas_validas, 'DATA_VALIDADE'] = df_ativo.loc[datas_validas, 'DATA_VALIDADE'].dt.tz_localize(tz_brasil)
+    # 1. Cria uma máscara para identificar quais linhas TÊM uma data válida (não são NaT).
+    datas_validas_mask = df_ativo['DATA_VALIDADE'].notna()
 
-    # Cria a condição para manter o cupom:
-    # 1. A data de validade é NULA (vazia)
-    # OU
-    # 2. A data de validade (já com fuso) é maior ou igual a hoje
-    condicao_data_valida = (df_ativo['DATA_VALIDADE'].isnull()) | (df_ativo['DATA_VALIDADE'].dt.normalize() >= hoje_brasil)
+    # 2. Somente para as linhas com datas válidas, aplica o fuso horário.
+    if datas_validas_mask.any():
+        df_ativo.loc[datas_validas_mask, 'DATA_VALIDADE'] = df_ativo.loc[datas_validas_mask, 'DATA_VALIDADE'].dt.tz_localize(tz_brasil)
 
-    # Aplica o filtro
-    df_ativo = df_ativo[condicao_data_valida]
-    
+        # 3. Cria uma máscara para identificar os cupons que estão expirados.
+        # Um cupom é expirado SE ele tem uma data VÁLIDA E essa data é ANTERIOR a hoje.
+        cupons_expirados_mask = datas_validas_mask & (df_ativo['DATA_VALIDADE'].dt.normalize() < hoje_brasil)
+
+        # 4. Mantém todos os cupons que NÃO estão na lista de expirados.
+        # A negação (~) garante que cupons sem data (onde a máscara era False)
+        # e cupons com data futura sejam mantidos.
+        df_ativo = df_ativo[~cupons_expirados_mask]
+
     # --- FIM DA CORREÇÃO ---
 
     df_ativo = df_ativo[df_ativo['USOS_ATUAIS'] < df_ativo['LIMITE_USOS']]
@@ -209,7 +212,7 @@ def carregar_catalogo():
             return 'Preço à vista'
             
         df_produtos['CONDICAOPAGAMENTO'] = df_produtos.apply(gerar_condicao_pagamento, axis=1)
-    # --- FIM: Lidar com PRECOVISTA e PRECOCARTAO ---
+    # --- Fim: Lidar com PRECOVISTA e PRECOCARTAO ---
 
     coluna_foto_encontrada = None
     nomes_possiveis_foto = ['FOTOURL', 'LINKIMAGEM', 'FOTO_URL', 'IMAGEM', 'URL_FOTO', 'LINK']
@@ -411,4 +414,3 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False
-
