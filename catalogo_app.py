@@ -471,37 +471,39 @@ if st.session_state.pedido_confirmado:
 
 
 
+import streamlit as st
+import streamlit.components.v1 as
 
-
-html_code = """
+# 1. Ajuste no CSS para garantir a largura total e a altura adequada
+#    * Usamos 'height: auto' para a altura, como no Código 1.
+#    * O 'left: 50%; margin-left: -50vw;' é o que garante a largura total.
+html_code_corrigido = """
 <style>
 .banner-slider {
-    width: 100vw;
     position: relative;
+    width: 100vw;
     left: 50%;
+    right: 50%;
     margin-left: -50vw;
+    margin-right: -50vw;
     overflow: hidden;
-    max-height: 100px; /* Ajuste como quiser */
-    z-index: 999;
+    height: auto; /* Garante que a altura se ajuste ao conteúdo */
 }
-
 .banner-slide {
     position: absolute;
     width: 100%;
     opacity: 0;
     transition: opacity 1s ease-in-out;
 }
-
 .banner-slide.active {
     opacity: 1;
-    position: relative;
+    position: relative; /* Importante para o slide ativo ocupar espaço */
 }
-
 .banner-slide img {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: contain;  /* ou 'cover' se quiser preencher o espaço */
+    object-fit: cover;
 }
 </style>
 
@@ -518,24 +520,36 @@ html_code = """
 </div>
 
 <script>
+// 2. Lógica de carrossel do Código 1, mas com a inicialização mais robusta do Código 2.
 function startBannerSlider() {
     let index = 0;
     const slides = document.querySelectorAll('#banner-slider .banner-slide');
     if (slides.length === 0) return;
+
+    // Garante que apenas o primeiro slide esteja ativo no início
     slides.forEach((slide, i) => {
         slide.classList.toggle('active', i === 0);
     });
+
     setInterval(() => {
-        slides[index].classList.remove('active'); 
-        index = (index + 1) % slides.length; 
-        slides[index].classList.add('active'); 
-    }, 5000);
+        slides[index].classList.remove('active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('active');
+    }, 5000); // Troca a cada 5 segundos
 }
+
+// 3. Execução do JS. Como estamos no components.html, o 'window.onload' 
+//    ou a checagem de 'document.readyState' do Código 1 são boas opções.
+//    Manteremos a inicialização simples, pois o 'components.html' renderiza seu próprio iframe.
 window.onload = startBannerSlider;
+
 </script>
 """
 
-components.html(html_code, height=420)
+# 4. Exibição do componente
+# O Código 2 usou 'components.html', o que é bom para JS, mas exige uma 'height' explícita.
+# O valor '420' é um bom ponto de partida (altura média dos seus banners).
+components.html(html_code_corrigido, height=420)
 
 
 
@@ -646,6 +660,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
