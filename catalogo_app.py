@@ -394,10 +394,14 @@ if st.session_state.pedido_confirmado:
     st.stop()
 
 # --- Banner Principal ---
+# --- Banner Principal - Black Friday ---
+URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" # COLOQUE A URL DA IMAGEM AQUI
+
 st.markdown(f"""
-<div class="banner-colored" style="background-color: #e91e63; padding: 10px 25px; border-radius: 10px; display: flex; align-items: center; gap: 25px; margin-bottom: 20px;">
-    <img src="{LOGO_DOCEBELLA_URL}" alt="Doce&Bella Logo" style="max-height: 80px; width: auto; object-fit: contain;">
-    <h1 style="color: white; font-size: 2rem; margin: 0;">Catálogo de Pedidos Doce&Bella</h1>
+<div style="margin-bottom: 20px;">
+    <img src="{URL_BLACK_FRIDAY}" 
+         alt="Esquenta Black Friday - Ofertas Imperdíveis" 
+         style="width: 100%; max-width: 1200px; height: auto; border-radius: 10px; display: block; margin: 0 auto;">
 </div>
 """, unsafe_allow_html=True)
 
@@ -503,6 +507,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
