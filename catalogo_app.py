@@ -432,7 +432,6 @@ if num_itens > 0:
     </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
-)
 
 
 # --- Botão Flutuante do WhatsApp ---
@@ -444,6 +443,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
