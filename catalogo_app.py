@@ -211,8 +211,9 @@ st.markdown(f"""
 }}
 
 .banner-colored img {{
-    max-height: 60px; 
+    max-height: 80px;  /* Você pode ajustar a altura aqui */
     width: auto;
+    object-fit: contain; /* <-- ESTA É A CORREÇÃO */
 }}
 
 .banner-colored h1 {{
@@ -525,3 +526,4 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
