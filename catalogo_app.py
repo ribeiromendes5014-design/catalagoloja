@@ -77,154 +77,182 @@ def copy_to_clipboard_js(text_to_copy):
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS (VERSÃO CORRIGIDA E OTIMIZADA) ---
+# --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown(f"""
 <style>
-/* --- Configurações Globais e Reset --- */
-#MainMenu, footer, [data-testid="stSidebar"] {{
-    visibility: hidden;
-}}
+#MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
 [data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"],
-[data-testid="stStatusWidget"], [data-testid="stDecoration"] {{
-    display: none !important;
+[data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
+
+/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
+div[data-testid="stPopover"] > div:first-child > button {{
+    position: fixed !important;
+    bottom: 110px; /* mesmo nível do botão flutuante */
+    right: 40px;
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 0 !important; /* invisível mas clicável */
+    z-index: 1001 !important;
+    pointer-events: auto !important;
 }}
 
-/* --- Fundo da Página --- */
 .stApp {{
     background-image: url({BACKGROUND_IMAGE_URL}) !important;
     background-size: cover;
     background-attachment: fixed;
 }}
 
-/* --- CORREÇÃO PRINCIPAL (Passo 1) --- */
-/* Tornamos o container principal do Streamlit totalmente transparente e sem padding.
-   Ele servirá apenas como uma tela em branco para posicionarmos nossos elementos. */
-div.block-container {{
-    background: transparent !important;
-    padding: 0 !important;
-    margin-top: 2rem !important; /* Espaço no topo da página */
+/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura */
+div.block-container {{ 
+    background-color: rgba(255, 255, 255, 0.95); 
+    border-radius: 10px; 
+    padding: 2rem; 
+    margin-top: 1rem; /* <-- ESTA É A LINHA QUE CAUSA O ESPAÇO EXTRA NO TOPO */
+    color: #262626;
 }}
-
-/* --- Banner em Tela Cheia --- */
-/* Estilo para forçar o container do banner a ocupar 100% da largura da tela. */
-.full-width-banner-container {{
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-}}
-.full-width-banner-container img {{
-    width: 100%;
-    height: auto;
-    display: block;
-}}
-
-/* --- CORREÇÃO PRINCIPAL (Passo 2) --- */
-/* Criamos nossa própria "caixa de conteúdo" com fundo branco.
-   Tudo (exceto o banner e botões flutuantes) ficará aqui dentro. */
-.content-box {{
-    max-width: 1200px;         /* Largura máxima do conteúdo */
-    margin: 20px auto 0 auto;  /* Centraliza a caixa na tela com 20px de espaço no topo */
-    background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 10px;
-    padding: 2rem;             /* Espaçamento interno */
-}}
-/* Garante que todo texto dentro da caixa seja escuro e legível */
-.content-box * {{
+div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, 
+div.block-container h4, div.block-container h5, div.block-container h6, div.block-container span {{
     color: #262626 !important;
 }}
 
-/* --- Barra de Busca Rosa --- */
-/* Agora mais simples, pois está contida dentro da .content-box */
-.pink-bar-container {{
-    background-color: #E91E63;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 1rem; /* Espaço abaixo da barra */
+/* === NOVO CSS PARA EXPANDIR O BANNER (FULL WIDTH) === */
+.full-width-element {{
+    width: 100vw !important;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
 }}
 
-/* --- Estilos dos Componentes (sem grandes mudanças) --- */
-div[data-testid="stButton"] > button {{
-    background-color: #E91E63;
-    color: white;
-    border-radius: 10px;
-    border: 1px solid #C2185B;
-    font-weight: bold;
+/* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
+.pink-bar-container {{ 
+    /* Cor de fundo da barra de busca alterada para Preto */
+    background-color: #000000; 
+    padding: 10px 0; 
+    width: 100vw; 
+    position: relative; 
+    left: 50%; right: 50%; 
+    margin-left: -50vw; 
+    margin-right: -50vw; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4); 
 }}
-div[data-testid="stButton"] > button:hover {{
-    background-color: #C2185B;
-    border: 1px solid #E91E63;
+.pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
+
+.cart-badge-button {{ 
+    /* Botão de resumo no topo e checkout */
+    background-color: #D32F2F; 
+    color: white; 
+    border-radius: 12px; 
+    padding: 8px 15px;
+    font-size: 16px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border: none; 
+    transition: background-color 0.3s;
+    display: inline-flex; 
+    align-items: center; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    min-width: 150px; 
+    justify-content: center; 
 }}
-.product-image-container {{
-    height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    overflow: hidden;
+.cart-badge-button:hover {{ 
+    background-color: #FF4500; 
 }}
-.product-image-container img {{
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
-    border-radius: 8px;
+.cart-count {{ 
+    /* Contador de itens no carrinho */
+    background-color: white; 
+    color: #D32F2F; 
+    border-radius: 50%; 
+    padding: 2px 7px; 
+    margin-left: 8px; 
+    font-size: 14px; 
+    line-height: 1; 
 }}
-.esgotado-badge, .estoque-baixo-badge {{
-    color: white;
-    font-weight: bold;
-    padding: 3px 8px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    display: block;
+
+div[data-testid="stButton"] > button {{ 
+    /* Botões 'Adicionar ao Carrinho' e 'Aplicar Cupom' */
+    background-color: #D32F2F; 
+    color: white; 
+    border-radius: 10px; 
+    border: 1px solid #000000; 
+    font-weight: bold; 
 }}
-.esgotado-badge {{ background-color: #757575; }}
-.estoque-baixo-badge {{ background-color: #FFC107; color: black !important; }}
+div[data-testid="stButton"] > button:hover {{ 
+    /* Cor de hover preta */
+    background-color: #000000; 
+    color: white; 
+    border: 1px solid #FF4500; 
+}}
+
+/* === Estilos de Produtos e Estoque === */
+
+.product-image-container {{ height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }}
+.product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
+
+.esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
+.estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
+
 .price-action-flex {{
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
+    justify-content: space-between; 
+    align-items: flex-end; 
     margin-top: 1rem;
-    gap: 10px;
+    gap: 10px; 
 }}
 .action-buttons-container {{
     flex-shrink: 0;
-    width: 45%;
+    width: 45%; 
+}}
+.action-buttons-container div[data-testid="stNumberInput"] {{
+    width: 100%;
 }}
 
-/* --- Botões Flutuantes (WhatsApp e Carrinho) --- */
-.whatsapp-float, .cart-float {{
-    position: fixed;
-    right: 40px;
-    z-index: 1000;
-}}
+/* --- CSS para o Botão Flutuante do WhatsApp --- */
 .whatsapp-float {{
+    position: fixed;
     bottom: 40px;
+    right: 40px;
+    background: none;
+    border: none;
+    width: auto;
+    height: auto;
+    padding: 0;
+    box-shadow: none;
+    z-index: 999;
 }}
 .whatsapp-float img {{
     width: 60px;
     height: 60px;
+    cursor: pointer;
+    display: block;
 }}
+
+/* --- CSS para o Botão Flutuante do Carrinho --- */
 .cart-float {{
-    bottom: 110px;
-    background-color: #E91E63;
+    position: fixed;
+    bottom: 110px; 
+    right: 40px;
+    background-color: #D32F2F;
     color: white;
+    border-radius: 50%;
     width: 60px;
     height: 60px;
-    border-radius: 50%;
+    text-align: center;
+    font-size: 28px;
+    box-shadow: 2px 2px 5px #999;
+    cursor: pointer;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    box-shadow: 2px 2px 5px #999;
 }}
 .cart-float-count {{
     position: absolute;
     top: -5px;
     right: -5px;
     background-color: #FFD600;
-    color: black !important;
+    color: black;
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -234,13 +262,6 @@ div[data-testid="stButton"] > button:hover {{
     align-items: center;
     justify-content: center;
     border: 2px solid white;
-}}
-
-/* Botão invisível do popover do carrinho */
-div[data-testid="stPopover"] > div:first-child > button {{
-    position: fixed !important; bottom: 110px; right: 40px;
-    width: 60px !important; height: 60px !important; opacity: 0 !important;
-    z-index: 1001 !important; pointer-events: auto !important;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -432,46 +453,85 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner full width ---
-st.markdown(
-    """
-    <div class="fullwidth-banner">
-        <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Black Friday">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# --- Banner de Black Friday: FORÇA LARGURA TOTAL DA TELA (100vw) ---
 
-# --- Conteúdo ---
-st.title("Catálogo de Pedidos")
-termo = st.text_input("Buscar produtos...", key='termo_pesquisa')
+URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
 
-if df_catalogo_completo is None or df_catalogo_completo.empty:
-    st.error("O catálogo não está disponível no momento.")
-    st.stop()
+st.markdown(f"""
+<style>
+.fullscreen-banner {{
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: -4rem;  /* remove espaço superior */
+    margin-bottom: 0;
+    padding: 0;
+}}
+.fullscreen-banner img {{
+    width: 100%;
+    height: auto;
+    display: block;
+}}
+</style>
 
-df_catalogo = df_catalogo_completo.reset_index()
-categorias = ["TODAS"] + sorted(df_catalogo['CATEGORIA'].dropna().unique().tolist())
-categoria = st.selectbox("Filtrar por Categoria:", categorias)
+<div class="fullscreen-banner">
+    <img src="{URL_BLACK_FRIDAY}" alt="Esquenta Black Friday - Ofertas Imperdíveis">
+</div>
+""", unsafe_allow_html=True)
+
+# --- Barra de Busca (Movida para baixo do Banner) ---
+# Use a classe original da barra de busca para mantê-la expandida (mas agora preta ou vermelha, como você configurou)
+st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
+st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+# --- Filtros e Exibição dos Produtos ---
+df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
+categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
+categorias.sort()
+categorias.insert(0, "TODAS AS CATEGORIAS")
+
+col_filtro_cat, col_select_ordem, _ = st.columns([1, 1, 3])
+termo = st.session_state.get('termo_pesquisa_barra', '').lower()
+
+categoria_selecionada = col_filtro_cat.selectbox("Filtrar por:", categorias, key='filtro_categoria_barra')
+if termo:
+    col_filtro_cat.markdown(f'<div style="font-size: 0.8rem; color: #E91E63;">Busca ativa desabilita filtro.</div>', unsafe_allow_html=True)
 
 df_filtrado = df_catalogo.copy()
-if categoria != "TODAS":
-    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'] == categoria]
-if termo:
-    df_filtrado = df_filtrado[df_filtrado['NOME'].str.lower().str.contains(termo.lower())]
+if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
+    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'].astype(str) == categoria_selecionada]
+elif termo:
+    df_filtrado = df_filtrado[df_filtrado.apply(lambda row: termo in str(row['NOME']).lower() or termo in str(row['DESCRICAOLONGA']).lower(), axis=1)]
 
 if df_filtrado.empty:
-    st.info("Nenhum produto encontrado.")
+    st.info(f"Nenhum produto encontrado com os critérios selecionados.")
 else:
-    cols = st.columns(4)
-    for i, row in df_filtrado.iterrows():
-        product_id = row['ID']
-        with cols[i % 4]:
-            render_product_card(product_id, row, key_prefix=f'prod_{product_id}', df_catalogo_indexado=df_catalogo_completo)
+    st.subheader("✨ Nossos Produtos")
+    opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome do Produto (A-Z)']
+    ordem_selecionada = col_select_ordem.selectbox("Ordenar por:", opcoes_ordem, key='ordem_produtos')
+    df_filtrado['EM_PROMOCAO'] = df_filtrado['PRECO_PROMOCIONAL'].notna()
 
-# 4. Fecha a caixa de conteúdo
-st.markdown('</div>', unsafe_allow_html=True)
- 
+    sort_map = {
+        'Lançamento': (['RECENCIA', 'EM_PROMOCAO'], [False, False]),
+        'Promoção': (['EM_PROMOCAO', 'RECENCIA'], [False, False]),
+        'Menor Preço': (['EM_PROMOCAO', 'PRECO_FINAL'], [False, True]),
+        'Maior Preço': (['EM_PROMOCAO', 'PRECO_FINAL'], [False, False]),
+        'Nome do Produto (A-Z)': (['EM_PROMOCAO', 'NOME'], [False, True])
+    }
+    if ordem_selecionada in sort_map:
+        by_cols, ascending_order = sort_map[ordem_selecionada]
+        df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
+
+    cols = st.columns(4)
+    for i, row in df_filtrado.reset_index(drop=True).iterrows():
+        product_id = row['ID']
+        unique_key = f'prod_{product_id}_{i}'
+        with cols[i % 4]:
+            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
 # --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
@@ -525,10 +585,5 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
-
-
-
 
 
