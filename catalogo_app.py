@@ -77,132 +77,154 @@ def copy_to_clipboard_js(text_to_copy):
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS (COM CORREÇÃO DE LAYOUT) ---
+# --- CSS (VERSÃO CORRIGIDA E OTIMIZADA) ---
 st.markdown(f"""
 <style>
-#MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
+/* --- Configurações Globais e Reset --- */
+#MainMenu, footer, [data-testid="stSidebar"] {{
+    visibility: hidden;
+}}
 [data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"],
-[data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
-
-/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
-div[data-testid="stPopover"] > div:first-child > button {{
-    position: fixed !important;
-    bottom: 110px; /* mesmo nível do botão flutuante */
-    right: 40px;
-    width: 60px !important;
-    height: 60px !important;
-    opacity: 0 !important; /* invisível mas clicável */
-    z-index: 1001 !important;
-    pointer-events: auto !important;
+[data-testid="stStatusWidget"], [data-testid="stDecoration"] {{
+    display: none !important;
 }}
 
+/* --- Fundo da Página --- */
 .stApp {{
     background-image: url({BACKGROUND_IMAGE_URL}) !important;
     background-size: cover;
     background-attachment: fixed;
 }}
 
-/* ALTERAÇÃO 1: Container principal agora é transparente e sem padding */
-div.block-container {{ 
-    background-color: transparent !important; /* Fundo transparente */
-    border-radius: 0px; 
-    padding: 0 !important; /* Removemos o padding para o banner colar nas bordas */
-    margin-top: 1rem; 
-    color: #262626;
+/* --- CORREÇÃO PRINCIPAL (Passo 1) --- */
+/* Tornamos o container principal do Streamlit totalmente transparente e sem padding.
+   Ele servirá apenas como uma tela em branco para posicionarmos nossos elementos. */
+div.block-container {{
+    background: transparent !important;
+    padding: 0 !important;
+    margin-top: 2rem !important; /* Espaço no topo da página */
 }}
 
-/* NOVO: Wrapper para o conteúdo que ficará na caixa branca */
-.content-wrapper {{
+/* --- Banner em Tela Cheia --- */
+/* Estilo para forçar o container do banner a ocupar 100% da largura da tela. */
+.full-width-banner-container {{
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}}
+.full-width-banner-container img {{
+    width: 100%;
+    height: auto;
+    display: block;
+}}
+
+/* --- CORREÇÃO PRINCIPAL (Passo 2) --- */
+/* Criamos nossa própria "caixa de conteúdo" com fundo branco.
+   Tudo (exceto o banner e botões flutuantes) ficará aqui dentro. */
+.content-box {{
+    max-width: 1200px;         /* Largura máxima do conteúdo */
+    margin: 20px auto 0 auto;  /* Centraliza a caixa na tela com 20px de espaço no topo */
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
-    padding: 2rem;
-    margin-top: 0rem; /* O espaçamento já está no container principal */
+    padding: 2rem;             /* Espaçamento interno */
 }}
-
-/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura DENTRO DO WRAPPER */
-.content-wrapper p, .content-wrapper h1, .content-wrapper h2, .content-wrapper h3, 
-.content-wrapper h4, .content-wrapper h5, .content-wrapper h6, .content-wrapper span {{
+/* Garante que todo texto dentro da caixa seja escuro e legível */
+.content-box * {{
     color: #262626 !important;
 }}
 
-.pink-bar-container {{ background-color: #E91E63; padding: 10px 0; width: 100vw; position: relative; 
-    left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
-.pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
+/* --- Barra de Busca Rosa --- */
+/* Agora mais simples, pois está contida dentro da .content-box */
+.pink-bar-container {{
+    background-color: #E91E63;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 1rem; /* Espaço abaixo da barra */
+}}
 
-.cart-badge-button {{ background-color: #C2185B; color: white; border-radius: 12px; padding: 8px 15px;
-    font-size: 16px; font-weight: bold; cursor: pointer; border: none; transition: background-color 0.3s;
-    display: inline-flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; justify-content: center; }}
-.cart-badge-button:hover {{ background-color: #C2185B; }}
-.cart-count {{ background-color: white; color: #E91E63; border-radius: 50%; padding: 2px 7px; margin-left: 8px; font-size: 14px; line-height: 1; }}
-div[data-testid="stButton"] > button {{ background-color: #E91E63; color: white; border-radius: 10px; border: 1px solid #C2185B; font-weight: bold; }}
-div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: white; border: 1px solid #E91E63; }}
-
-.product-image-container {{ height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }}
-.product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
-
-.esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
-.estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
-
+/* --- Estilos dos Componentes (sem grandes mudanças) --- */
+div[data-testid="stButton"] > button {{
+    background-color: #E91E63;
+    color: white;
+    border-radius: 10px;
+    border: 1px solid #C2185B;
+    font-weight: bold;
+}}
+div[data-testid="stButton"] > button:hover {{
+    background-color: #C2185B;
+    border: 1px solid #E91E63;
+}}
+.product-image-container {{
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}}
+.product-image-container img {{
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}}
+.esgotado-badge, .estoque-baixo-badge {{
+    color: white;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}}
+.esgotado-badge {{ background-color: #757575; }}
+.estoque-baixo-badge {{ background-color: #FFC107; color: black !important; }}
 .price-action-flex {{
     display: flex;
-    justify-content: space-between; 
-    align-items: flex-end; 
+    justify-content: space-between;
+    align-items: flex-end;
     margin-top: 1rem;
-    gap: 10px; 
+    gap: 10px;
 }}
 .action-buttons-container {{
     flex-shrink: 0;
-    width: 45%; 
-}}
-.action-buttons-container div[data-testid="stNumberInput"] {{
-    width: 100%;
+    width: 45%;
 }}
 
-/* --- CSS para o Botão Flutuante do WhatsApp --- */
-.whatsapp-float {{
+/* --- Botões Flutuantes (WhatsApp e Carrinho) --- */
+.whatsapp-float, .cart-float {{
     position: fixed;
-    bottom: 40px;
     right: 40px;
-    background: none;
-    border: none;
-    width: auto;
-    height: auto;
-    padding: 0;
-    box-shadow: none;
-    z-index: 999;
+    z-index: 1000;
+}}
+.whatsapp-float {{
+    bottom: 40px;
 }}
 .whatsapp-float img {{
     width: 60px;
     height: 60px;
-    cursor: pointer;
-    display: block;
 }}
-
-/* --- CSS para o Botão Flutuante do Carrinho --- */
 .cart-float {{
-    position: fixed;
-    bottom: 110px; 
-    right: 40px;
+    bottom: 110px;
     background-color: #E91E63;
     color: white;
-    border-radius: 50%;
     width: 60px;
     height: 60px;
-    text-align: center;
-    font-size: 28px;
-    box-shadow: 2px 2px 5px #999;
-    cursor: pointer;
-    z-index: 1000;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 28px;
+    box-shadow: 2px 2px 5px #999;
 }}
 .cart-float-count {{
     position: absolute;
     top: -5px;
     right: -5px;
     background-color: #FFD600;
-    color: black;
+    color: black !important;
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -212,6 +234,13 @@ div[data-testid="stButton"] > button:hover {{ background-color: #C2185B; color: 
     align-items: center;
     justify-content: center;
     border: 2px solid white;
+}}
+
+/* Botão invisível do popover do carrinho */
+div[data-testid="stPopover"] > div:first-child > button {{
+    position: fixed !important; bottom: 110px; right: 40px;
+    width: 60px !important; height: 60px !important; opacity: 0 !important;
+    z-index: 1001 !important; pointer-events: auto !important;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -540,5 +569,6 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
