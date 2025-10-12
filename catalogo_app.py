@@ -580,7 +580,7 @@ else:
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
-        🛒
+        <span style="font-size: 28px;">🛒</span>
         <span class="cart-float-count">{num_itens}</span>
     </div>
     <script>
@@ -590,7 +590,6 @@ if num_itens > 0:
             if (popoverButton) {{
                 return popoverButton;
             }}
-            // Tenta encontrar botão por outras abordagens (compatibilidade)
             const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
             if (alt) return alt;
             return null;
@@ -604,7 +603,7 @@ if num_itens > 0:
                         popBtn.click();
                     }} else {{
                         console.warn("Botão do popover não encontrado. Verifique o seletor.");
-                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
                     }}
                 }} catch (err) {{
                     console.error("Erro ao tentar abrir o popover do carrinho:", err);
@@ -615,6 +614,7 @@ if num_itens > 0:
     </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
+
 
 
                                
@@ -630,6 +630,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
