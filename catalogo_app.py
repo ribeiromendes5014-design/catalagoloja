@@ -80,9 +80,12 @@ st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sid
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown(f"""
 <style>
-#MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
-[data-testid="stSidebarHeader"], [data-testid="stToolbar"], a[data-testid="stAppDeployButton"],
-[data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
+MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
+[data-testid="stSidebarHeader"], [data-testid="stToolbar"],
+[data-testid="stAppViewBlockContainer"], [data-testid="stDecoration"] {{
+    margin: 0 !important;
+    padding: 0 !important;
+}}
 
 /* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
 div[data-testid="stPopover"] > div:first-child > button {{
@@ -102,28 +105,39 @@ div[data-testid="stPopover"] > div:first-child > button {{
     background-attachment: fixed;
 }}
 
-/* CORREÇÃO PARA MODO ESCURO: Força cor do texto escura */
-div.block-container {{ 
-    background-color: rgba(255, 255, 255, 0.95); 
-    border-radius: 10px; 
-    padding: 2rem; 
-    margin-top: 1rem; /* <-- ESTA É A LINHA QUE CAUSA O ESPAÇO EXTRA NO TOPO */
+div.block-container {{
+    background-color: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 1rem;
     color: #262626;
 }}
-div.block-container p, div.block-container h1, div.block-container h2, div.block-container h3, 
-div.block-container h4, div.block-container h5, div.block-container h6, div.block-container span {{
-    color: #262626 !important;
+
+div[data-testid="stAppViewBlockContainer"] {{
+    padding-top: 0 !important;
 }}
 
-/* === NOVO CSS PARA EXPANDIR O BANNER (FULL WIDTH) === */
-.full-width-element {{
-    width: 100vw !important;
+.fullwidth-banner {{
     position: relative;
+    width: 100vw;
     left: 50%;
     right: 50%;
     margin-left: -50vw;
     margin-right: -50vw;
+    overflow: hidden;
+    z-index: 9999;
 }}
+
+.fullwidth-banner img {{
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    margin: 0;
+    padding: 0;
+}}
+
+
 
 /* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
 .pink-bar-container {{ 
@@ -453,34 +467,16 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner de Black Friday: FORÇA LARGURA TOTAL DA TELA (100vw) ---
+# --- Banner Black Friday full width (sem margens brancas) ---
+st.markdown(
+    f"""
+    <div class="fullwidth-banner">
+        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-URL_BLACK_FRIDAY = "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png"
-
-st.markdown(f"""
-<style>
-.fullscreen-banner {{
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    margin-top: -4rem;  /* remove espaço superior */
-    margin-bottom: 0;
-    padding: 0;
-}}
-.fullscreen-banner img {{
-    width: 100%;
-    height: auto;
-    display: block;
-}}
-</style>
-
-<div class="fullscreen-banner">
-    <img src="{URL_BLACK_FRIDAY}" alt="Esquenta Black Friday - Ofertas Imperdíveis">
-</div>
-""", unsafe_allow_html=True)
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
 # Use a classe original da barra de busca para mantê-la expandida (mas agora preta ou vermelha, como você configurou)
@@ -585,5 +581,6 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
