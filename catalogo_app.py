@@ -235,7 +235,6 @@ st.markdown(whatsapp_button_html, unsafe_allow_html=True)
 
 
 # --- Botão Flutuante do Carrinho ---
-# --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
@@ -880,6 +879,7 @@ else:
 
 
                                
+
 
 
 
