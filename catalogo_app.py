@@ -17,7 +17,63 @@ from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
     calcular_cashback_total, render_product_card
 )
+# --- NOVA FUNÇÃO: Tela de Detalhes do Produto ---
+def mostrar_detalhes_produto(df_catalogo_indexado):
+    """Renderiza a tela de detalhes de um único produto (incluindo variações)."""
+    
+    # 1. PEGA O ID do produto a ser exibido no st.session_state
+    produto_id = st.session_state.get('produto_detalhe_id')
+    
+    if not produto_id or produto_id not in df_catalogo_indexado.index:
+        st.error("Produto não encontrado ou ID de detalhe ausente.")
+        st.session_state.produto_detalhe_id = None
+        st.rerun()
 
+    # 2. BUSCA O PRODUTO PRINCIPAL
+    # Para produtos com PaiID, buscamos pelo ID principal (PaiID) se o ID clicado for um Filho.
+    # Se o ID clicado não tiver PaiID ou for o Pai, usamos ele mesmo.
+    
+    row_clicada = df_catalogo_indexado.loc[produto_id].copy()
+    
+    # Se o item clicado for uma variação (Filho), subimos para o Pai para buscar a descrição/imagem principal
+    id_pai_raw = row_clicada.get('PAIID')
+    id_principal = id_pai_raw if pd.notna(id_pai_raw) and id_pai_raw != produto_id else produto_id
+    
+    if id_principal in df_catalogo_indexado.index:
+        row_principal = df_catalogo_indexado.loc[id_principal].copy()
+    else:
+         row_principal = row_clicada # Usa o próprio item se o Pai não for encontrado
+
+    st.subheader(row_principal['NOME'])
+
+    col_img, col_info = st.columns([1, 2])
+    
+    # Coluna 1: Imagem e Vídeo
+    with col_img:
+        # Se houver vídeo, use abas (reutilizando a lógica do card)
+        youtube_url = row_principal.get('YOUTUBE_URL')
+        if youtube_url and isinstance(youtube_url, str) and youtube_url.strip().startswith('http'):
+            tab_foto, tab_video = st.tabs(["📷 Foto", "▶️ Vídeo"])
+            with tab_foto:
+                st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
+            with tab_video:
+                st.video(youtube_url)
+        else:
+            st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
+
+
+    # Coluna 2: Detalhes, Variações e Compra
+    with col_info:
+        st.markdown(f"**Marca:** {row_principal.get('MARCA', 'N/A')}")
+        st.markdown(f"**Descrição:** {row_principal.get('DESCRICAOLONGA', row_principal.get('DESCRICAOCURTA', 'Sem descrição detalhada'))}")
+        
+        st.markdown("---")
+        
+        # Lógica de VOLTAR
+        if st.button("⬅️ Voltar ao Catálogo"):
+            st.session_state.produto_detalhe_id = None
+            st.rerun()
+            
 # --- Inicialização do Carrinho de Compras e Estado ---
 if 'carrinho' not in st.session_state:
     st.session_state.carrinho = {}
@@ -642,6 +698,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
