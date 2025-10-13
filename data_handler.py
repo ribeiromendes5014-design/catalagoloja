@@ -82,7 +82,7 @@ def get_data_from_github(file_name):
         return None
 
 
-@st.cache_data(ttl=None)
+@st.cache_data(ttl=30)
 def carregar_cupons():
     """Carrega os cupons do 'cupons.csv' do GitHub, validando com fuso horário do Brasil."""
     df = get_data_from_github(SHEET_NAME_CUPONS_CSV)
@@ -145,7 +145,7 @@ def carregar_cupons():
     return df_ativo.dropna(subset=['NOME_CUPOM', 'VALOR_DESCONTO']).reset_index(drop=True)
 
 
-@st.cache_data(ttl=None)
+@st.cache_data(ttl=5)
 def carregar_promocoes():
     """Carrega as promoções do 'promocoes.csv' do GitHub."""
     df = get_data_from_github(SHEET_NAME_PROMOCOES_CSV)
@@ -168,7 +168,7 @@ def carregar_promocoes():
     return df_essencial.dropna(subset=['ID_PRODUTO', 'PRECO_PROMOCIONAL']).reset_index(drop=True)
 
 
-@st.cache_data(ttl=None)
+@st.cache_data(ttl=2)
 def carregar_catalogo():
     """
     Carrega o catálogo, aplica promoções e vídeos, e prepara o DataFrame.
@@ -274,7 +274,7 @@ def carregar_catalogo():
     return df_final.set_index('ID')
 
 
-@st.cache_data(ttl=None) 
+@st.cache_data(ttl=1) 
 def carregar_clientes_cashback():
     """Carrega os clientes do cashback, limpa o contato e renomeia as colunas para facilitar."""
     df = get_data_from_github(SHEET_NAME_CLIENTES_CASHBACK_CSV)
