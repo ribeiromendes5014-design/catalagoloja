@@ -467,23 +467,22 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-# --- Banner rotativo (carrossel funcional no Streamlit) ---
+import streamlit as st
 
-# 1. Defina suas imagens em uma lista. Fica muito mais fácil de adicionar ou remover!
+# 1. Lista de imagens
 banner_images = [
     "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png",
     "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png",
     "https://i.ibb.co/NjxQqMq/banner-natal.png"
 ]
 
-# 2. Crie a string HTML para os slides dinamicamente usando um loop
+# 2. Geração dos slides
 slides_html = ""
 for i, url in enumerate(banner_images):
-    # Adiciona a classe 'active' APENAS para o primeiro slide (i == 0)
     active_class = "active" if i == 0 else ""
     slides_html += f'<div class="banner-slide {active_class}"><img src="{url}" alt="Banner {i+1}"></div>'
 
-# 3. Injete todo o código no st.markdown de uma vez
+# 3. HTML + CSS + JS
 st.markdown(
     f"""
     <style>
@@ -493,11 +492,11 @@ st.markdown(
         left: 50%;
         margin-left: -50vw;
         overflow: hidden;
+        z-index: 1;
     }}
     .banner-aspect-ratio-spacer {{
         width: 100%;
-        padding-top: 33.33%; /* Ajuste essa % para a proporção (altura/largura) dos seus banners */
-        position: relative;
+        padding-top: 33.33%;
         visibility: hidden;
     }}
     .banner-slide {{
@@ -511,12 +510,13 @@ st.markdown(
     }}
     .banner-slide.active {{
         opacity: 1;
+        z-index: 2;
     }}
     .banner-slide img {{
         width: 100%;
         height: 100%;
-        display: block;
         object-fit: cover;
+        display: block;
     }}
     </style>
 
@@ -526,33 +526,26 @@ st.markdown(
     </div>
 
     <script>
-    // O JavaScript continua o mesmo
-    function startBannerSlider() {{
-        let index = 0;
+    const waitForBanners = setInterval(() => {{
         const slides = document.querySelectorAll('#banner-slider .banner-slide');
-        if (slides.length === 0) return false;
+        if (slides.length > 0) {{
+            clearInterval(waitForBanners);
+            let index = 0;
 
-        slides.forEach((slide, i) => slide.classList.toggle('active', i === 0));
-
-        setInterval(() => {{
-            if (document.hidden) return;
-            slides[index].classList.remove('active');
-            index = (index + 1) % slides.length;
-            slides[index].classList.add('active');
-        }}, 5000);
-        return true;
-    }}
-
-    function checkAndStart() {{
-        if (document.getElementById('banner-slider') && startBannerSlider()) {{
-            clearInterval(intervalCheck);
+            setInterval(() => {{
+                if (document.hidden) return;
+                slides.forEach((slide, i) => {{
+                    slide.classList.toggle('active', i === index);
+                }});
+                index = (index + 1) % slides.length;
+            }}, 5000);
         }}
-    }}
-    const intervalCheck = setInterval(checkAndStart, 500);
+    }}, 500);
     </script>
     """,
     unsafe_allow_html=True
 )
+
 
 # --- Barra de Busca (Movida para baixo do Banner) ---
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
@@ -657,6 +650,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
