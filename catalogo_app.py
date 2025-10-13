@@ -8,14 +8,13 @@ from streamlit_autorefresh import st_autorefresh
 import requests
 
 # Importa as funções e constantes dos novos módulos
-# CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
     carregar_catalogo, carregar_cupons, carregar_clientes_cashback, buscar_cliente_cashback, 
     salvar_pedido, BACKGROUND_IMAGE_URL, LOGO_DOCEBELLA_URL, NUMERO_WHATSAPP
 )
 from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho, 
-    calcular_cashback_total, render_product_card, render_product_details_page # NOVO IMPORT
+    calcular_cashback_total, render_product_card 
 )
 
 # --- Inicialização do Carrinho de Compras e Estado ---
@@ -41,11 +40,6 @@ if st.session_state.df_catalogo_indexado is None:
 
 DF_CLIENTES_CASH = carregar_clientes_cashback()
 
-# --- NOVOS ESTADOS PARA NAVEGAÇÃO ---
-if 'visualizando_detalhes' not in st.session_state:
-    st.session_state.visualizando_detalhes = False
-if 'produto_selecionado_id' not in st.session_state:
-    st.session_state.produto_selecionado_id = None
 
 # --- Funções Auxiliares de UI ---
 def copy_to_clipboard_js(text_to_copy):
@@ -79,15 +73,11 @@ def copy_to_clipboard_js(text_to_copy):
     """
     st.markdown(js_code, unsafe_allow_html=True)
 
-def handle_card_click(prod_id):
-    """Callback para definir o estado de visualização de detalhes e recarregar."""
-    st.session_state.visualizando_detalhes = True
-    st.session_state.produto_selecionado_id = prod_id
-    # st.rerun() é feito automaticamente após o on_click do botão Streamlit
-
 
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
-st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
+# Removida a configuração do page_title aqui para deixar o controle com o Streamlit pages
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown(f"""
@@ -444,105 +434,88 @@ with col_carrinho:
                             st.session_state.cupom_aplicado = None
                             st.session_state.desconto_cupom = 0.0
                             st.session_state.cupom_mensagem = ""
-                            st.session_state.visualizando_detalhes = False # Garante que volta ao catálogo
-                            st.session_state.produto_selecionado_id = None
                             st.rerun()
                     else:
                         st.warning("Preencha seu nome e contato.")
 
-st.markdown("</div></div>", unsafe_allow_html=True) # FECHA A BARRA ROSA E O POPOVER
+st.markdown("</div></div>", unsafe_allow_html=True)
 
 
-# --- LÓGICA DE NAVEGAÇÃO ENTRE CATÁLOGO E DETALHES ---
+# --- Filtros e Ordenação ---
+df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 
-if st.session_state.visualizando_detalhes and st.session_state.produto_selecionado_id is not None:
-    # --- MODO: PÁGINA DE DETALHES DO PRODUTO ---
-    
-    # render_product_details_page já foi importado no início do script
-    render_product_details_page(
-        st.session_state.produto_selecionado_id, 
-        st.session_state.df_catalogo_indexado
-    )
-    st.stop() # Interrompe o restante do script para exibir apenas os detalhes
-
+if 'CATEGORIA' in df_catalogo.columns:
+    categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist()
+    categorias.sort()
+    categorias.insert(0, "TODAS AS CATEGORIAS")
 else:
-    # --- MODO: CATÁLOGO COMPLETO ---
-    
-    # --- Filtros e Ordenação ---
-    df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
+    categorias = ["TODAS AS CATEGORIAS"]
+    if "Geral" not in df_catalogo.columns:
+         st.warning("A coluna 'CATEGORIA' não foi encontrada no seu arquivo de catálogo. O filtro não será exibido.")
 
-    if 'CATEGORIA' in df_catalogo.columns:
-        categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist()
-        categorias.sort()
-        categorias.insert(0, "TODAS AS CATEGORIAS")
+col_filtro_cat, col_select_ordem, _ = st.columns([1, 1, 3])
+
+termo = st.session_state.get('termo_pesquisa_barra', '').lower()
+
+with col_filtro_cat:
+    categoria_selecionada = st.selectbox(
+        "Filtrar por:",
+        categorias,
+        key='filtro_categoria_barra'
+    )
+    if termo:
+        st.markdown(f'<div style="font-size: 0.8rem; color: #E91E63;">Busca ativa desabilita filtro.</div>', unsafe_allow_html=True)
+
+df_filtrado = df_catalogo.copy()
+
+if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
+    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'].astype(str) == categoria_selecionada]
+elif termo:
+    df_filtrado = df_filtrado[df_filtrado.apply(
+        lambda row: termo in str(row['NOME']).lower() or termo in str(row['DESCRICAOLONGA']).lower(), 
+        axis=1
+    )]
+
+if df_filtrado.empty:
+    if termo:
+        st.info(f"Nenhum produto encontrado com o termo '{termo}' na categoria '{categoria_selecionada}'.")
     else:
-        categorias = ["TODAS AS CATEGORIAS"]
-        if "Geral" not in df_catalogo.columns:
-             st.warning("A coluna 'CATEGORIA' não foi encontrada no seu arquivo de catálogo. O filtro não será exibido.")
+        st.info(f"Nenhum produto encontrado na categoria '{categoria_selecionada}'.")
+else:
+    st.subheader("✨ Nossos Produtos")
 
-    col_filtro_cat, col_select_ordem, _ = st.columns([1, 1, 3])
-
-    termo = st.session_state.get('termo_pesquisa_barra', '').lower()
-
-    with col_filtro_cat:
-        categoria_selecionada = st.selectbox(
-            "Filtrar por:",
-            categorias,
-            key='filtro_categoria_barra'
+    with col_select_ordem:
+        opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome do Produto (A-Z)']
+        ordem_selecionada = st.selectbox(
+            "Ordenar por:",
+            opcoes_ordem,
+            key='ordem_produtos'
         )
-        if termo:
-            st.markdown(f'<div style="font-size: 0.8rem; color: #E91E63;">Busca ativa desabilita filtro.</div>', unsafe_allow_html=True)
 
-    df_filtrado = df_catalogo.copy()
+    df_filtrado['EM_PROMOCAO'] = df_filtrado['PRECO_PROMOCIONAL'].notna()
 
-    if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
-        df_filtrado = df_filtrado[df_filtrado['CATEGORIA'].astype(str) == categoria_selecionada]
-    elif termo:
-        df_filtrado = df_filtrado[df_filtrado.apply(
-            lambda row: termo in str(row['NOME']).lower() or termo in str(row['DESCRICAOLONGA']).lower(), 
-            axis=1
-        )]
-
-    if df_filtrado.empty:
-        if termo:
-            st.info(f"Nenhum produto encontrado com o termo '{termo}' na categoria '{categoria_selecionada}'.")
-        else:
-            st.info(f"Nenhum produto encontrado na categoria '{categoria_selecionada}'.")
+    if ordem_selecionada == 'Lançamento':
+        df_ordenado = df_filtrado.sort_values(by=['RECENCIA', 'EM_PROMOCAO'], ascending=[False, False])
+    elif ordem_selecionada == 'Promoção':
+        df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'RECENCIA'], ascending=[False, False])
+    elif ordem_selecionada == 'Menor Preço':
+        df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'PRECO_FINAL'], ascending=[False, True])
+    elif ordem_selecionada == 'Maior Preço':
+        df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'PRECO_FINAL'], ascending=[False, False])
+    elif ordem_selecionada == 'Nome do Produto (A-Z)':
+        df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'NOME'], ascending=[False, True])
     else:
-        st.subheader("✨ Nossos Produtos")
+        df_ordenado = df_filtrado
 
-        with col_select_ordem:
-            opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome do Produto (A-Z)']
-            ordem_selecionada = st.selectbox(
-                "Ordenar por:",
-                opcoes_ordem,
-                key='ordem_produtos'
-            )
+    df_filtrado = df_ordenado
 
-        df_filtrado['EM_PROMOCAO'] = df_filtrado['PRECO_PROMOCIONAL'].notna()
-
-        if ordem_selecionada == 'Lançamento':
-            df_ordenado = df_filtrado.sort_values(by=['RECENCIA', 'EM_PROMOCAO'], ascending=[False, False])
-        elif ordem_selecionada == 'Promoção':
-            df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'RECENCIA'], ascending=[False, False])
-        elif ordem_selecionada == 'Menor Preço':
-            df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'PRECO_FINAL'], ascending=[False, True])
-        elif ordem_selecionada == 'Maior Preço':
-            df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'PRECO_FINAL'], ascending=[False, False])
-        elif ordem_selecionada == 'Nome do Produto (A-Z)':
-            df_ordenado = df_filtrado.sort_values(by=['EM_PROMOCAO', 'NOME'], ascending=[False, True])
-        else:
-            df_ordenado = df_filtrado
-
-        df_filtrado = df_ordenado
-
-        cols = st.columns(4)
-        for i, row in df_filtrado.reset_index(drop=True).iterrows():
-            product_id = row['ID']
-            unique_key = f'prod_{product_id}_{i}'
-            with cols[i % 4]:
-                # Certifique-se de passar o argumento 'i' para o CSS de ajuste
-                render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado, i=i)
+    cols = st.columns(4)
+    for i, row in df_filtrado.reset_index(drop=True).iterrows():
+        product_id = row['ID']
+        unique_key = f'prod_{product_id}_{i}'
+        with cols[i % 4]:
+            # Chamamos render_product_card com o novo método de navegação (link HTML)
+            render_product_card(product_id, row, unique_key, st.session_state.df_catalogo_indexado, i)
 
 
 # --- Botão Flutuante do WhatsApp ---
