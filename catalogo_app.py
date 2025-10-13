@@ -235,6 +235,7 @@ st.markdown(whatsapp_button_html, unsafe_allow_html=True)
 
 
 # --- Botão Flutuante do Carrinho ---
+# --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
@@ -274,7 +275,6 @@ if num_itens > 0:
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
 
-st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
 
 def copy_to_clipboard_js(text_to_copy):
     js_code = f"""
@@ -880,6 +880,7 @@ else:
 
 
                                
+
 
 
 
