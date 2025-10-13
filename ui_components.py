@@ -112,29 +112,32 @@ def render_product_image_clickable(link_imagem, prod_id):
     """
     st.markdown(html_content, unsafe_allow_html=True)
 
-    # --- BOTÃO INVISÍVEL DE ACIONAMENTO (HIDDEN BUTTON) ---
-    
-    # Injetamos um CSS para esconder o botão, mantendo-o funcional
+    # --- CSS AGRESSIVO PARA OCULTAR O BOTÃO ---
+    # Injetamos o CSS para esconder o elemento do botão Streamlit pelo seu ID
     st.markdown(
         f"""
         <style>
-        /* Esconde o elemento do botão Streamlit pelo seu ID gerado */
-        button[data-testid="stButton"]#details_btn_{prod_id} {{
+        /* Procura pelo container do botão específico e esconde ele e seu rótulo */
+        div[data-testid="stVerticalBlock"] > div > div > div > button#details_btn_{prod_id} {{
             display: none !important;
             visibility: hidden !important;
+            height: 0;
+            width: 0;
+            padding: 0;
+            margin: 0;
+            line-height: 0;
+            overflow: hidden;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
-
-    # O Streamlit Button que o JS vai "clicar"
+    
+    # --- BOTÃO INVISÍVEL DE ACIONAMENTO (HIDDEN BUTTON) ---
+    # Removemos 'label_visibility' para garantir a compatibilidade.
     if st.button(
         "Definir ID", 
-        key=f'details_btn_{prod_id}', 
-        help="Clique na imagem para ver os detalhes", 
-        # O argumento label_visibility="collapsed" e o CSS acima garantem que ele não apareça.
-        label_visibility="collapsed"
+        key=f'details_btn_{prod_id}' # Este ID é usado no JavaScript e no CSS
     ):
         st.session_state.produto_detalhe_id = prod_id
         st.rerun()
@@ -224,4 +227,5 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
 
