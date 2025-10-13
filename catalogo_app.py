@@ -83,7 +83,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             # Formata as opções para o Selectbox
             # Criaremos um dicionário {Nome da Variação: ID do Produto}
             mapa_variacoes = {
-                f"{row['NOME']} ({row['MARCA']})" : row.name
+                f"{row['NOME']} ({row['DESCRICAOCURTA']})" : row.name
                 for _, row in df_variacoes.iterrows()
             }
             
@@ -814,6 +814,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
