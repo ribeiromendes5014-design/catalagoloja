@@ -236,41 +236,12 @@ st.markdown(whatsapp_button_html, unsafe_allow_html=True)
 
 # --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
+    # Apenas o HTML é usado. O JS complexo é removido para evitar SyntaxError.
     floating_cart_html = f"""
-    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+    <div class="cart-float" title="Ver seu pedido" role="button" aria-label="Carrinho: {num_itens} itens">
         🛒
         <span class="cart-float-count">{num_itens}</span>
     </div>
-    <script>
-    (function() {{  <-- CORRIGIDO: Era (function() {
-        const waitForPopoverButton = () => {{  <-- CORRIGIDO: Era () {
-            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
-            if (popoverButton) {{  <-- CORRIGIDO: Era if (popoverButton) {
-                return popoverButton;
-            }}  <-- CORRIGIDO: Era }
-            // Tenta encontrar botão por outras abordagens (compatibilidade)
-            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
-            if (alt) return alt;
-            return null;
-        }};
-        const floatBtn = document.getElementById("floating_cart_btn");
-        if (floatBtn) {{  <-- CORRIGIDO: Era if (floatBtn) {
-            floatBtn.addEventListener("click", function() {{  <-- CORRIGIDO: Era function() {
-                try {{  <-- CORRIGIDO: Era try {
-                    const popBtn = waitForPopoverButton();
-                    if (popBtn) {{  <-- CORRIGIDO: Era if (popBtn) {
-                        popBtn.click();
-                    }} else {{  <-- CORRIGIDO: Era } else {
-                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
-                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
-                    }}  <-- CORRIGIDO: Era }
-                }} catch (err) {{  <-- CORRIGIDO: Era } catch (err) {
-                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
-                }}  <-- CORRIGIDO: Era }
-            }});  <-- CORRIGIDO: Era });
-        }}  <-- CORRIGIDO: Era }
-    }})();  <-- CORRIGIDO: Era })();
-    </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
 
@@ -874,6 +845,7 @@ else:
 
 
                                
+
 
 
 
