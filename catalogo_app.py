@@ -455,18 +455,53 @@ st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
 # --- Tela de Pedido Confirmado ---
 if st.session_state.pedido_confirmado:
     st.balloons()
-    # Mensagem atualizada: avisa sobre o WhatsApp
-    st.success("🎉 Pedido enviado com sucesso! Aguarde o WhatsApp abrir para confirmar o Opt-in.") 
+    
+    # MENSAGEM CORRIGIDA: Pede para o cliente clicar
+    st.success("🎉 Pedido enviado com sucesso! Clique no botão abaixo para confirmar o pedido via WhatsApp.")
     
     pedido = st.session_state.pedido_confirmado
     
-    # NOVO: Pega o ID que foi salvo na session state
+    # Pega o ID que foi salvo na session state
     id_pedido_display = pedido.get('id_pedido', 'N/A')
+    
+    # 1. Constrói a mensagem de Opt-in
+    nome_cliente = pedido['nome']
+    mensagem_optin = (
+        f"Olá! Acabei de fazer um pedido (ID: {id_pedido_display}) pelo catálogo da Doce&Bella. "
+        f"Confirmo meu Opt-in e desejo prosseguir com a compra. Meu nome é {nome_cliente}."
+    )
+    
+    # 2. Gera o link final do WhatsApp (NUMERO_WHATSAPP deve estar disponível neste arquivo)
+    import requests
+    link_whats_final = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(mensagem_optin)}"
+
+    # 3. NOVO BOTÃO DE CONFIRMAÇÃO EXPLICITO (Abre o WhatsApp)
+    st.markdown(
+        f"""
+        <a href="{link_whats_final}" target="_blank">
+            <button style="
+                background-color: #25D366; 
+                color: white; 
+                border-radius: 10px; 
+                border: 1px solid #000000; 
+                font-weight: bold; 
+                font-size: 1.1rem;
+                padding: 10px 20px;
+                width: 100%;
+                margin-bottom: 20px;
+                cursor: pointer;
+            ">
+                ✅ CLIQUE AQUI PARA CONFIRMAR O PEDIDO NO WHATSAPP
+            </button>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
     
     itens_formatados = '\n'.join([f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
     
     resumo_texto = (
-        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA (ID: {id_pedido_display})***\n\n" # <-- ID ADICIONADO AQUI
+        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA (ID: {id_pedido_display})***\n\n"
         f"🛒 Cliente: {pedido['nome']}\n"
         f"📞 Contato: {pedido['contato']}\n"
         f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n"
@@ -498,7 +533,6 @@ if st.session_state.pedido_confirmado:
         st.rerun()
     
     st.stop()
-
 # URL do banner de Black Friday
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
 
@@ -617,6 +651,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
