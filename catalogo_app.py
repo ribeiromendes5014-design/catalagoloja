@@ -19,7 +19,9 @@ from ui_components import (
     calcular_cashback_total, render_product_card
 )
 
-# --- Inicialização do Carrinho de Compras e Estado ---
+# --- CONFIGURAÇÃO INICIAL E DE ESTADO ---
+st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
+
 if 'carrinho' not in st.session_state:
     st.session_state.carrinho = {}
 if 'pedido_confirmado' not in st.session_state:
@@ -31,7 +33,7 @@ if 'desconto_cupom' not in st.session_state:
 if 'cupom_mensagem' not in st.session_state:
     st.session_state.cupom_mensagem = ""
 
-# OTIMIZAÇÃO: Cache do catálogo principal no estado da sessão para evitar re-leitura constante
+# OTIMIZAÇÃO: Cache do catálogo principal no estado da sessão
 if 'df_catalogo_indexado' not in st.session_state:
     st.session_state.df_catalogo_indexado = None
 
@@ -41,7 +43,7 @@ if st.session_state.df_catalogo_indexado is None:
 
 DF_CLIENTES_CASH = carregar_clientes_cashback()
 
-# Define o catálogo base para a página de detalhes
+# Define o catálogo base para a página de detalhes (usa o DF indexado)
 if 'df_catalogo_base' not in st.session_state:
     st.session_state.df_catalogo_base = st.session_state.df_catalogo_indexado
 
@@ -50,12 +52,10 @@ if 'df_catalogo_base' not in st.session_state:
 def get_product_gallery_data(product_data: pd.Series) -> list:
     """Extrai todas as URLs de imagem da linha do produto."""
     all_photos = [product_data['LINKIMAGEM']] if product_data.get('LINKIMAGEM') else []
-    # Adicione aqui a lógica de FOTOS_ADICIONAIS se ela existir
     return [url for url in all_photos if str(url).startswith('http')]
 
 def get_product_variations(product_id: int, df_catalogo_completo: pd.DataFrame) -> pd.DataFrame:
     """Filtra e formata as variações (filhos) de um produto pai."""
-    # Filtra onde o PAIID é o ID do produto principal
     df_filhos = df_catalogo_completo[
         df_catalogo_completo['PAIID'].astype(str) == str(product_id)
     ].copy()
@@ -64,9 +64,7 @@ def get_product_variations(product_id: int, df_catalogo_completo: pd.DataFrame) 
         def extract_label(details_json):
             if pd.isna(details_json) or not details_json: return ""
             try:
-                # Usa ast.literal_eval para converter a string JSON
                 detalhes = ast.literal_eval(details_json)
-                # Formata a string de variação (ex: Cor: Vermelho - Tam: 38)
                 return ' - '.join([f"{k.split('/')[0]}: {v}" for k, v in detalhes.items() if v])
             except: 
                 return ""
@@ -180,10 +178,9 @@ def render_product_details_content(product_id: int, df_catalogo_base: pd.DataFra
                 label_visibility="collapsed"
             )
             
-            # Encontra a linha de dados usando a coluna PAIID e a combinação de detalhes (mais robusto)
+            # Encontra a linha de dados 
             if variacao_selecionada_label_limpa and variacao_selecionada_label_limpa != 'Selecione a Variação':
-                # Reconstroi o filtro com a lógica do DETALHESGRADE (mais complexo de fazer, vamos simplificar o filtro)
-                # Vamos buscar a variação que COMEÇA com a label limpa
+                
                 produto_a_comprar = df_filhos[
                     df_filhos['Variação_Label'].str.startswith(variacao_selecionada_label_limpa)
                 ].iloc[0]
@@ -278,9 +275,6 @@ def copy_to_clipboard_js(text_to_copy):
     """
     st.markdown(js_code, unsafe_allow_html=True)
 
-
-# --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown(f"""
