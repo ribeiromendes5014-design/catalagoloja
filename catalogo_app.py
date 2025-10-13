@@ -307,53 +307,51 @@ def copy_to_clipboard_js(text_to_copy):
     st.markdown(js_code, unsafe_allow_html=True)
 
 
-# --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
-st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
-st.markdown(f"""
+st.markdown("""
 <style>
-MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
+MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
 [data-testid="stSidebarHeader"], [data-testid="stToolbar"],
-[data-testid="stAppViewBlockContainer"], [data-testid="stDecoration"] {{
+[data-testid="stAppViewBlockContainer"], [data-testid="stDecoration"] {
     margin: 0 !important;
     padding: 0 !important;
-}}
+}
 
 /* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
-div[data-testid="stPopover"] > div:first-child > button {{
+div[data-testid="stPopover"] > div:first-child > button {
     position: fixed !important;
-    bottom: 110px; /* mesmo nível do botão flutuante */
+    bottom: 110px;
     right: 40px;
     width: 60px !important;
     height: 60px !important;
-    opacity: 0 !important; /* invisível mas clicável */
+    opacity: 0 !important;
     z-index: 1001 !important;
     pointer-events: auto !important;
-}}
+}
 
-.stApp {{
-    background-image: url({BACKGROUND_IMAGE_URL}) !important;
+.stApp {
+    background-image: url(""" + BACKGROUND_IMAGE_URL + """) !important;
     background-size: cover;
     background-attachment: fixed;
-}}
+}
 
-div.block-container {{
+div.block-container {
     background-color: rgba(255,255,255,0.95);
     border-radius: 10px;
     padding: 2rem;
     margin-top: 1rem;
     color: #262626;
-}}
+}
 
-div[data-testid="stAppViewBlockContainer"] {{
+div[data-testid="stAppViewBlockContainer"] {
     padding-top: 0 !important;
-}}
+}
 
-.fullwidth-banner {{
+.fullwidth-banner {
     position: relative;
     width: 100vw;
     left: 50%;
@@ -362,22 +360,19 @@ div[data-testid="stAppViewBlockContainer"] {{
     margin-right: -50vw;
     overflow: hidden;
     z-index: 9999;
-}}
+}
 
-.fullwidth-banner img {{
+.fullwidth-banner img {
     display: block;
     width: 100%;
     height: auto;
     object-fit: cover;
     margin: 0;
     padding: 0;
-}}
+}
 
-
-
-/* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
-.pink-bar-container {{ 
-    /* Cor de fundo da barra de busca alterada para Preto */
+/* === BLACK FRIDAY CORES INÍCIO === */
+.pink-bar-container {
     background-color: #000000; 
     padding: 10px 0; 
     width: 100vw; 
@@ -386,11 +381,10 @@ div[data-testid="stAppViewBlockContainer"] {{
     margin-left: -50vw; 
     margin-right: -50vw; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.4); 
-}}
-.pink-bar-content {{ width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }}
+}
+.pink-bar-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }
 
-.cart-badge-button {{ 
-    /* Botão de resumo no topo e checkout */
+.cart-badge-button {
     background-color: #D32F2F; 
     color: white; 
     border-radius: 12px; 
@@ -405,12 +399,9 @@ div[data-testid="stAppViewBlockContainer"] {{
     box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
     min-width: 150px; 
     justify-content: center; 
-}}
-.cart-badge-button:hover {{ 
-    background-color: #FF4500; 
-}}
-.cart-count {{ 
-    /* Contador de itens no carrinho */
+}
+.cart-badge-button:hover { background-color: #FF4500; }
+.cart-count {
     background-color: white; 
     color: #D32F2F; 
     border-radius: 50%; 
@@ -418,76 +409,89 @@ div[data-testid="stAppViewBlockContainer"] {{
     margin-left: 8px; 
     font-size: 14px; 
     line-height: 1; 
-}}
+}
 
 /* Regras Padrão (para PC/Telas Grandes) */
 h1 { font-size: 2.5rem; } 
 
 /* ======================================= */
-/* MEDIA QUERY: SÓ SE A TELA FOR PEQUENA */
+/* MEDIA QUERY: TELA PEQUENA (CELULAR) */
 /* ======================================= */
 @media only screen and (max-width: 600px) {
-    
-    /* 1. Reduz o tamanho do conteúdo principal */
     div.block-container {
-        padding: 0.5rem !important; /* Reduz o padding para ganhar espaço */
+        padding: 0.5rem !important;
         margin-top: 0.5rem !important;
-    }}
-    
-    /* 2. Reduz o tamanho do título */
+    }
     h1 {
         font-size: 1.8rem;
-    }}
-    
-    /* 3. Ajusta o tamanho da imagem do produto no celular (opcional) */
+    }
     .product-image-container {
         height: 180px;
-   }}
-    
-    /* 4. Torna as colunas verticais (para melhor leitura) */
-    /* Se você tiver um layout de coluna complexo, pode ser necessário ajustá-lo aqui. */
-}}
+    }
+}
 
-div[data-testid="stButton"] > button {{ 
-    /* Botões 'Adicionar ao Carrinho' e 'Aplicar Cupom' */
+/* ================================================================= */
+/* REGRAS GERAIS PARA AJUSTE DE TELA (MEDIA QUERY) */
+/* ================================================================= */
+@media only screen and (max-width: 650px) {
+    div.block-container {
+        padding: 1rem 0.5rem !important;
+    }
+    div[data-testid="stColumns"] {
+        flex-direction: column !important;
+    }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    .product-image-container {
+        height: 200px !important;
+    }
+    .whatsapp-float, .cart-float {
+        width: 50px !important;
+        height: 50px !important;
+        bottom: 20px !important;
+        right: 20px !important;
+    }
+    .cart-float {
+        bottom: 80px !important;
+    }
+}
+
+div[data-testid="stButton"] > button { 
     background-color: #D32F2F; 
     color: white; 
     border-radius: 10px; 
     border: 1px solid #000000; 
     font-weight: bold; 
-}}
-div[data-testid="stButton"] > button:hover {{ 
-    /* Cor de hover preta */
+}
+div[data-testid="stButton"] > button:hover { 
     background-color: #000000; 
     color: white; 
     border: 1px solid #FF4500; 
-}}
+}
 
 /* === Estilos de Produtos e Estoque === */
+.product-image-container { height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }
+.product-image-container img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }
+.esgotado-badge { background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }
+.estoque-baixo-badge { background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }
 
-.product-image-container {{ height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }}
-.product-image-container img {{ max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }}
-
-.esgotado-badge {{ background-color: #757575; color: white; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
-.estoque-baixo-badge {{ background-color: #FFC107; color: black; font-weight: bold; padding: 3px 8px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }}
-
-.price-action-flex {{
+.price-action-flex {
     display: flex;
     justify-content: space-between; 
     align-items: flex-end; 
     margin-top: 1rem;
     gap: 10px; 
-}}
-.action-buttons-container {{
+}
+.action-buttons-container {
     flex-shrink: 0;
     width: 45%; 
-}}
-.action-buttons-container div[data-testid="stNumberInput"] {{
+}
+.action-buttons-container div[data-testid="stNumberInput"] {
     width: 100%;
-}}
+}
 
-/* --- CSS para o Botão Flutuante do WhatsApp --- */
-.whatsapp-float {{
+/* Botão Flutuante do WhatsApp */
+.whatsapp-float {
     position: fixed;
     bottom: 40px;
     right: 40px;
@@ -498,16 +502,16 @@ div[data-testid="stButton"] > button:hover {{
     padding: 0;
     box-shadow: none;
     z-index: 999;
-}}
-.whatsapp-float img {{
+}
+.whatsapp-float img {
     width: 60px;
     height: 60px;
     cursor: pointer;
     display: block;
-}}
+}
 
-/* --- CSS para o Botão Flutuante do Carrinho --- */
-.cart-float {{
+/* Botão Flutuante do Carrinho */
+.cart-float {
     position: fixed;
     bottom: 110px; 
     right: 40px;
@@ -524,8 +528,8 @@ div[data-testid="stButton"] > button:hover {{
     display: flex;
     align-items: center;
     justify-content: center;
-}}
-.cart-float-count {{
+}
+.cart-float-count {
     position: absolute;
     top: -5px;
     right: -5px;
@@ -540,13 +544,7 @@ div[data-testid="stButton"] > button:hover {{
     align-items: center;
     justify-content: center;
     border: 2px solid white;
-}}
-
-Script execution error
-File "/opt/render/project/src/catalogo_app.py", line 431
-      /* 1. Reduz o tamanho do conteúdo principal */
-      ^
-SyntaxError: f-string: expecting a valid expression after '{'
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -854,43 +852,6 @@ else:
 
 
                                
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
