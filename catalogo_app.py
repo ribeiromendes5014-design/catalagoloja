@@ -430,11 +430,18 @@ st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
 # --- Tela de Pedido Confirmado ---
 if st.session_state.pedido_confirmado:
     st.balloons()
-    st.success("🎉 Pedido enviado com sucesso! Utilize o resumo abaixo para confirmar o pedido pelo WhatsApp.")
+    # Mensagem atualizada: avisa sobre o WhatsApp
+    st.success("🎉 Pedido enviado com sucesso! Aguarde o WhatsApp abrir para confirmar o Opt-in.") 
+    
     pedido = st.session_state.pedido_confirmado
+    
+    # NOVO: Pega o ID que foi salvo na session state
+    id_pedido_display = pedido.get('id_pedido', 'N/A')
+    
     itens_formatados = '\n'.join([f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
+    
     resumo_texto = (
-        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA ***\n\n"
+        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA (ID: {id_pedido_display})***\n\n" # <-- ID ADICIONADO AQUI
         f"🛒 Cliente: {pedido['nome']}\n"
         f"📞 Contato: {pedido['contato']}\n"
         f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n"
@@ -585,6 +592,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
