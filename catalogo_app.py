@@ -15,7 +15,7 @@ from data_handler import (
 )
 from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho, 
-    calcular_cashback_total, render_product_card
+    calcular_cashback_total, render_product_card, render_product_details_page # NOVO IMPORT
 )
 
 # --- Inicialização do Carrinho de Compras e Estado ---
@@ -444,18 +444,34 @@ with col_carrinho:
                             st.session_state.cupom_aplicado = None
                             st.session_state.desconto_cupom = 0.0
                             st.session_state.cupom_mensagem = ""
+                            st.session_state.visualizando_detalhes = False # Garante que volta ao catálogo
+                            st.session_state.produto_selecionado_id = None
                             st.rerun()
                     else:
                         st.warning("Preencha seu nome e contato.")
 
-st.markdown("</div></div>", unsafe_allow_html=True)
+st.markdown("</div></div>", unsafe_allow_html=True) # FECHA A BARRA ROSA E O POPOVER
 
 
-# --- Filtros e Ordenação ---
+# --- LÓGICA DE NAVEGAÇÃO ENTRE CATÁLOGO E DETALHES ---
+
+if st.session_state.visualizando_detalhes and st.session_state.produto_selecionado_id is not None:
+    # --- MODO: PÁGINA DE DETALHES DO PRODUTO ---
+    
+    # render_product_details_page já foi importado no início do script
+    render_product_details_page(
+        st.session_state.produto_selecionado_id, 
+        st.session_state.df_catalogo_indexado
+    )
+    st.stop() # Interrompe o restante do script para exibir apenas os detalhes
+
+else:
+    # --- MODO: CATÁLOGO COMPLETO ---
+    
+    # --- Filtros e Ordenação ---
     df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 
     if 'CATEGORIA' in df_catalogo.columns:
-        # Pega as categorias do catálogo
         categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist()
         categorias.sort()
         categorias.insert(0, "TODAS AS CATEGORIAS")
@@ -525,7 +541,8 @@ st.markdown("</div></div>", unsafe_allow_html=True)
             product_id = row['ID']
             unique_key = f'prod_{product_id}_{i}'
             with cols[i % 4]:
-                render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+                # Certifique-se de passar o argumento 'i' para o CSS de ajuste
+                render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado, i=i)
 
 
 # --- Botão Flutuante do WhatsApp ---
