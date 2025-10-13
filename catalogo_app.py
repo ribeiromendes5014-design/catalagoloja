@@ -236,12 +236,41 @@ st.markdown(whatsapp_button_html, unsafe_allow_html=True)
 
 # --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
-    # Apenas o HTML é usado. O JS complexo é removido para evitar SyntaxError.
     floating_cart_html = f"""
-    <div class="cart-float" title="Ver seu pedido" role="button" aria-label="Carrinho: {num_itens} itens">
+    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
         🛒
         <span class="cart-float-count">{num_itens}</span>
     </div>
+    <script>
+    (function() {{
+        const waitForPopoverButton = () => {{
+            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
+            if (popoverButton) {{
+                return popoverButton;
+            }}
+            // Tenta encontrar botão por outras abordagens (compatibilidade)
+            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
+            if (alt) return alt;
+            return null;
+        }};
+        const floatBtn = document.getElementById("floating_cart_btn");
+        if (floatBtn) {{
+            floatBtn.addEventListener("click", function() {{
+                try {{
+                    const popBtn = waitForPopoverButton();
+                    if (popBtn) {{
+                        popBtn.click();
+                    }} else {{
+                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+                    }}
+                }} catch (err) {{
+                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
+                }}
+            }});
+        }}
+    }})();
+    </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
 
@@ -845,6 +874,7 @@ else:
 
 
                                
+
 
 
 
