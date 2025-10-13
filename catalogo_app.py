@@ -471,40 +471,52 @@ if st.session_state.pedido_confirmado:
 st.markdown(
     """
     <style>
-    /* Usamos a classe que já funciona para o contêiner principal */
     .fullwidth-banner {
-        position: relative;
+        position: relative; /* Essencial para o posicionamento dos filhos */
         width: 100vw;
         left: 50%;
-        right: 50%;
         margin-left: -50vw;
-        margin-right: -50vw;
         overflow: hidden;
-        height: auto;
+        /* A altura será definida pelo espaçador invisível */
     }
-    /* Os estilos internos do slider continuam os mesmos, mas referenciando o novo pai */
-    .fullwidth-banner .banner-slide {
-        position: absolute;
+
+    /* O espaçador que garante a altura correta do contêiner */
+    .banner-aspect-ratio-spacer {
         width: 100%;
-        opacity: 0;
-        transition: opacity 1s ease-in-out;
-        /* Garante que os slides não comecem um em cima do outro de forma visível */
+        /* Use o aspect-ratio do seu banner. 3:1 é um bom começo para banners largos.
+           A fórmula é (altura / largura) * 100%. Ex: 500px / 1500px = 0.3333 -> padding-top: 33.33% */
+        padding-top: 33.33%; 
+        position: relative;
+        visibility: hidden; /* Ele ocupa espaço mas não aparece */
+    }
+
+    /* Regras para os slides */
+    .banner-slide {
+        position: absolute; /* TODOS os slides ficam empilhados */
         top: 0;
         left: 0;
-    }
-    .fullwidth-banner .banner-slide.active {
-        opacity: 1;
-        position: relative; /* Importante para o slide ativo dar altura ao contêiner */
-    }
-    .fullwidth-banner .banner-slide img {
         width: 100%;
-        height: auto;
+        height: 100%; /* Ocupa 100% da altura e largura do pai */
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+
+    .banner-slide.active {
+        opacity: 1; /* O slide ativo simplesmente se torna visível */
+        /* REMOVEMOS o "position: relative" daqui. Esta é a correção principal. */
+    }
+
+    .banner-slide img {
+        width: 100%;
+        height: 100%;
         display: block;
-        object-fit: cover;
+        object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
     }
     </style>
 
     <div id="banner-slider" class="fullwidth-banner">
+        <div class="banner-aspect-ratio-spacer"></div>
+
         <div class="banner-slide active">
             <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
         </div>
@@ -520,45 +532,25 @@ st.markdown(
     function startBannerSlider() {
         let index = 0;
         const slides = document.querySelectorAll('#banner-slider .banner-slide');
-        
-        if (slides.length === 0) {
-            console.error("Não foram encontrados slides no elemento #banner-slider.");
-            return false;
-        }
+        if (slides.length === 0) return false;
 
-        console.log("Slider Iniciado com " + slides.length + " slides.");
-        
-        slides.forEach((slide, i) => {
-            if (i === 0) {
-                slide.classList.add('active');
-            } else {
-                slide.classList.remove('active');
-            }
-        });
+        slides.forEach((slide, i) => slide.classList.toggle('active', i === 0));
 
-        const intervalId = setInterval(() => {
-            if (document.hidden) return; // Pausa o slider se a aba não estiver visível
+        setInterval(() => {
+            if (document.hidden) return;
             slides[index].classList.remove('active');
             index = (index + 1) % slides.length;
             slides[index].classList.add('active');
         }, 5000);
-        
         return true;
     }
 
     function checkAndStart() {
-        if (document.getElementById('banner-slider')) {
-            if (startBannerSlider()) {
-                clearInterval(intervalCheck);
-            }
+        if (document.getElementById('banner-slider') && startBannerSlider()) {
+            clearInterval(intervalCheck);
         }
     }
-
     const intervalCheck = setInterval(checkAndStart, 500);
-
-    window.addEventListener('load', function() {
-        checkAndStart();
-    });
     </script>
     """,
     unsafe_allow_html=True
@@ -667,6 +659,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
