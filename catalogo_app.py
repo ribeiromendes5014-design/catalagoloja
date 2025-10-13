@@ -371,7 +371,61 @@ div[data-testid="stAppViewBlockContainer"] {{
     padding: 0;
 }}
 
+/* --- CSS para o Botão Flutuante do WhatsApp --- */
+.whatsapp-float {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: none;
+    border: none;
+    width: auto;
+    height: auto;
+    padding: 0;
+    box-shadow: none;
+    z-index: 999;
+}}
+.whatsapp-float img {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    display: block;
+}}
 
+/* --- CSS para o Botão Flutuante do Carrinho --- */
+.cart-float {
+    position: fixed;
+    bottom: 110px; 
+    right: 40px;
+    background-color: #D32F2F;
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    font-size: 28px;
+    box-shadow: 2px 2px 5px #999;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}}
+.cart-float-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #FFD600;
+    color: black;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}}
 
 /* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
 .pink-bar-container {{ 
@@ -820,6 +874,7 @@ else:
 
 
                                
+
 
 
 
