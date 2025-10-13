@@ -20,59 +20,164 @@ from ui_components import (
 # --- NOVA FUNÇÃO: Tela de Detalhes do Produto ---
 def mostrar_detalhes_produto(df_catalogo_indexado):
     """Renderiza a tela de detalhes de um único produto (incluindo variações)."""
+    import streamlit as st
     
-    # 1. PEGA O ID do produto a ser exibido no st.session_state
-    produto_id = st.session_state.get('produto_detalhe_id')
+    produto_id_clicado = st.session_state.get('produto_detalhe_id')
     
-    if not produto_id or produto_id not in df_catalogo_indexado.index:
+    if not produto_id_clicado or produto_id_clicado not in df_catalogo_indexado.index:
         st.error("Produto não encontrado ou ID de detalhe ausente.")
         st.session_state.produto_detalhe_id = None
         st.rerun()
 
-    # 2. BUSCA O PRODUTO PRINCIPAL
-    # Para produtos com PaiID, buscamos pelo ID principal (PaiID) se o ID clicado for um Filho.
-    # Se o ID clicado não tiver PaiID ou for o Pai, usamos ele mesmo.
+    # --- LÓGICA DE BUSCA DO PRODUTO PAI E VARIAÇÕES ---
+    row_clicada = df_catalogo_indexado.loc[produto_id_clicado].copy()
     
-    row_clicada = df_catalogo_indexado.loc[produto_id].copy()
+    # Tentativa de identificar o Pai: O PaiID é o ID que agrupa, senão é ele mesmo.
+    id_pai = row_clicada.get('PAIID', produto_id_clicado)
     
-    # Se o item clicado for uma variação (Filho), subimos para o Pai para buscar a descrição/imagem principal
-    id_pai_raw = row_clicada.get('PAIID')
-    id_principal = id_pai_raw if pd.notna(id_pai_raw) and id_pai_raw != produto_id else produto_id
-    
-    if id_principal in df_catalogo_indexado.index:
-        row_principal = df_catalogo_indexado.loc[id_principal].copy()
+    # Garante que o ID Principal (para descrição e imagem) seja o PaiID ou o ID clicado
+    if pd.isna(id_pai) or id_pai == produto_id_clicado:
+        id_principal_para_info = produto_id_clicado
     else:
-         row_principal = row_clicada # Usa o próprio item se o Pai não for encontrado
+        id_principal_para_info = id_pai
 
-    st.subheader(row_principal['NOME'])
+    # Busca a linha do produto que contém as informações mestras (imagem/descrição)
+    if id_principal_para_info in df_catalogo_indexado.index:
+        row_principal = df_catalogo_indexado.loc[id_principal_para_info].copy()
+    else:
+        row_principal = row_clicada # Se o Pai não for encontrado, usa o próprio item clicado
 
-    col_img, col_info = st.columns([1, 2])
     
-    # Coluna 1: Imagem e Vídeo
-    with col_img:
-        # Se houver vídeo, use abas (reutilizando a lógica do card)
-        youtube_url = row_principal.get('YOUTUBE_URL')
-        if youtube_url and isinstance(youtube_url, str) and youtube_url.strip().startswith('http'):
-            tab_foto, tab_video = st.tabs(["📷 Foto", "▶️ Vídeo"])
-            with tab_foto:
-                st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
-            with tab_video:
-                st.video(youtube_url)
+    # 1. BUSCA TODAS AS VARIAÇÕES (PRODUTOS FILHOS)
+    # Filtra: PaiID = ID Principal OU é o próprio produto Principal (se ele for o pai)
+    df_variacoes = df_catalogo_indexado[
+        (df_catalogo_indexado['PAIID'] == id_principal_para_info) | 
+        (df_catalogo_indexado.index == id_principal_para_info)
+    ].sort_values(by='NOME').copy()
+
+    # ----------------------------------------------------
+    # --- NOVO LAYOUT (SEÇÕES DO MOCKUP) ---
+    # ----------------------------------------------------
+    
+    # --- 1. Botão Voltar (Canto Superior Esquerdo - Seta Vermelha) ---
+    if st.button("⬅️ Voltar ao Catálogo"):
+        st.session_state.produto_detalhe_id = None
+        st.rerun()
+    
+    st.markdown("---") # Linha divisória para separar o botão do conteúdo
+
+    # --- Estrutura Principal: Imagem/Variações (Esquerda) vs Detalhes/Preço (Direita) ---
+    col_img_variacao, col_detalhes_compra = st.columns([1, 2])
+    
+    
+    # =================================================================
+    # --- COLUNA ESQUERDA: IMAGEM E OPÇÕES (Quadrados Imagem e Roxo) ---
+    # =================================================================
+    with col_img_variacao:
+        # Imagem Principal (Corpo da Imagem)
+        st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
+        
+        # --- Lógica de Seleção de Variação (Quadrado Roxo) ---
+        if not df_variacoes.empty:
+            
+            # Formata as opções para o Selectbox
+            # Criaremos um dicionário {Nome da Variação: ID do Produto}
+            mapa_variacoes = {
+                f"{row['NOME']} ({row['MARCA']})" : row.name
+                for _, row in df_variacoes.iterrows()
+            }
+            
+            # Encontra a chave que corresponde ao produto clicado originalmente
+            indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
+            
+            opcao_selecionada_nome = st.selectbox(
+                "Selecione a Variação:",
+                options=list(mapa_variacoes.keys()),
+                index=indice_selecionado,
+                key='seletor_variacao'
+            )
+            
+            # Pega o ID da variação REALMENTE selecionada no widget
+            id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
+            
+            # Puxa o objeto (linha) da variação selecionada para usar no preço/carrinho
+            produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
+            
+            st.markdown("---")
+            
         else:
-            st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
+            # Não há variações, usa o produto principal
+            id_variacao_selecionada = produto_id_clicado
+            produto_selecionado_row = row_principal
+            st.info("Este produto não possui variações.")
 
-
-    # Coluna 2: Detalhes, Variações e Compra
-    with col_info:
+        
+        # --- Área de Compra e Quantidade (Quadrado Marrom) ---
+        
+        # Garante que o estoque seja o da variação selecionada (se houver)
+        estoque_atual_variacao = int(pd.to_numeric(produto_selecionado_row.get('QUANTIDADE', 999999), errors='coerce'))
+        
+        # Preço da variação selecionada
+        preco_final_variacao = produto_selecionado_row['PRECO_FINAL']
+        
+        col_qtd, col_add = st.columns([1, 2])
+        
+        qtd_a_adicionar = col_qtd.number_input(
+            'Qtd',
+            min_value=1,
+            max_value=estoque_atual_variacao,
+            value=1,
+            step=1,
+            key='qtd_detalhes',
+            label_visibility="collapsed",
+            disabled=estoque_atual_variacao <= 0
+        )
+        
+        if estoque_atual_variacao <= 0:
+             col_add.error("🚫 ESGOTADO")
+        elif col_add.button(f"🛒 Adicionar R$ {preco_final_variacao * qtd_a_adicionar:.2f}", 
+                            key='btn_add_detalhes', use_container_width=True):
+            
+            adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
+            st.rerun()
+            
+    # =================================================================
+    # --- COLUNA DIREITA: DETALHES (Quadrado Azul) ---
+    # =================================================================
+    with col_detalhes_compra:
+        
+        # Nome do Produto (Parte do Quadrado Azul)
+        st.title(row_principal['NOME'])
+        
+        # Descrição (Parte do Quadrado Azul)
         st.markdown(f"**Marca:** {row_principal.get('MARCA', 'N/A')}")
         st.markdown(f"**Descrição:** {row_principal.get('DESCRICAOLONGA', row_principal.get('DESCRICAOCURTA', 'Sem descrição detalhada'))}")
         
         st.markdown("---")
         
-        # Lógica de VOLTAR
-        if st.button("⬅️ Voltar ao Catálogo"):
-            st.session_state.produto_detalhe_id = None
-            st.rerun()
+        # Detalhes de Preço (Deixado aqui para visibilidade)
+        preco_original = produto_selecionado_row['PRECO']
+        is_promotion = pd.notna(produto_selecionado_row.get('PRECO_PROMOCIONAL'))
+        condicao_pagamento = produto_selecionado_row.get('CONDICAOPAGAMENTO', 'Preço à vista')
+        cashback_percent = pd.to_numeric(produto_selecionado_row.get('CASHBACKPERCENT'), errors='coerce')
+        
+        if is_promotion:
+            st.markdown(f"""
+            <div style="line-height: 1.2;">
+                <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
+                <h2 style='color: #D32F2F; margin:0;'>R$ {preco_final_variacao:.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final_variacao:.2f}</h2>", unsafe_allow_html=True)
+        
+        st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
+
+        if pd.notna(cashback_percent) and cashback_percent > 0:
+            cashback_valor = (cashback_percent / 100) * preco_final_variacao
+            st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
+
+# --- FIM DA FUNÇÃO mostrar_detalhes_produto ---
             
 # --- Inicialização do Carrinho de Compras e Estado ---
 if 'carrinho' not in st.session_state:
@@ -709,6 +814,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
