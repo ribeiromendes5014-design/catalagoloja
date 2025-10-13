@@ -467,88 +467,18 @@ if st.session_state.pedido_confirmado:
     
     st.stop()
 
-import streamlit as st
-import streamlit.components.v1 as components
+# URL do banner de Black Friday
+URL_BLACK_FRIDAY = "https://iili.io/KOji2jV.md.png"
 
-# Lista de imagens para o carrossel
-banner_images = [
-    "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png",
-    "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png",
-    "https://i.ibb.co/NjxQqMq/banner-natal.png"
-]
-
-# Geração do HTML dos slides
-slides_html = ""
-for i, url in enumerate(banner_images):
-    active_class = "active" if i == 0 else ""
-    slides_html += f'<div class="banner-slide {active_class}"><img src="{url}" alt="Banner {i+1}"></div>'
-
-# HTML completo do carrossel com CSS e JS
-html_code = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        .fullwidth-banner {{
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-        }}
-        .banner-container {{
-            position: relative;
-            width: 100%;
-            padding-top: 33.33%; /* Altura relativa à largura (proporção 3:1) */
-        }}
-        .banner-slide {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }}
-        .banner-slide.active {{
-            opacity: 1;
-        }}
-        .banner-slide img {{
-            width: 100%;
-            height: 100%;
-            object-fit: fill;
-            display: block;
-        }}
-    </style>
-</head>
-<body>
+# --- Banner Black Friday full width (sem margens brancas) ---
+st.markdown(
+    f"""
     <div class="fullwidth-banner">
-        <div class="banner-container" id="banner-slider">
-            {slides_html}
-        </div>
+        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
     </div>
-
-    <script>
-        const slides = [];
-        let index = 0;
-        document.addEventListener("DOMContentLoaded", function() {{
-            const allSlides = document.querySelectorAll(".banner-slide");
-            allSlides.forEach(slide => slides.push(slide));
-            if (slides.length === 0) return;
-
-            slides[0].classList.add("active");
-
-            setInterval(() => {{
-                slides[index].classList.remove("active");
-                index = (index + 1) % slides.length;
-                slides[index].classList.add("active");
-            }}, 5000);
-        }});
-    </script>
-</body>
-</html>
-"""
-
-# Renderiza o carrossel como HTML (altura ajustável conforme proporção)
-components.html(html_code, height=300)
+    """,
+    unsafe_allow_html=True
+)
 
 
 
@@ -655,6 +585,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
