@@ -205,6 +205,13 @@ DF_CLIENTES_CASH = carregar_clientes_cashback()
 if 'produto_detalhe_id' not in st.session_state:
     st.session_state.produto_detalhe_id = None
 
+# --- Cálculos iniciais do carrinho ---
+total_acumulado = sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values())
+num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
+carrinho_vazio = not st.session_state.carrinho
+df_catalogo_completo = st.session_state.df_catalogo_indexado
+cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
+
 # --- CONTROLE DE FLUXO PRINCIPAL ---
 
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
@@ -267,7 +274,7 @@ if num_itens > 0:
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
 
-
+st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
 
 def copy_to_clipboard_js(text_to_copy):
     js_code = f"""
@@ -508,12 +515,6 @@ div[data-testid="stButton"] > button:hover {{
 """, unsafe_allow_html=True)
 
 
-# --- Cálculos iniciais do carrinho ---
-total_acumulado = sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values())
-num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
-carrinho_vazio = not st.session_state.carrinho
-df_catalogo_completo = st.session_state.df_catalogo_indexado
-cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
 # --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
 # Definimos o popover e todo o seu conteúdo dentro de um container no início do código.
@@ -677,7 +678,6 @@ with st.container():
                     else:
                         st.warning("Preencha seu nome e contato.")
 
-st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
 
 
 # --- Tela de Pedido Confirmado ---
@@ -820,6 +820,7 @@ else:
 
 
                                
+
 
 
 
