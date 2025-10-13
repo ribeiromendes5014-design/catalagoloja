@@ -214,6 +214,61 @@ if st.session_state.produto_detalhe_id:
     st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
 # --- Funções Auxiliares de UI ---
 
+# --- Botão Flutuante do WhatsApp ---
+MENSAGEM_PADRAO = "Olá, vi o catálogo de pedidos da Doce&Bella e gostaria de ajuda!"
+LINK_WHATSAPP = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(MENSAGEM_PADRAO)}"
+whatsapp_button_html = f"""
+<a href="{LINK_WHATSAPP}" class="whatsapp-float" target="_blank" title="Fale Conosco pelo WhatsApp">
+    <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-whats.png"
+         alt="WhatsApp"
+         style="width: 60px; height: 60px;" />
+</a>
+"""
+st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
+
+# --- Botão Flutuante do Carrinho ---
+if num_itens > 0:
+    floating_cart_html = f"""
+    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+        🛒
+        <span class="cart-float-count">{num_itens}</span>
+    </div>
+    <script>
+    (function() {{
+        const waitForPopoverButton = () => {{
+            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
+            if (popoverButton) {{
+                return popoverButton;
+            }}
+            // Tenta encontrar botão por outras abordagens (compatibilidade)
+            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
+            if (alt) return alt;
+            return null;
+        }};
+        const floatBtn = document.getElementById("floating_cart_btn");
+        if (floatBtn) {{
+            floatBtn.addEventListener("click", function() {{
+                try {{
+                    const popBtn = waitForPopoverButton();
+                    if (popBtn) {{
+                        popBtn.click();
+                    }} else {{
+                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+                    }}
+                }} catch (err) {{
+                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
+                }}
+            }});
+        }}
+    }})();
+    </script>
+    """
+    st.markdown(floating_cart_html, unsafe_allow_html=True)
+
+
+
 def copy_to_clipboard_js(text_to_copy):
     js_code = f"""
     <script>
@@ -623,58 +678,6 @@ with st.container():
                         st.warning("Preencha seu nome e contato.")
 
 st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
-# --- Botão Flutuante do WhatsApp ---
-MENSAGEM_PADRAO = "Olá, vi o catálogo de pedidos da Doce&Bella e gostaria de ajuda!"
-LINK_WHATSAPP = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(MENSAGEM_PADRAO)}"
-whatsapp_button_html = f"""
-<a href="{LINK_WHATSAPP}" class="whatsapp-float" target="_blank" title="Fale Conosco pelo WhatsApp">
-    <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-whats.png"
-         alt="WhatsApp"
-         style="width: 60px; height: 60px;" />
-</a>
-"""
-st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
-# --- Botão Flutuante do Carrinho ---
-if num_itens > 0:
-    floating_cart_html = f"""
-    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
-        🛒
-        <span class="cart-float-count">{num_itens}</span>
-    </div>
-    <script>
-    (function() {{
-        const waitForPopoverButton = () => {{
-            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
-            if (popoverButton) {{
-                return popoverButton;
-            }}
-            // Tenta encontrar botão por outras abordagens (compatibilidade)
-            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
-            if (alt) return alt;
-            return null;
-        }};
-        const floatBtn = document.getElementById("floating_cart_btn");
-        if (floatBtn) {{
-            floatBtn.addEventListener("click", function() {{
-                try {{
-                    const popBtn = waitForPopoverButton();
-                    if (popBtn) {{
-                        popBtn.click();
-                    }} else {{
-                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
-                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
-                    }}
-                }} catch (err) {{
-                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
-                }}
-            }});
-        }}
-    }})();
-    </script>
-    """
-    st.markdown(floating_cart_html, unsafe_allow_html=True)
 
 
 # --- Tela de Pedido Confirmado ---
@@ -817,6 +820,7 @@ else:
 
 
                                
+
 
 
 
