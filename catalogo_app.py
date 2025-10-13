@@ -456,26 +456,24 @@ st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
 if st.session_state.pedido_confirmado:
     st.balloons()
     
-    # MENSAGEM CORRIGIDA: Pede para o cliente clicar
+    # 1. MENSAGEM DE SUCESSO
     st.success("🎉 Pedido enviado com sucesso! Clique no botão abaixo para confirmar o pedido via WhatsApp.")
     
     pedido = st.session_state.pedido_confirmado
-    
-    # Pega o ID que foi salvo na session state
     id_pedido_display = pedido.get('id_pedido', 'N/A')
-    
-    # 1. Constrói a mensagem de Opt-in
     nome_cliente = pedido['nome']
+    
+    # Prepara a mensagem de Opt-in para o botão do WhatsApp
     mensagem_optin = (
         f"Olá! Acabei de fazer um pedido (ID: {id_pedido_display}) pelo catálogo da Doce&Bella. "
         f"Confirmo meu Opt-in e desejo prosseguir com a compra. Meu nome é {nome_cliente}."
     )
     
-    # 2. Gera o link final do WhatsApp (NUMERO_WHATSAPP deve estar disponível neste arquivo)
+    # Gera o link final do WhatsApp
     import requests
     link_whats_final = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(mensagem_optin)}"
 
-    # 3. NOVO BOTÃO DE CONFIRMAÇÃO EXPLICITO (Abre o WhatsApp)
+    # 2. BOTÃO DE CONFIRMAÇÃO DO WHATSAPP
     st.markdown(
         f"""
         <a href="{link_whats_final}" target="_blank">
@@ -488,7 +486,8 @@ if st.session_state.pedido_confirmado:
                 font-size: 1.1rem;
                 padding: 10px 20px;
                 width: 100%;
-                margin-bottom: 20px;
+                margin-top: 15px;
+                margin-bottom: 30px;
                 cursor: pointer;
             ">
                 ✅ CLIQUE AQUI PARA CONFIRMAR O PEDIDO NO WHATSAPP
@@ -498,41 +497,33 @@ if st.session_state.pedido_confirmado:
         unsafe_allow_html=True
     )
     
-    itens_formatados = '\n'.join([f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
+    # --- SIMPLIFICAÇÃO: RESUMO ABAIXO FOI REMOVIDO OU SUBSTITUÍDO ---
+    # Se você ainda quiser mostrar o resumo em um formato simples (sem o botão copiar),
+    # você pode usar st.markdown ou st.info. Vamos remover tudo que duplicava.
+
+    st.subheader(f"Resumo do Pedido (ID: {id_pedido_display})")
     
-    resumo_texto = (
-        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA (ID: {id_pedido_display})***\n\n"
-        f"🛒 Cliente: {pedido['nome']}\n"
-        f"📞 Contato: {pedido['contato']}\n"
-        f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n"
-        f"💰 Saldo Cashback: R$ {pedido.get('cliente_saldo_cashback', 0.00):.2f}\n\n"
-        f"📦 Itens Pedidos:\n{itens_formatados}\n\n"
-        f"🎟️ Cupom Aplicado: {pedido.get('cupom_aplicado', 'Nenhum')}\n"
-        f"📉 Desconto Total: R$ {pedido.get('desconto_cupom', 0.0):.2f}\n\n"
-        f"✅ CASHBACK A SER GANHO: R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}\n"
-        f"💰 VALOR TOTAL A PAGAR: R$ {pedido['total']:.2f}\n\n"
-        f"Obrigado por seu pedido!"
-    )
-    st.text_area("Resumo do Pedido (Clique para copiar)", resumo_texto, height=300)
+    # Conteúdo simples do resumo
+    itens_formatados = '\n'.join([f"• {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
     
-    safe_resumo = resumo_texto.replace("'", "\\'").replace('"', '\\"')
-    st.markdown(
-        f"""
-        <button class="cart-badge-button"
-                style="background-color: #25D366; width: 100%; margin-bottom: 15px;"
-                onclick="copyTextToClipboard('{safe_resumo}')">
-            ✅ Copiar Resumo
-        </button>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown(f"""
+    **Cliente:** {pedido['nome']} | **Contato:** {pedido['contato']}  
+    **Total a Pagar:** R$ {pedido['total']:.2f}  
+    **Cashback a Ganhar:** R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}
     
+    **Itens:**
+    {itens_formatados}
+    """)
+    
+    st.markdown("---")
+    
+    # 3. BOTÃO "Voltar ao Catálogo"
     if st.button("Voltar ao Catálogo"):
         st.session_state.pedido_confirmado = None
         limpar_carrinho()
+        st.rerun() 
         
-    
-    st.stop()
+    st.stop() 
 # URL do banner de Black Friday
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
 
@@ -651,6 +642,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
