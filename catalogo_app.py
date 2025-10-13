@@ -767,8 +767,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
 # --- Barra de Busca (Movida para baixo do Banner) ---
 st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
 st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
@@ -822,6 +820,7 @@ else:
 
 
                                
+
 
 
 
