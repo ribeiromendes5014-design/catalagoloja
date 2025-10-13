@@ -96,8 +96,19 @@ if st.session_state.df_catalogo_indexado is None:
 
 DF_CLIENTES_CASH = carregar_clientes_cashback()
 
+# --- ADICIONA O CONTROLE DE ESTADO PARA A TELA DE DETALHES ---
+if 'produto_detalhe_id' not in st.session_state:
+    st.session_state.produto_detalhe_id = None
 
+# --- CONTROLE DE FLUXO PRINCIPAL ---
+
+# Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
+if st.session_state.produto_detalhe_id:
+    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
+    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
+    st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
 # --- Funções Auxiliares de UI ---
+
 def copy_to_clipboard_js(text_to_copy):
     js_code = f"""
     <script>
@@ -698,6 +709,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
