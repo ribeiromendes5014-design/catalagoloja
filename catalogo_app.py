@@ -471,27 +471,32 @@ if st.session_state.pedido_confirmado:
 st.markdown(
     """
     <style>
-    .banner-slider {
+    /* Usamos a classe que já funciona para o contêiner principal */
+    .fullwidth-banner {
         position: relative;
-        width: 100%;
+        width: 100vw;
         left: 50%;
         right: 50%;
-        margin-left: -50%;
-        margin-right: -50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
         overflow: hidden;
         height: auto;
     }
-    .banner-slide {
+    /* Os estilos internos do slider continuam os mesmos, mas referenciando o novo pai */
+    .fullwidth-banner .banner-slide {
         position: absolute;
         width: 100%;
         opacity: 0;
         transition: opacity 1s ease-in-out;
+        /* Garante que os slides não comecem um em cima do outro de forma visível */
+        top: 0;
+        left: 0;
     }
-    .banner-slide.active {
+    .fullwidth-banner .banner-slide.active {
         opacity: 1;
-        position: relative;
+        position: relative; /* Importante para o slide ativo dar altura ao contêiner */
     }
-    .banner-slide img {
+    .fullwidth-banner .banner-slide img {
         width: 100%;
         height: auto;
         display: block;
@@ -499,12 +504,12 @@ st.markdown(
     }
     </style>
 
-    <div id="banner-slider" class="banner-slider">
+    <div id="banner-slider" class="fullwidth-banner">
         <div class="banner-slide active">
             <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
         </div>
         <div class="banner-slide">
-            <img src=https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
+            <img src="https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
         </div>
         <div class="banner-slide">
             <img src="https://i.ibb.co/NjxQqMq/banner-natal.png" alt="Banner 3">
@@ -515,22 +520,45 @@ st.markdown(
     function startBannerSlider() {
         let index = 0;
         const slides = document.querySelectorAll('#banner-slider .banner-slide');
-        if (slides.length === 0) return;
+        
+        if (slides.length === 0) {
+            console.error("Não foram encontrados slides no elemento #banner-slider.");
+            return false;
+        }
 
-        setInterval(() => {
+        console.log("Slider Iniciado com " + slides.length + " slides.");
+        
+        slides.forEach((slide, i) => {
+            if (i === 0) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+
+        const intervalId = setInterval(() => {
+            if (document.hidden) return; // Pausa o slider se a aba não estiver visível
             slides[index].classList.remove('active');
             index = (index + 1) % slides.length;
             slides[index].classList.add('active');
-        }, 5000); // Troca a cada 5 segundos
+        }, 5000);
+        
+        return true;
     }
 
-    // Espera o DOM do Streamlit carregar
-    const intervalCheck = setInterval(() => {
-        if (document.readyState === "complete") {
-            startBannerSlider();
-            clearInterval(intervalCheck);
+    function checkAndStart() {
+        if (document.getElementById('banner-slider')) {
+            if (startBannerSlider()) {
+                clearInterval(intervalCheck);
+            }
         }
-    }, 500);
+    }
+
+    const intervalCheck = setInterval(checkAndStart, 500);
+
+    window.addEventListener('load', function() {
+        checkAndStart();
+    });
     </script>
     """,
     unsafe_allow_html=True
@@ -639,6 +667,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
