@@ -358,14 +358,14 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
             current_content = novo_cabecalho
         else:
             st.error(f"Erro HTTP ao obter o SHA do arquivo no GitHub: {e}")
-            return False
+            return False, None # <--- ALTERADO: Retorna False e None
     except Exception as e:
         st.error(f"Erro na decodificação ou leitura do arquivo 'pedidos.csv'. Detalhe: {e}")
-        return False
+        return False, None # <--- ALTERADO: Retorna False e None
 
     timestamp = int(datetime.now().timestamp())
     data_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    id_pedido = timestamp
+    id_pedido = timestamp # ID GERADO AQUI
     status = "PENDENTE"
     link_imagem = ""
 
@@ -405,15 +405,21 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     try:
         response_put = requests.put(api_url, headers=headers_put, data=json.dumps(commit_data))
         response_put.raise_for_status()
+        
+        # NOVO: Adiciona o ID ao dicionário do pedido antes de salvar na session state
+        pedido_data['id_pedido'] = id_pedido
         st.session_state.pedido_confirmado = pedido_data
-        return True
+        
+        return True, id_pedido # <--- ALTERADO: Retorna o status e o ID
+    
     except requests.exceptions.HTTPError as e:
         st.error(f"Erro ao salvar o pedido (Commit no GitHub). Status {e.response.status_code}. "
                  f"Verifique as permissões 'repo' do seu PAT. Detalhe: {e.response.text}")
-        return False
+        return False, None # <--- ALTERADO: Retorna False e None
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
-        return False
+        return False, None
+
 
 
 
