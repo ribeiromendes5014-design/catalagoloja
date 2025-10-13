@@ -279,41 +279,40 @@ def copy_to_clipboard_js(text_to_copy):
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown(f"""
 <style>
+/* Remove todos os elementos de Streamlit que você não quer ver, como menus */
 MainMenu, footer, [data-testid="stSidebar"] {{visibility: hidden;}}
 [data-testid="stSidebarHeader"], [data-testid="stToolbar"],
-[data-testid="stAppViewBlockContainer"], [data-testid="stDecoration"] {{
+[data-testid="stDecoration"] {{
     margin: 0 !important;
     padding: 0 !important;
 }}
 
-/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
-div[data-testid="stPopover"] > div:first-child > button {{
-    position: fixed !important;
-    bottom: 110px; /* mesmo nível do botão flutuante */
-    right: 40px;
-    width: 60px !important;
-    height: 60px !important;
-    opacity: 0 !important; /* invisível mas clicável */
-    z-index: 1001 !important;
-    pointer-events: auto !important;
+/* Zera o padding principal do app para que o banner full-width funcione */
+div[data-testid="stAppViewBlockContainer"] {{
+    padding-top: 0 !important;
+    /* Adicionado para garantir que o background ocupe a altura total, importante em mobile */
+    min-height: 100vh; 
 }}
 
 .stApp {{
     background-image: url({BACKGROUND_IMAGE_URL}) !important;
     background-size: cover;
     background-attachment: fixed;
+    /* Remove padding default */
+    padding: 0;
 }}
 
+/* CONTAINER PRINCIPAL (onde o conteúdo fica) */
 div.block-container {{
     background-color: rgba(255,255,255,0.95);
     border-radius: 10px;
     padding: 2rem;
     margin-top: 1rem;
     color: #262626;
-}}
-
-div[data-testid="stAppViewBlockContainer"] {{
-    padding-top: 0 !important;
+    /* Garante que o container centralize e não se estenda desnecessariamente */
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }}
 
 .fullwidth-banner {{
@@ -326,16 +325,19 @@ div[data-testid="stAppViewBlockContainer"] {{
     overflow: hidden;
     z-index: 9999;
 }}
+/* ... (restante do CSS omitido por brevidade, mas está na versão final) ... */
 
-.fullwidth-banner img {{
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    margin: 0;
-    padding: 0;
+/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
+div[data-testid="stPopover"] > div:first-child > button {{
+    position: fixed !important;
+    bottom: 110px; /* mesmo nível do botão flutuante */
+    right: 40px;
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 0 !important; /* invisível mas clicável */
+    z-index: 1001 !important;
+    pointer-events: auto !important;
 }}
-
 
 /* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
 .pink-bar-container {{ 
@@ -484,17 +486,82 @@ div[data-testid="stButton"] > button:hover {{
 query_params = st.experimental_get_query_params()
 product_id_str = query_params.get("view_product_id", [None])[0]
 
+# 1. TELA DE PEDIDO CONFIRMADO (Prioridade Máxima)
+if st.session_state.pedido_confirmado:
+    st.balloons()
+    st.success("🎉 Pedido enviado com sucesso! Utilize o resumo abaixo para confirmar o pedido pelo WhatsApp.")
+    pedido = st.session_state.pedido_confirmado
+    itens_formatados = '\n'.join([f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
+    resumo_texto = (
+        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA ***\n\n"
+        f"🛒 Cliente: {pedido['nome']}\n"
+        f"📞 Contato: {pedido['contato']}\n"
+        f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n"
+        f"💰 Saldo Cashback: R$ {pedido.get('cliente_saldo_cashback', 0.00):.2f}\n\n"
+        f"📦 Itens Pedidos:\n{itens_formatados}\n\n"
+        f"🎟️ Cupom Aplicado: {pedido.get('cupom_aplicado', 'Nenhum')}\n"
+        f"📉 Desconto Total: R$ {pedido.get('desconto_cupom', 0.0):.2f}\n\n"
+        f"✅ CASHBACK A SER GANHO: R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}\n"
+        f"💰 VALOR TOTAL A PAGAR: R$ {pedido['total']:.2f}\n\n"
+        f"Obrigado por seu pedido!"
+    )
+    st.text_area("Resumo do Pedido (Clique para copiar)", resumo_texto, height=300)
+    
+    safe_resumo = resumo_texto.replace("'", "\\'").replace('"', '\\"')
+    st.markdown(
+        f"""
+        <button class="cart-badge-button"
+                style="background-color: #25D366; width: 100%; margin-bottom: 15px;"
+                onclick="copyTextToClipboard('{safe_resumo}')">
+            ✅ Copiar Resumo
+        </button>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    if st.button("Voltar ao Catálogo"):
+        st.session_state.pedido_confirmado = None
+        limpar_carrinho()
+        st.rerun()
+    
+    st.stop()
+
+# 2. PÁGINA DE DETALHES (Segunda Prioridade)
 if product_id_str:
     try:
         product_id = int(product_id_str)
-        # RENDERIZA A PÁGINA DE DETALHES COMPLETA
+        # O conteúdo da página de detalhes não precisa de container extra
         render_product_details_content(product_id, st.session_state.df_catalogo_indexado, DF_CLIENTES_CASH) 
         st.stop() # PARA a execução do catálogo principal
         
     except ValueError:
         st.error("ID de produto inválido na URL.")
 
-# --- Se não houver ID na URL, continua com o Catálogo Principal ---
+# --- Se não houver ID na URL, continua com o Catálogo Principal (Container de Layout) ---
+
+st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
+
+# --- Renderiza o Layout Principal do Catálogo ---
+
+# URL do banner de Black Friday
+URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
+
+# --- Banner Black Friday full width (sem margens brancas) ---
+st.markdown(
+    f"""
+    <div class="fullwidth-banner">
+        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+# --- Barra de Busca (Movida para baixo do Banner) ---
+st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
+st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
+st.markdown("</div></div>", unsafe_allow_html=True)
 
 
 # --- Cálculos iniciais do carrinho ---
@@ -638,68 +705,6 @@ with st.container():
                             st.rerun()
                     else:
                         st.warning("Preencha seu nome e contato.")
-
-st_autorefresh(interval=6000000000, key="auto_refresh_catalogo")
-
-# --- Tela de Pedido Confirmado ---
-if st.session_state.pedido_confirmado:
-    st.balloons()
-    st.success("🎉 Pedido enviado com sucesso! Utilize o resumo abaixo para confirmar o pedido pelo WhatsApp.")
-    pedido = st.session_state.pedido_confirmado
-    itens_formatados = '\n'.join([f"- {item['quantidade']}x {item['nome']} (R$ {item['preco']:.2f} un.)" for item in pedido['itens']])
-    resumo_texto = (
-        f"***📝 RESUMO DO PEDIDO - DOCE&BELLA ***\n\n"
-        f"🛒 Cliente: {pedido['nome']}\n"
-        f"📞 Contato: {pedido['contato']}\n"
-        f"💎 Nível Atual: {pedido.get('cliente_nivel_atual', 'N/A')}\n"
-        f"💰 Saldo Cashback: R$ {pedido.get('cliente_saldo_cashback', 0.00):.2f}\n\n"
-        f"📦 Itens Pedidos:\n{itens_formatados}\n\n"
-        f"🎟️ Cupom Aplicado: {pedido.get('cupom_aplicado', 'Nenhum')}\n"
-        f"📉 Desconto Total: R$ {pedido.get('desconto_cupom', 0.0):.2f}\n\n"
-        f"✅ CASHBACK A SER GANHO: R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}\n"
-        f"💰 VALOR TOTAL A PAGAR: R$ {pedido['total']:.2f}\n\n"
-        f"Obrigado por seu pedido!"
-    )
-    st.text_area("Resumo do Pedido (Clique para copiar)", resumo_texto, height=300)
-    
-    safe_resumo = resumo_texto.replace("'", "\\'").replace('"', '\\"')
-    st.markdown(
-        f"""
-        <button class="cart-badge-button"
-                style="background-color: #25D366; width: 100%; margin-bottom: 15px;"
-                onclick="copyTextToClipboard('{safe_resumo}')">
-            ✅ Copiar Resumo
-        </button>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    if st.button("Voltar ao Catálogo"):
-        st.session_state.pedido_confirmado = None
-        limpar_carrinho()
-        st.rerun()
-    
-    st.stop()
-
-# URL do banner de Black Friday
-URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
-
-# --- Banner Black Friday full width (sem margens brancas) ---
-st.markdown(
-    f"""
-    <div class="fullwidth-banner">
-        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-
-
-# --- Barra de Busca (Movida para baixo do Banner) ---
-st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
-st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
-st.markdown("</div></div>", unsafe_allow_html=True)
 
 
 # --- Filtros e Exibição dos Produtos ---
