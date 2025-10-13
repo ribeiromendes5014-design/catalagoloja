@@ -242,34 +242,34 @@ if num_itens > 0:
         <span class="cart-float-count">{num_itens}</span>
     </div>
     <script>
-    (function() {{
-        const waitForPopoverButton = () => {{
+    (function() {{  <-- CORRIGIDO: Era (function() {
+        const waitForPopoverButton = () => {{  <-- CORRIGIDO: Era () {
             const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
-            if (popoverButton) {{
+            if (popoverButton) {{  <-- CORRIGIDO: Era if (popoverButton) {
                 return popoverButton;
-            }}
+            }}  <-- CORRIGIDO: Era }
             // Tenta encontrar botão por outras abordagens (compatibilidade)
             const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
             if (alt) return alt;
             return null;
         }};
         const floatBtn = document.getElementById("floating_cart_btn");
-        if (floatBtn) {{
-            floatBtn.addEventListener("click", function() {{
-                try {{
+        if (floatBtn) {{  <-- CORRIGIDO: Era if (floatBtn) {
+            floatBtn.addEventListener("click", function() {{  <-- CORRIGIDO: Era function() {
+                try {{  <-- CORRIGIDO: Era try {
                     const popBtn = waitForPopoverButton();
-                    if (popBtn) {{
+                    if (popBtn) {{  <-- CORRIGIDO: Era if (popBtn) {
                         popBtn.click();
-                    }} else {{
+                    }} else {{  <-- CORRIGIDO: Era } else {
                         console.warn("Botão do popover não encontrado. Verifique o seletor.");
                         alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
-                    }}
-                }} catch (err) {{
+                    }}  <-- CORRIGIDO: Era }
+                }} catch (err) {{  <-- CORRIGIDO: Era } catch (err) {
                     console.error("Erro ao tentar abrir o popover do carrinho:", err);
-                }}
-            }});
-        }}
-    }})();
+                }}  <-- CORRIGIDO: Era }
+            }});  <-- CORRIGIDO: Era });
+        }}  <-- CORRIGIDO: Era }
+    }})();  <-- CORRIGIDO: Era })();
     </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
@@ -874,6 +874,7 @@ else:
 
 
                                
+
 
 
 
