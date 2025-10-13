@@ -468,7 +468,7 @@ if st.session_state.pedido_confirmado:
     st.stop()
 
 # URL do banner de Black Friday
-URL_BLACK_FRIDAY = "https://iili.io/KOji2jV.md.png"
+URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
 
 # --- Banner Black Friday full width (sem margens brancas) ---
 st.markdown(
@@ -585,6 +585,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
