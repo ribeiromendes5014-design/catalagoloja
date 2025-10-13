@@ -443,8 +443,6 @@ with st.container():
                             st.session_state.desconto_cupom = 0.0
                             st.session_state.cupom_mensagem = ""
                             
-                            # NOVO: FORÇA A INTERRUPÇÃO DO SCRIPT. 
-                            # Isso dá tempo para o JS de redirecionamento ser processado pelo navegador.
                             st.stop()
                             
                         else:
@@ -619,6 +617,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
