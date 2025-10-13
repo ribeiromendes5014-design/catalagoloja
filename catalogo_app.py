@@ -443,7 +443,7 @@ with st.container():
                             st.session_state.desconto_cupom = 0.0
                             st.session_state.cupom_mensagem = ""
                             
-                            st.stop()
+                           
                             
                         else:
                              st.error("❌ Erro ao salvar o pedido. Tente novamente.")
@@ -651,6 +651,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
