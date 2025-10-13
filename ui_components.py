@@ -111,7 +111,6 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado, i):
     is_promotion = pd.notna(row.get('PRECO_PROMOCIONAL'))
     
     # URL para a nova página de detalhes, passando o ID como query parameter
-    # Nota: O nome do arquivo na pasta pages é 'produto_detalhe.py'
     detail_url = f"produto_detalhe?id={prod_id}"
     
     # Prepara os elementos HTML
@@ -151,6 +150,7 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado, i):
         image_html = placeholder_html
 
     # O conteúdo do card é estilizado e embrulhado na tag <a> para navegação nativa
+    # CORREÇÃO: Usamos o st.markdown com o HTML/CSS do cartão, permitindo unsafe_allow_html=True
     st.markdown(f"""
         <a href="{detail_url}" style="text-decoration: none; color: inherit; display: block; height: 100%;">
             <div style="cursor: pointer; padding: 10px; border-radius: 8px; border: 1px solid #E0E0E0; background-color: white; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: left;">
