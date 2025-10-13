@@ -530,7 +530,7 @@ if st.session_state.pedido_confirmado:
     if st.button("Voltar ao Catálogo"):
         st.session_state.pedido_confirmado = None
         limpar_carrinho()
-        st.rerun()
+        
     
     st.stop()
 # URL do banner de Black Friday
@@ -651,6 +651,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
