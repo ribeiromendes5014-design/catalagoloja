@@ -96,6 +96,9 @@ def render_product_image_clickable(link_imagem, prod_id):
         image_url = "https://via.placeholder.com/300x220?text=Sem+Imagem" 
 
     # --- HTML DO CONTAINER CLICÁVEL ---
+    # Envolvemos tudo em um div com um ID único para facilitar a localização do botão Streamlit.
+    st.markdown(f'<div id="container-clicavel-{prod_id}">', unsafe_allow_html=True)
+    
     html_content = f"""
     <div class="product-image-container clickable-image" 
          onclick="
@@ -111,36 +114,43 @@ def render_product_image_clickable(link_imagem, prod_id):
     </div>
     """
     st.markdown(html_content, unsafe_allow_html=True)
-
-    # --- CSS AGRESSIVO PARA OCULTAR O BOTÃO ---
-    # Injetamos o CSS para esconder o elemento do botão Streamlit pelo seu ID
-    st.markdown(
-        f"""
-        <style>
-        /* Procura pelo container do botão específico e esconde ele e seu rótulo */
-        div[data-testid="stVerticalBlock"] > div > div > div > button#details_btn_{prod_id} {{
-            display: none !important;
-            visibility: hidden !important;
-            height: 0;
-            width: 0;
-            padding: 0;
-            margin: 0;
-            line-height: 0;
-            overflow: hidden;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
     
     # --- BOTÃO INVISÍVEL DE ACIONAMENTO (HIDDEN BUTTON) ---
-    # Removemos 'label_visibility' para garantir a compatibilidade.
+    
+    # É CRUCIAL que o botão Streamlit seja renderizado APÓS o markdown da imagem.
+    
+    # O Streamlit Button que o JS vai "clicar".
+    # Sem 'label_visibility' devido à compatibilidade.
     if st.button(
         "Definir ID", 
         key=f'details_btn_{prod_id}' # Este ID é usado no JavaScript e no CSS
     ):
         st.session_state.produto_detalhe_id = prod_id
         st.rerun()
+        
+    # --- FECHANDO O CONTÊINER DO BOTÃO E INJETANDO O CSS ---
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # CSS AGRESSIVO: Tenta esconder o botão por fora do container do próprio st.button.
+    # O CSS tenta encontrar o botão pelo ID e aplica display: none.
+    st.markdown(
+        f"""
+        <style>
+        /* Oculta o botão 'Definir ID' por ser um truque de click-handler */
+        div[data-testid="stVerticalBlock"] > div > div > div:has(> button#details_btn_{prod_id}) {{
+            display: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+        }}
+        /* Se o seletor acima não funcionar, tenta o contêiner direto */
+        #container-clicavel-{prod_id} + div button#details_btn_{prod_id} {{
+            display: none !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
@@ -227,5 +237,6 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
 
 
