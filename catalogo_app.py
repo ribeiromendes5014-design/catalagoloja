@@ -6,6 +6,7 @@ import json
 import time
 from streamlit_autorefresh import st_autorefresh
 import requests
+import ast # Necessário para decodificar DetalhesGrade
 
 # Importa as funções e constantes dos novos módulos
 # CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
@@ -40,6 +41,210 @@ if st.session_state.df_catalogo_indexado is None:
 
 DF_CLIENTES_CASH = carregar_clientes_cashback()
 
+# Define o catálogo base para a página de detalhes
+if 'df_catalogo_base' not in st.session_state:
+    st.session_state.df_catalogo_base = st.session_state.df_catalogo_indexado
+
+# --- Lógicas de Detalhes do Produto (Injetadas do produto_detalhe.py) ---
+
+def get_product_gallery_data(product_data: pd.Series) -> list:
+    """Extrai todas as URLs de imagem da linha do produto."""
+    all_photos = [product_data['LINKIMAGEM']] if product_data.get('LINKIMAGEM') else []
+    # Adicione aqui a lógica de FOTOS_ADICIONAIS se ela existir
+    return [url for url in all_photos if str(url).startswith('http')]
+
+def get_product_variations(product_id: int, df_catalogo_completo: pd.DataFrame) -> pd.DataFrame:
+    """Filtra e formata as variações (filhos) de um produto pai."""
+    # Filtra onde o PAIID é o ID do produto principal
+    df_filhos = df_catalogo_completo[
+        df_catalogo_completo['PAIID'].astype(str) == str(product_id)
+    ].copy()
+    
+    if 'DETALHESGRADE' in df_filhos.columns:
+        def extract_label(details_json):
+            if pd.isna(details_json) or not details_json: return ""
+            try:
+                # Usa ast.literal_eval para converter a string JSON
+                detalhes = ast.literal_eval(details_json)
+                # Formata a string de variação (ex: Cor: Vermelho - Tam: 38)
+                return ' - '.join([f"{k.split('/')[0]}: {v}" for k, v in detalhes.items() if v])
+            except: 
+                return ""
+
+        df_filhos['Variação_Label'] = df_filhos.apply(
+            lambda row: f"{extract_label(row.get('DETALHESGRADE'))} (Estoque: {int(row['QUANTIDADE'])})", 
+            axis=1
+        )
+    return df_filhos
+
+def render_product_details_content(product_id: int, df_catalogo_base: pd.DataFrame, df_clientes_cash: pd.DataFrame):
+    """Renderiza a página completa de detalhes de um único produto."""
+    
+    try:
+        product_data = df_catalogo_base.loc[product_id]
+    except KeyError:
+        st.error(f"❌ Produto com ID {product_id} não encontrado no catálogo.")
+        return
+
+    # --- INÍCIO DA ESTRUTURA DA PÁGINA (Layout) ---
+    st.title(f"✨ {product_data['NOME']}")
+    
+    # 1. CABEÇALHO E BOTÃO DE RETORNO
+    col_back, _ = st.columns([1, 4])
+    with col_back:
+        # Botão para limpar o parâmetro de query e voltar ao catálogo principal
+        if st.button("⬅️ Voltar ao Catálogo"):
+            st.experimental_set_query_params(view_product_id=None)
+            st.rerun()
+
+    st.markdown("---") 
+
+    # --- SEÇÃO 2: CARROSSEL DE FOTOS E INFO RÁPIDA ---
+    col_gallery, col_info = st.columns([2, 3]) 
+
+    # Lógica do Carrossel de Fotos
+    all_photos = get_product_gallery_data(product_data)
+    selected_photo_key = f"selected_photo_index_{product_id}"
+    if selected_photo_key not in st.session_state:
+        st.session_state[selected_photo_key] = 0 
+        
+    current_photo_url = all_photos[st.session_state[selected_photo_key]] if all_photos else None
+
+
+    with col_gallery:
+        # Imagem Principal (Grande)
+        if current_photo_url:
+            st.image(current_photo_url, use_column_width=True)
+
+        # Carrossel de Miniaturas
+        if len(all_photos) > 1:
+            st.markdown("<div style='margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;'>", unsafe_allow_html=True)
+            for i, photo_url in enumerate(all_photos):
+                is_selected = st.session_state[selected_photo_key] == i
+                style = "border: 2px solid #FF4B4B; border-radius: 5px;" if is_selected else "border: 1px solid #ccc; border-radius: 5px;"
+                
+                # O botão atualiza o estado e reruns
+                if st.button(label=" ", key=f"thumb_{product_id}_{i}"):
+                    st.session_state[selected_photo_key] = i
+                    st.rerun() 
+                    
+                # Renderiza a miniatura via HTML/CSS (O truque é esconder o botão de fato)
+                st.markdown(
+                    f"""
+                    <div style="width: 70px; height: 70px; overflow: hidden; {style}">
+                       <img src="{photo_url}" style="width: 100%; height: 100%; object-fit: cover;"/>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+
+    # --- Informações e Ação de Compra ---
+    with col_info:
+        st.subheader("Especificações Rápidas")
+        
+        preco_final = product_data['PRECO_FINAL']
+        preco_original = product_data['PRECO']
+        is_promotion = pd.notna(product_data.get('PRECO_PROMOCIONAL'))
+        condicao_pagamento = product_data.get('CONDICAOPAGAMENTO', 'Preço à vista')
+
+        if is_promotion:
+            st.markdown(f"""
+            <div style="line-height: 1.2;">
+                <span style='text-decoration: line-through; color: #757575; font-size: 1.1rem;'>R$ {preco_original:.2f}</span>
+                <h2 style='color: #D32F2F; margin:0;'>R$ {preco_final:.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final:.2f}</h2>", unsafe_allow_html=True)
+
+        st.markdown(f"<span style='color: #757575; font-size: 1rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
+        st.markdown("---")
+        
+        # --- SELEÇÃO DE VARIAÇÃO ---
+        df_filhos = get_product_variations(product_id, df_catalogo_base)
+        produto_a_comprar = product_data # Default é o próprio pai/simples
+
+        if not df_filhos.empty:
+            st.markdown("##### 🎨 Escolha o Tom/Variação:")
+            
+            # Remove a parte do estoque para deixar o label mais limpo no selectbox
+            opcoes_labels_limpas = [lbl.split(' (Estoque:')[0] for lbl in df_filhos['Variação_Label'].tolist()]
+            opcoes_labels = ['Selecione a Variação'] + opcoes_labels_limpas
+            
+            variacao_selecionada_label_limpa = st.selectbox(
+                "Variação:",
+                options=opcoes_labels,
+                key=f"select_variacao_{product_id}",
+                label_visibility="collapsed"
+            )
+            
+            # Encontra a linha de dados usando a coluna PAIID e a combinação de detalhes (mais robusto)
+            if variacao_selecionada_label_limpa and variacao_selecionada_label_limpa != 'Selecione a Variação':
+                # Reconstroi o filtro com a lógica do DETALHESGRADE (mais complexo de fazer, vamos simplificar o filtro)
+                # Vamos buscar a variação que COMEÇA com a label limpa
+                produto_a_comprar = df_filhos[
+                    df_filhos['Variação_Label'].str.startswith(variacao_selecionada_label_limpa)
+                ].iloc[0]
+
+                estoque_disponivel = int(produto_a_comprar['QUANTIDADE'])
+                if estoque_disponivel <= 0:
+                    st.error("🚫 Variação esgotada. Escolha outra opção.")
+                    produto_a_comprar = None
+                
+            else:
+                produto_a_comprar = None # Impede a compra se nada foi selecionado
+        
+        else:
+            estoque_disponivel = int(product_data['QUANTIDADE'])
+
+
+        # --- Bloco de Ação (Adicionar ao Carrinho) ---
+        if produto_a_comprar is not None:
+            id_final_compra = produto_a_comprar['ID']
+            
+            with st.container(border=True):
+                # Se for um filho, usa o estoque do filho
+                max_qtd = int(produto_a_comprar['QUANTIDADE']) if pd.notna(produto_a_comprar.get('PAIID')) else int(product_data['QUANTIDADE'])
+
+                qtd = st.number_input("Quantidade:", min_value=1, max_value=max_qtd, value=1, key=f"details_qtd_{product_id}")
+                
+                # CÁLCULO DE CASHBACK - REUTILIZAÇÃO DA LÓGICA DO CARRINHO
+                temp_carrinho = {
+                    id_final_compra: {
+                        'nome': produto_a_comprar['NOME'],
+                        'preco': produto_a_comprar['PRECO_FINAL'],
+                        'quantidade': qtd
+                    }
+                }
+                
+                cashback_estimado = calcular_cashback_total(temp_carrinho, df_catalogo_base)
+                st.success(f"Cashback estimado: R$ {cashback_estimado:.2f}")
+
+                
+                if st.button("🛒 Adicionar ao Pedido", key=f"details_add_cart_{product_id}", type="primary", use_container_width=True):
+                    adicionar_qtd_ao_carrinho(id_final_compra, produto_a_comprar, qtd) 
+                    st.toast(f"{qtd}x {produto_a_comprar['NOME']} adicionado!", icon="🛒")
+        else:
+            if not df_filhos.empty:
+                st.error("Selecione uma variação válida.")
+            elif estoque_disponivel <= 0:
+                 st.error("Produto esgotado.")
+
+
+    # --- SEÇÃO 3: DETALHES COMPLETOS (Descrição, Especificações) ---
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("---") 
+    st.subheader("📚 Detalhes e Aplicação")
+    descricao_longa = product_data.get('DESCRICAOLONGA')
+    st.markdown(descricao_longa if descricao_longa else product_data['DESCRICAOCURTA'])
+    
+    # --- SEÇÃO 4: SUGESTÕES DE PRODUTOS ---
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.subheader("Você também pode gostar:")
+    st.info("Sugestões de produtos relacionados virão aqui.")
+# -----------------------------------------------------------------------------
 
 # --- Funções Auxiliares de UI ---
 def copy_to_clipboard_js(text_to_copy):
@@ -74,7 +279,7 @@ def copy_to_clipboard_js(text_to_copy):
     st.markdown(js_code, unsafe_allow_html=True)
 
 
-# --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
+# --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
@@ -136,7 +341,6 @@ div[data-testid="stAppViewBlockContainer"] {{
     margin: 0;
     padding: 0;
 }}
-
 
 
 /* === BLACK FRIDAY CORES INÍCIO (ANTIGO .pink-bar-container) === */
@@ -281,6 +485,24 @@ div[data-testid="stButton"] > button:hover {{
 """, unsafe_allow_html=True)
 
 
+# --- CONTROLE DE FLUXO PRINCIPAL (Verifica se deve mostrar detalhes ou catálogo) ---
+
+query_params = st.experimental_get_query_params()
+product_id_str = query_params.get("view_product_id", [None])[0]
+
+if product_id_str:
+    try:
+        product_id = int(product_id_str)
+        # RENDERIZA A PÁGINA DE DETALHES COMPLETA
+        render_product_details_content(product_id, st.session_state.df_catalogo_indexado, DF_CLIENTES_CASH) 
+        st.stop() # PARA a execução do catálogo principal
+        
+    except ValueError:
+        st.error("ID de produto inválido na URL.")
+
+# --- Se não houver ID na URL, continua com o Catálogo Principal ---
+
+
 # --- Cálculos iniciais do carrinho ---
 total_acumulado = sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values())
 num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
@@ -288,9 +510,7 @@ carrinho_vazio = not st.session_state.carrinho
 df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
-# --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
-# Definimos o popover e todo o seu conteúdo dentro de um container no início do código.
-# Isso garante que ele sempre exista no DOM para ser encontrado pelo JavaScript do botão flutuante.
+# --- ÂNCORA E CONTEÚDO DO POPOVER (CARRINHO) ---
 with st.container():
     with st.popover("Conteúdo do Carrinho"):
         st.header("🛒 Detalhes do Pedido")
@@ -561,7 +781,7 @@ if num_itens > 0:
                         popBtn.click();
                     }} else {{
                         console.warn("Botão do popover não encontrado. Verifique o seletor.");
-                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
                     }}
                 }} catch (err) {{
                     console.error("Erro ao tentar abrir o popover do carrinho:", err);
@@ -585,16 +805,3 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
