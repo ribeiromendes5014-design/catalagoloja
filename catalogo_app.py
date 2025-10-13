@@ -541,46 +541,12 @@ div[data-testid="stButton"] > button:hover {{
     justify-content: center;
     border: 2px solid white;
 }}
-/* ================================================================= */
-/* REGRAS GERAIS PARA AJUSTE DE TELA (MEDIA QUERY)                   */
-/* Só são aplicadas quando a tela tem 650px ou menos (Celulares)     */
-/* ================================================================= */
 
-@media only screen and (max-width: 650px) {
-    
-    /* 1. Reduzir o Padding Global (Ganha espaço valioso) */
-    div.block-container {
-        padding: 1rem 0.5rem !important;
-    }}
-    
-    /* 2. Empilhar as Colunas da Tela de Detalhes (CRUCIAL) */
-    /* Este seletor afeta o layout de col_img_variacao e col_detalhes_compra */
-    div[data-testid="stColumns"] {
-        flex-direction: column !important; /* Força as colunas a empilharem */
-    }}
-
-    /* 3. Ajustar o tamanho de Títulos e Imagens */
-    h1 {
-        font-size: 1.8rem; /* Reduz o título principal */
-    }}
-    h2 {
-        font-size: 1.5rem; /* Reduz o título do preço */
-    }}
-    .product-image-container {
-        height: 200px !important; /* Garante que a imagem não seja muito grande */
-    }}
-    
-    /* 4. Ajustar Tamanhos dos Botões Flutuantes (para não ocupar tanto espaço) */
-    .whatsapp-float, .cart-float {
-        width: 50px !important;
-        height: 50px !important;
-        bottom: 20px !important; /* Coloca o WhatsApp mais abaixo */
-        right: 20px !important;
-    }}
-    .cart-float {
-        bottom: 80px !important; /* Coloca o carrinho acima do WhatsApp */
-    }}
-}}
+Script execution error
+File "/opt/render/project/src/catalogo_app.py", line 431
+      /* 1. Reduz o tamanho do conteúdo principal */
+      ^
+SyntaxError: f-string: expecting a valid expression after '{'
 </style>
 """, unsafe_allow_html=True)
 
@@ -888,6 +854,7 @@ else:
 
 
                                
+
 
 
 
