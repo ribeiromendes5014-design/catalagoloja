@@ -416,12 +416,37 @@ with st.container():
                             "cliente_saldo_cashback": saldo_cashback,
                             "cashback_a_ganhar": cashback_a_ganhar
                         }
-                        if salvar_pedido(nome_input, contato_limpo, total_com_desconto, json.dumps(detalhes, ensure_ascii=False), detalhes):
+                        
+                        # NOVO: Captura o status e o ID do pedido
+                        sucesso, id_pedido = salvar_pedido(nome_input, contato_limpo, total_com_desconto, json.dumps(detalhes, ensure_ascii=False), detalhes)
+                        
+                        if sucesso:
+                            # 1. Mensagem de Opt-in com o ID do Pedido
+                            # NUMERO_WHATSAPP é o número da loja (doce&bella), importado do data_handler
+                            mensagem_optin = (
+                                f"Olá! Acabei de fazer um pedido (ID: {id_pedido}) pelo catálogo da Doce&Bella. "
+                                f"Confirmo meu Opt-in e desejo prosseguir com a compra. Meu nome é {nome_input}."
+                            )
+                            
+                            # 2. Gera o Link do WhatsApp e codifica o texto
+                            link_whats = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(mensagem_optin)}"
+                            
+                            # 3. EXECUTA O JAVASCRIPT PARA REDIRECIONAMENTO IMEDIATO
+                            js_redirect = f"""
+                            <script>
+                            window.location.href = '{link_whats}';
+                            </script>
+                            """
+                            st.markdown(js_redirect, unsafe_allow_html=True)
+
+                            # 4. Limpa states e reexecuta (o browser já deve ter redirecionado)
                             st.session_state.carrinho = {}
                             st.session_state.cupom_aplicado = None
                             st.session_state.desconto_cupom = 0.0
                             st.session_state.cupom_mensagem = ""
                             st.rerun()
+                        else:
+                             st.error("❌ Erro ao salvar o pedido. Tente novamente.")
                     else:
                         st.warning("Preencha seu nome e contato.")
 
@@ -592,6 +617,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
