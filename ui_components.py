@@ -82,16 +82,66 @@ def limpar_carrinho():
 
 # --- Funções de Renderização de UI ---
 
-def render_product_image(link_imagem):
-    placeholder_html = """<div class="product-image-container" style="background-color: #f0f0f0; border-radius: 8px;"><span style="color: #a0a0a0; font-size: 1.1rem; font-weight: bold;">Sem Imagem</span></div>"""
+def render_product_image_clickable(link_imagem, prod_id):
+    """
+    Renderiza a imagem do produto. Ao clicar, define o st.session_state.produto_detalhe_id
+    e força o rerun para ir para a tela de detalhes.
+    """
+    import streamlit as st # Garante que st está disponível aqui
+    
     if link_imagem and str(link_imagem).strip().startswith('http'):
-        st.markdown(f'<div class="product-image-container"><img src="{link_imagem}" alt="Imagem do produto"></div>', unsafe_allow_html=True)
+        image_url = link_imagem
     else:
-        st.markdown(placeholder_html, unsafe_allow_html=True)
+        # Imagem placeholder
+        image_url = "https://via.placeholder.com/300x220?text=Sem+Imagem" 
+
+    # --- HTML DO CONTAINER CLICÁVEL ---
+    html_content = f"""
+    <div class="product-image-container clickable-image" 
+         onclick="
+            // 1. Encontra o botão de clique invisível para este produto.
+            const btn = document.getElementById('details_btn_{prod_id}');
+            // 2. Simula o clique no botão.
+            if (btn) {{
+                btn.click();
+            }}
+         "
+         style="cursor: pointer;">
+        <img src="{image_url}" alt="Imagem do produto" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px;">
+    </div>
+    """
+    st.markdown(html_content, unsafe_allow_html=True)
+
+    # --- BOTÃO INVISÍVEL DE ACIONAMENTO (HIDDEN BUTTON) ---
+    
+    # Injetamos um CSS para esconder o botão, mantendo-o funcional
+    st.markdown(
+        f"""
+        <style>
+        /* Esconde o elemento do botão Streamlit pelo seu ID gerado */
+        button[data-testid="stButton"]#details_btn_{prod_id} {{
+            display: none !important;
+            visibility: hidden !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # O Streamlit Button que o JS vai "clicar"
+    if st.button(
+        "Definir ID", 
+        key=f'details_btn_{prod_id}', 
+        help="Clique na imagem para ver os detalhes", 
+        # O argumento label_visibility="collapsed" e o CSS acima garantem que ele não apareça.
+        label_visibility="collapsed"
+    ):
+        st.session_state.produto_detalhe_id = prod_id
+        st.rerun()
 
 
 def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
-    """Renderiza um card de produto com suporte para abas de foto e vídeo, seletor de quantidade e feedback de estoque."""
+    """Renderiza um card de produto simplificado e clicável para abrir a tela de detalhes."""
     with st.container(border=True):
         
         produto_nome = str(row['NOME'])
@@ -110,16 +160,11 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
         elif estoque_baixo:
             st.markdown(f'<span class="estoque-baixo-badge">⚠️ Últimas {estoque_atual} Unidades!</span>', unsafe_allow_html=True)
 
-        youtube_url = row.get('YOUTUBE_URL')
+        
+        # -----------------------------------------------------------------
+        render_product_image_clickable(row.get('LINKIMAGEM'), prod_id)
+        # -----------------------------------------------------------------
 
-        if youtube_url and isinstance(youtube_url, str) and youtube_url.strip().startswith('http'):
-            tab_foto, tab_video = st.tabs(["📷 Foto", "▶️ Vídeo"])
-            with tab_foto:
-                render_product_image(row.get('LINKIMAGEM'))
-            with tab_video:
-                st.video(youtube_url)
-        else:
-            render_product_image(row.get('LINKIMAGEM'))
 
         preco_final = row['PRECO_FINAL']
         preco_original = row['PRECO']
@@ -138,34 +183,8 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
         if descricao_curta:
             st.caption(descricao_curta)
 
-        with st.expander("Ver detalhes"):
-            descricao_principal = row.get('DESCRICAOLONGA')
-            detalhes_str = row.get('DETALHESGRADE')
-            
-            tem_descricao = descricao_principal and isinstance(descricao_principal, str) and descricao_principal.strip()
-            tem_detalhes = detalhes_str and isinstance(detalhes_str, str) and detalhes_str.strip()
-            
-            if not tem_descricao and not tem_detalhes:
-                st.info('Sem informações detalhadas disponíveis para este produto.')
-            else:
-                if tem_descricao and descricao_principal.strip() != descricao_curta:
-                    st.subheader('Descrição')
-                    st.markdown(descricao_principal)
-                    if tem_detalhes:
-                        st.markdown('---') 
-                
-                if tem_detalhes:
-                    st.subheader('Especificações')
-                    if detalhes_str.strip().startswith('{'):
-                        try:
-                            detalhes_dict = ast.literal_eval(detalhes_str)
-                            texto_formatado = "\n".join([f"* **{chave.strip()}**: {str(valor).strip()}" for chave, valor in detalhes_dict.items()])
-                            st.markdown(texto_formatado)
-                        except (ValueError, SyntaxError):
-                            st.markdown(detalhes_str)
-                    else:
-                        st.markdown(detalhes_str)
-        
+        # REMOVEMOS O st.expander("Ver detalhes") AQUI
+
         # --- SEÇÃO CORRIGIDA: Preço e Ação agora estão juntos ---
         st.markdown('<div class="price-action-flex">', unsafe_allow_html=True)
         
@@ -194,28 +213,15 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
         # Lado Direito: Botões de Ação
         st.markdown('<div class="action-buttons-container">', unsafe_allow_html=True)
         with st.container():
-            item_ja_no_carrinho = prod_id in st.session_state.carrinho
-
-            if esgotado:
-                st.empty() # Não mostra nada se estiver esgotado
-            elif item_ja_no_carrinho:
-                qtd_atual = st.session_state.carrinho[prod_id]['quantidade']
-                st.button(f"✅ {qtd_atual}x NO PEDIDO", key=f'btn_in_cart_{key_prefix}', use_container_width=True, disabled=True)
-            else:
-                qtd_a_adicionar = st.number_input(
-                    'Quantidade',
-                    min_value=1,
-                    max_value=estoque_atual,
-                    value=1,
-                    step=1,
-                    key=f'qtd_input_{key_prefix}',
-                    label_visibility="collapsed"
-                )
-                
-                if st.button(f"🛒 Adicionar {qtd_a_adicionar} un.", key=f'btn_add_{key_prefix}', use_container_width=True):
-                    if qtd_a_adicionar >= 1:
-                        adicionar_qtd_ao_carrinho(prod_id, row, qtd_a_adicionar)
-                        st.rerun()
+            # REMOVEMOS O INPUT DE QUANTIDADE E O BOTÃO "ADICIONAR" AQUI,
+            # POIS A COMPRA DEVE SER FEITA NA TELA DE DETALHES
+            
+            # COLOCAMOS UM BOTÃO SIMPLES DE "VER DETALHES" COMO SEGUNDA OPÇÃO, 
+            # CASO O CLIQUE NA IMAGEM FALHE EM ALGUM NAVEGADOR
+            if st.button("👁️ Ver Detalhes", key=f'btn_details_card_{key_prefix}', use_container_width=True):
+                 st.session_state.produto_detalhe_id = prod_id
+                 st.rerun()
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
