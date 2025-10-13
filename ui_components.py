@@ -195,35 +195,27 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
         st.markdown('<div class="action-buttons-container">', unsafe_allow_html=True)
         with st.container():
             item_ja_no_carrinho = prod_id in st.session_state.carrinho
-            
+
             if esgotado:
                 st.empty() # Não mostra nada se estiver esgotado
             elif item_ja_no_carrinho:
                 qtd_atual = st.session_state.carrinho[prod_id]['quantidade']
                 st.button(f"✅ {qtd_atual}x NO PEDIDO", key=f'btn_in_cart_{key_prefix}', use_container_width=True, disabled=True)
             else:
-                # Se o produto não tiver variações, mostramos o botão de adicionar e o de detalhes
-                if 'PAIID' not in row.index or pd.isna(row['PAIID']): 
-                    
-                    qtd_a_adicionar = st.number_input(
-                        'Quantidade',
-                        min_value=1,
-                        max_value=estoque_atual,
-                        value=1,
-                        step=1,
-                        key=f'qtd_input_{key_prefix}',
-                        label_visibility="collapsed"
-                    )
-                    
-                    if st.button(f"🛒 Adicionar {qtd_a_adicionar} un.", key=f'btn_add_{key_prefix}', use_container_width=True):
-                        if qtd_a_adicionar >= 1:
-                            adicionar_qtd_ao_carrinho(prod_id, row, qtd_a_adicionar)
-                            st.rerun()
-
-                # BOTÃO DE NAVEGAÇÃO CORRIGIDO
-                if st.button("🔎 Ver Detalhes", key=f'btn_details_{key_prefix}', use_container_width=True, type="secondary"):
-                    st.experimental_set_query_params(view_product_id=prod_id)
-                    st.rerun()
+                qtd_a_adicionar = st.number_input(
+                    'Quantidade',
+                    min_value=1,
+                    max_value=estoque_atual,
+                    value=1,
+                    step=1,
+                    key=f'qtd_input_{key_prefix}',
+                    label_visibility="collapsed"
+                )
                 
+                if st.button(f"🛒 Adicionar {qtd_a_adicionar} un.", key=f'btn_add_{key_prefix}', use_container_width=True):
+                    if qtd_a_adicionar >= 1:
+                        adicionar_qtd_ao_carrinho(prod_id, row, qtd_a_adicionar)
+                        st.rerun()
+
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
