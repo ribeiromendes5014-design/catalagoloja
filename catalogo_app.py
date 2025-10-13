@@ -468,88 +468,86 @@ if st.session_state.pedido_confirmado:
     st.stop()
 
 # --- Banner rotativo (carrossel funcional no Streamlit) ---
+
+# 1. Defina suas imagens em uma lista. Fica muito mais fácil de adicionar ou remover!
+banner_images = [
+    "https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png",
+    "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png",
+    "https://i.ibb.co/NjxQqMq/banner-natal.png"
+]
+
+# 2. Crie a string HTML para os slides dinamicamente usando um loop
+slides_html = ""
+for i, url in enumerate(banner_images):
+    # Adiciona a classe 'active' APENAS para o primeiro slide (i == 0)
+    active_class = "active" if i == 0 else ""
+    slides_html += f'<div class="banner-slide {active_class}"><img src="{url}" alt="Banner {i+1}"></div>'
+
+# 3. Injete todo o código no st.markdown de uma vez
 st.markdown(
-    """
+    f"""
     <style>
-    .fullwidth-banner {
-        position: relative; /* Essencial para o posicionamento dos filhos */
+    .fullwidth-banner {{
+        position: relative;
         width: 100vw;
         left: 50%;
         margin-left: -50vw;
         overflow: hidden;
-        /* A altura será definida pelo espaçador invisível */
-    }
-
-    /* O espaçador que garante a altura correta do contêiner */
-    .banner-aspect-ratio-spacer {
+    }}
+    .banner-aspect-ratio-spacer {{
         width: 100%;
-        /* Use o aspect-ratio do seu banner. 3:1 é um bom começo para banners largos.
-           A fórmula é (altura / largura) * 100%. Ex: 500px / 1500px = 0.3333 -> padding-top: 33.33% */
-        padding-top: 33.33%; 
+        padding-top: 33.33%; /* Ajuste essa % para a proporção (altura/largura) dos seus banners */
         position: relative;
-        visibility: hidden; /* Ele ocupa espaço mas não aparece */
-    }
-
-    /* Regras para os slides */
-    .banner-slide {
-        position: absolute; /* TODOS os slides ficam empilhados */
+        visibility: hidden;
+    }}
+    .banner-slide {{
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%; /* Ocupa 100% da altura e largura do pai */
+        height: 100%;
         opacity: 0;
         transition: opacity 1s ease-in-out;
-    }
-
-    .banner-slide.active {
-        opacity: 1; /* O slide ativo simplesmente se torna visível */
-        /* REMOVEMOS o "position: relative" daqui. Esta é a correção principal. */
-    }
-
-    .banner-slide img {
+    }}
+    .banner-slide.active {{
+        opacity: 1;
+    }}
+    .banner-slide img {{
         width: 100%;
         height: 100%;
         display: block;
-        object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
-    }
+        object-fit: cover;
+    }}
     </style>
 
     <div id="banner-slider" class="fullwidth-banner">
         <div class="banner-aspect-ratio-spacer"></div>
-
-        <div class="banner-slide active">
-            <img src="https://i.ibb.co/sp36kn5k/Banner-para-site-de-Black-Friday-nas-cores-Preto-Laranja-e-Vermelho.png" alt="Banner 1">
-        </div>
-        <div class="banner-slide">
-            <img src="https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png" alt="Banner 2">
-        </div>
-        <div class="banner-slide">
-            <img src="https://i.ibb.co/NjxQqMq/banner-natal.png" alt="Banner 3">
-        </div>
+        {slides_html}
     </div>
 
     <script>
-    function startBannerSlider() {
+    // O JavaScript continua o mesmo
+    function startBannerSlider() {{
         let index = 0;
         const slides = document.querySelectorAll('#banner-slider .banner-slide');
         if (slides.length === 0) return false;
 
         slides.forEach((slide, i) => slide.classList.toggle('active', i === 0));
 
-        setInterval(() => {
+        setInterval(() => {{
             if (document.hidden) return;
             slides[index].classList.remove('active');
             index = (index + 1) % slides.length;
             slides[index].classList.add('active');
-        }, 5000);
+        }}, 5000);
         return true;
-    }
+    }}
 
-    function checkAndStart() {
-        if (document.getElementById('banner-slider') && startBannerSlider()) {
+    function checkAndStart() {{
+        if (document.getElementById('banner-slider') && startBannerSlider()) {{
             clearInterval(intervalCheck);
-        }
-    }
+        }}
+    }}
     const intervalCheck = setInterval(checkAndStart, 500);
     </script>
     """,
@@ -659,6 +657,7 @@ whatsapp_button_html = f"""
 </a>
 """
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
 
 
 
