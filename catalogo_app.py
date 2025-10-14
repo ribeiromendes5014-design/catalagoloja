@@ -318,9 +318,6 @@ def copy_to_clipboard_js(text_to_copy):
 
 
 
-# --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
-st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
-
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown("""
 <style>
@@ -699,6 +696,7 @@ else:
 
 
                                
+
 
 
 
