@@ -430,19 +430,22 @@ with st.container():
 # --- Botão Flutuante do Carrinho ---
 <script>
 (function() {
-    // Aguarda o botão do popover aparecer no DOM
+    // Aguarda o botao do popover aparecer no DOM
     async function waitForPopoverButton(maxAttempts = 20) {
         for (let i = 0; i < maxAttempts; i++) {
             let popBtn = document.querySelector('div[data-testid="stPopover"] button');
             if (popBtn) return popBtn;
 
-            // fallback — tenta achar botão pelo texto
+            // fallback - tenta achar botao pelo texto
             popBtn = Array.from(document.querySelectorAll("button")).find(
-                b => b.textContent.trim().includes("Conteúdo do Carrinho")
+                function(b) { 
+                    return b.textContent.trim().includes("Conteudo do Carrinho") || 
+                           b.textContent.trim().includes("Conteúdo do Carrinho"); 
+                }
             );
             if (popBtn) return popBtn;
 
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(function(r) { setTimeout(r, 300); });
         }
         return null;
     }
@@ -455,13 +458,14 @@ with st.container():
                 if (popBtn) {
                     popBtn.click();
                 } else {
-                    alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+                    alert("⚠️ Nao foi possivel abrir o carrinho automaticamente.\nToque no botao 'Conteudo do Carrinho' no topo da pagina.");
                 }
             });
         }
     });
 })();
 </script>
+
 
 
 # --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
@@ -920,6 +924,7 @@ else:
 
 
                                
+
 
 
 
