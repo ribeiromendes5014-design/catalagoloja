@@ -651,15 +651,21 @@ with st.container():
 
             nivel_cliente, saldo_cashback = 'N/A', 0.00
             
-            # --- CORREÇÃO: ADICIONE ESTE BLOCO IF PARA EVITAR BUSCAR COM CONTATO VAZIO ---
-            if contato_input.strip() and DF_CLIENTES_CASH is not None and not DF_CLIENTES_CASH.empty:
+            # --- Correção de Proteção Adicional: Garante que a busca só ocorra se houver dados de clientes ---
+            if nome_input and contato_input and DF_CLIENTES_CASH is not None and not DF_CLIENTES_CASH.empty:
+                
+                # A linha que estava dando erro:
                 existe, nome_encontrado, saldo_cashback, nivel_cliente = buscar_cliente_cashback(contato_input, DF_CLIENTES_CASH)
+                
                 if existe:
                     st.success(f"🎉 **Bem-vindo(a) de volta, {nome_encontrado}!** Nível: **{nivel_cliente.upper()}**. Saldo de Cashback: **R$ {saldo_cashback:.2f}**.")
                 elif contato_input.strip():
                     st.info("👋 **Novo Cliente!** Você começará a acumular cashback após este pedido.")
-            # --- FIM DA CORREÇÃO ---
-            
+            elif nome_input and contato_input:
+                 # Se DF_CLIENTES_CASH estiver vazio/None, o cliente é tratado como novo
+                 st.info("👋 **Novo Cliente!** Você começará a acumular cashback após este pedido.")
+                 # nivel_cliente e saldo_cashback permanecem como 'N/A' e 0.00
+                 
             with st.form("form_finalizar_pedido", clear_on_submit=True):
                 st.text_input("Nome (Preenchido)", value=nome_input, disabled=True, label_visibility="collapsed")
                 st.text_input("Contato (Preenchido)", value=contato_input, disabled=True, label_visibility="collapsed")
@@ -855,6 +861,7 @@ else:
 
 
                                
+
 
 
 
