@@ -335,9 +335,7 @@ def buscar_cliente_cashback(numero_contato, df_clientes_cash):
         st.warning("⚠️ Nenhum dado de cashback carregado.")
         return False, None, 0.00, 'NENHUM'
 
-    # Mostra debug para saber o que está sendo buscado
-    st.write("DEBUG - digitado:", numero_contato)
-    st.write("DEBUG - contatos CSV:", df_clientes_cash['CONTATO'].tolist())
+   
 
     # Limpa número digitado (mantém apenas dígitos)
     contato_digitado = re.sub(r'\D', '', str(numero_contato or '').strip())
@@ -469,6 +467,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
