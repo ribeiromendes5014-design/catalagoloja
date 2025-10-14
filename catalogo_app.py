@@ -358,18 +358,21 @@ h1 { font-size: 2.5rem; }
         padding: 1rem 0.5rem !important;
     }
     
-    /* 1. Mude a direção para que os itens voltem a ficar na horizontal */
-    /* 2. Permita que eles quebrem a linha */
+    /* 1. Altera o container principal (stColumns) para permitir a quebra de linha */
     div[data-testid="stColumns"] {
-        flex-direction: row !important; /* Volta para a linha */
-        flex-wrap: wrap !important;     /* Permite a quebra para 2 por linha */
+        /* CRÍTICO: Remove flex-direction: column e força a quebra */
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
     }
     
-    /* 3. Ajuste a largura de cada coluna para que ocupe 50% da tela */
-    /* Esta regra mira cada bloco de produto dentro do container de colunas */
-    div[data-testid="stColumns"] > div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
-        width: 50% !important; 
-        min-width: 150px !important; /* Garante que não fique muito estreito */
+    /* 2. CRÍTICO: Força o contêiner de cada coluna individual a ter 50% de largura. */
+    /* Este seletor geralmente funciona para colunas criadas com st.columns() */
+    div[data-testid="stColumns"] > div[data-testid^="stBlock"] { 
+        width: 50% !important;
+        min-width: 150px !important;
+        /* Adicione padding lateral para não colar */
+        padding-left: 5px !important; 
+        padding-right: 5px !important;
     }
 
     h1 { font-size: 1.8rem; }
@@ -700,4 +703,5 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
 
