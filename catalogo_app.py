@@ -59,56 +59,83 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- NOVO LAYOUT (SEÇÕES DO MOCKUP) ---
     # ----------------------------------------------------
     
-        # --- 1. Botão Voltar (Canto Superior Esquerdo - Seta Vermelha) ---
+            # --- 1. Botão Voltar (Canto Superior Esquerdo - Seta Vermelha) ---
     if st.button("⬅️ Voltar ao Catálogo"):
         st.session_state.produto_detalhe_id = None
         st.rerun()
     
     st.markdown("---")  # Linha divisória para separar o botão do conteúdo
 
-    # --- Botão Flutuante do Carrinho dentro da página de detalhes ---
+    # --- Botão Flutuante do Carrinho dentro da página de detalhes (fixo e global) ---
     num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
     if num_itens > 0:
-        floating_cart_html = f"""
-        <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
-            🛒
-            <span class="cart-float-count">{num_itens}</span>
-        </div>
-        <script>
-        (function() {{
-            const waitForPopoverButton = () => {{
-                const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
-                if (popoverButton) {{
-                    return popoverButton;
-                }}
-                const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
-                if (alt) return alt;
-                return null;
-            }};
-            const floatBtn = document.getElementById("floating_cart_btn");
-            if (floatBtn) {{
-                floatBtn.addEventListener("click", function() {{
-                    try {{
-                        const popBtn = waitForPopoverButton();
-                        if (popBtn) {{
-                            popBtn.click();
-                        }} else {{
-                            alert("⚠️ Não foi possível abrir o carrinho automaticamente.\\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+        st.markdown(
+            f"""
+            <div style="
+                position: fixed;
+                bottom: 110px;
+                right: 40px;
+                background-color: #D32F2F;
+                color: white;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                text-align: center;
+                font-size: 28px;
+                box-shadow: 2px 2px 5px #999;
+                cursor: pointer;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            " id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+                🛒
+                <span style="
+                    position: absolute;
+                    top: -5px;
+                    right: -5px;
+                    background-color: #FFD600;
+                    color: black;
+                    border-radius: 50%;
+                    width: 24px;
+                    height: 24px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 2px solid white;
+                ">{num_itens}</span>
+            </div>
+            <script>
+            (function() {{
+                const waitForPopoverButton = () => {{
+                    const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
+                    if (popoverButton) return popoverButton;
+                    const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
+                    return alt || null;
+                }};
+                const floatBtn = document.getElementById("floating_cart_btn");
+                if (floatBtn) {{
+                    floatBtn.addEventListener("click", function() {{
+                        try {{
+                            const popBtn = waitForPopoverButton();
+                            if (popBtn) popBtn.click();
+                            else alert("⚠️ Toque no botão 'Conteúdo do Carrinho' no topo da página.");
+                        }} catch (err) {{
+                            console.error("Erro ao abrir carrinho:", err);
                         }}
-                    }} catch (err) {{
-                        console.error("Erro ao tentar abrir o popover do carrinho:", err);
-                    }}
-                }});
-            }}
-        }})();
-        </script>
-        """
-        st.markdown(floating_cart_html, unsafe_allow_html=True)
-
-
+                    }});
+                }}
+            }})();
+            </script>
+            """,
+            unsafe_allow_html=True,
+        )
 
     # --- Estrutura Principal: Imagem/Variações (Esquerda) vs Detalhes/Preço (Direita) ---
     col_img_variacao, col_detalhes_compra = st.columns([1, 2])
+
     
     
     # =================================================================
@@ -903,6 +930,7 @@ else:
 
 
                                
+
 
 
 
