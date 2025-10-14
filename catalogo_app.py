@@ -7,6 +7,15 @@ import time
 from streamlit_autorefresh import st_autorefresh
 import requests
 
+
+
+from ui_components import (
+    adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
+    calcular_cashback_total, render_product_card
+)
+# --- NOVA IMPORTAÇÃO ---
+from carrinho_ui import render_carrinho_popover
+
 # Importa as funções e constantes dos novos módulos
 # CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
@@ -234,6 +243,46 @@ whatsapp_button_html = f"""
 st.markdown(whatsapp_button_html, unsafe_allow_html=True)
 
 
+# --- Botão Flutuante do Carrinho ---
+if num_itens > 0:
+    floating_cart_html = f"""
+    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+        🛒
+        <span class="cart-float-count">{num_itens}</span>
+    </div>
+    <script>
+    (function() {{
+        const waitForPopoverButton = () => {{
+            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
+            if (popoverButton) {{
+                return popoverButton;
+            }}
+            // Tenta encontrar botão por outras abordagens (compatibilidade)
+            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
+            if (alt) return alt;
+            return null;
+        }};
+        const floatBtn = document.getElementById("floating_cart_btn");
+        if (floatBtn) {{
+            floatBtn.addEventListener("click", function() {{
+                try {{
+                    const popBtn = waitForPopoverButton();
+                    if (popBtn) {{
+                        popBtn.click();
+                    }} else {{
+                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
+                    }}
+                }} catch (err) {{
+                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
+                }}
+            }});
+        }}
+    }})();
+    </script>
+    """
+    st.markdown(floating_cart_html, unsafe_allow_html=True)
+
 
 def copy_to_clipboard_js(text_to_copy):
     js_code = f"""
@@ -270,10 +319,6 @@ def copy_to_clipboard_js(text_to_copy):
 
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
-
-from components.global_cart import render_global_cart
-render_global_cart()
-
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown("""
@@ -512,8 +557,8 @@ div[data-testid="stButton"] > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-
-
+with st.container():
+    render_carrinho_popover(df_catalogo_completo, DF_CLIENTES_CASH)
 
 # --- Tela de Pedido Confirmado ---
 if st.session_state.pedido_confirmado:
@@ -653,12 +698,6 @@ else:
 
 
                                
-
-
-
-
-
-
 
 
 
