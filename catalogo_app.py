@@ -6,8 +6,6 @@ import json
 import time
 from streamlit_autorefresh import st_autorefresh
 import requests
-from components.global_cart import render_global_cart
-render_global_cart()
 # Importa as funções e constantes dos novos módulos
 # CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
@@ -863,6 +861,7 @@ else:
 
 
                                
+
 
 
 
