@@ -279,32 +279,20 @@ def carregar_clientes_cashback():
     """Carrega os clientes do cashback, limpa o contato e renomeia as colunas para facilitar."""
     df = get_data_from_github(SHEET_NAME_CLIENTES_CASHBACK_CSV)
     
-    if df is None or df.empty:
+    # 1. Se o get_data_from_github retornar None (erro HTTP ou arquivo não encontrado)
+    if df is None: # <--- O get_data_from_github pode retornar None!
+        # Retorna um DataFrame VAZIO com as colunas esperadas para evitar o erro.
         return pd.DataFrame(columns=['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL'])
-        
-    df.rename(columns={
-        'CASHBACK_DISPONIVEL': 'CASHBACK_DISPONIVEL',
-        'NIVEL_ATUAL': 'NIVEL_ATUAL', 
-        'TELEFONE': 'CONTATO',
-        'NOME': 'NOME'
-    }, inplace=True)
     
-    if 'CASHBACK_DISPONÍVEL' in df.columns:
-        df.rename(columns={'CASHBACK_DISPONÍVEL': 'CASHBACK_DISPONIVEL'}, inplace=True)
+    if df.empty:
+        return pd.DataFrame(columns=['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL'])
 
-    if 'TELEFONE' in df.columns:
-        df.rename(columns={'TELEFONE': 'CONTATO'}, inplace=True)
-    elif 'CONTATO' not in df.columns:
-        if 'TELEFONE' in df.columns: df.rename(columns={'TELEFONE': 'CONTATO'}, inplace=True)
-        
-    if 'CONTATO' in df.columns:
-        df['CONTATO'] = df['CONTATO'].astype(str).str.replace(r'\D', '', regex=True).str.strip() 
-        df['CASHBACK_DISPONIVEL'] = pd.to_numeric(df['CASHBACK_DISPONIVEL'], errors='coerce').fillna(0.0)
-        df['NIVEL_ATUAL'] = df['NIVEL_ATUAL'].fillna('Prata')
+    # ... (O restante do processamento)
     
-        return df[['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL']].dropna(subset=['CONTATO'])
+    # Verifique a linha 276 para garantir que o retorno de erro também seja uma tupla:
     else:
         st.error("Erro: A coluna 'Telefone' (ou equivalente) do clientes_cash.csv não foi encontrada para a busca.")
+        # Garante o retorno de um DataFrame vazio
         return pd.DataFrame(columns=['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL'])
 
 
@@ -423,6 +411,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
