@@ -9,6 +9,7 @@ from datetime import datetime
 import json
 import pytz
 import streamlit as st 
+import re
 
 
 # --- Variáveis de Configuração ---
@@ -316,21 +317,28 @@ def carregar_clientes_cashback():
 def buscar_cliente_cashback(numero_contato, df_clientes_cash):
     """Busca um cliente pelo número de contato (limpo) e retorna saldo e nível."""
     
-    # Garante a mesma limpeza robusta de caracteres não numéricos.
-    # Usando a mesma lógica da limpeza 'str.replace(r'\D', '', regex=True)'
-    # Para um único string, podemos fazer manualmente:
-    
-    import re # É necessário importar 're'
-    
+    # --- CORREÇÃO DE LIMPEZA DE CONTATO ---
+    # Usamos re.sub para remover tudo que não é dígito,
+    # garantindo que o formato é idêntico ao do DataFrame (df['CONTATO']).
     contato_limpo = str(numero_contato).strip()
     if contato_limpo:
         contato_limpo = re.sub(r'\D', '', contato_limpo)
-        
+    # -------------------------------------
+    
     if df_clientes_cash.empty:
+        # This path correctly returns a 4-value tuple
         return False, None, 0.00, 'NENHUM'
         
-    # A comparação só funcionará se as limpezas forem idênticas!
-    cliente = df_clientes_cash[df_clientes_cash['CONTATO'] == contato_limpo] 
+    cliente = df_clientes_cash[df_clientes_cash['CONTATO'] == contato_limpo]
+    
+    if not cliente.empty:
+        saldo = cliente['CASHBACK_DISPONIVEL'].iloc[0]
+        nome = cliente['NOME'].iloc[0]
+        nivel = cliente['NIVEL_ATUAL'].iloc[0] 
+        return True, nome, saldo, nivel
+    else:
+        # This path correctly returns a 4-value tuple
+        return False, None, 0.00, 'NENHUM' 
 
 
 
@@ -428,6 +436,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
