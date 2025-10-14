@@ -215,6 +215,7 @@ df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
 # --- Botão Flutuante do Carrinho ---
+# MANTIDO AQUI PARA GARANTIR QUE SEJA EXECUTADO ANTES DO ST.STOP()
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
@@ -224,12 +225,11 @@ if num_itens > 0:
     <script>
     (function() {{
         const waitForPopoverButton = () => {{
-            // Procura pelo botão do popover visível (no topo)
+            // Procura pelo botão do popover (a âncora invisível)
             const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
             if (popoverButton) {{
                 return popoverButton;
             }}
-            // Tenta encontrar botão por outras abordagens (compatibilidade)
             const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
             if (alt) return alt;
             return null;
@@ -432,9 +432,9 @@ with st.container():
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
 if st.session_state.produto_detalhe_id:
     # CORREÇÃO: Ocultamos a âncora de texto do Popover que aparece no topo, forçando o display none.
-    # O Streamlit cria um botão no container para o Popover, que é o que você vê no topo.
+    # Usamos o seletor do botão que contém o texto "Conteúdo do Carrinho".
     st.markdown("<style>div[data-testid='stPopover'] button:first-child { display: none !important; visibility: hidden !important; }</style>", unsafe_allow_html=True)
-
+    
     # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
     st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
