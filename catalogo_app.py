@@ -8,12 +8,13 @@ from streamlit_autorefresh import st_autorefresh
 import requests
 import streamlit_javascript as st_js
 
-# Detecta largura da tela via JavaScript
-width = st_js.st_javascript("window.innerWidth")
-st.session_state.is_mobile = width is not None and width < 700
 
 # --- 1. CONFIGURAÇÃO DE PÁGINA (Deve ser a primeira chamada Streamlit) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
+
+# Detecta largura da tela via JavaScript
+width = st_js.st_javascript("window.innerWidth")
+st.session_state.is_mobile = width is not None and width < 700
 
 
 # --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
@@ -719,6 +720,7 @@ for i, row in df_filtrado.reset_index(drop=True).iterrows():
             key_prefix=unique_key,
             df_catalogo_indexado=st.session_state.df_catalogo_indexado
         )
+
 
 
 
