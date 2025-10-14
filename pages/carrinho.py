@@ -27,8 +27,7 @@ carrinho_vazio = len(st.session_state.carrinho) == 0
 cashback_a_ganhar = round(total_acumulado * 0.05, 2)  # exemplo: 5% de cashback
 
 # --- BLOCO DO CARRINHO ---
-with st.container():
-    with st.popover("Conteúdo do Carrinho"):
+
         st.header("🛒 Detalhes do Pedido")
 
         if carrinho_vazio:
