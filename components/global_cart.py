@@ -1,7 +1,7 @@
 # components/global_cart.py
 import streamlit as st
 from ui_components import limpar_carrinho, remover_do_carrinho, calcular_cashback_total
-render_global_cart()
+
 
 def render_global_cart():
     if 'carrinho' not in st.session_state:
