@@ -6,7 +6,8 @@ import json
 import time
 from streamlit_autorefresh import st_autorefresh
 import requests
-
+from components.global_cart import render_global_cart
+render_global_cart()
 # Importa as funções e constantes dos novos módulos
 # CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
@@ -310,8 +311,7 @@ def copy_to_clipboard_js(text_to_copy):
 
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
-from components.global_cart import render_global_cart
-render_global_cart()
+
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown("""
@@ -863,6 +863,7 @@ else:
 
 
                                
+
 
 
 
