@@ -360,9 +360,7 @@ def buscar_cliente_cashback(numero_contato, df_clientes_cash):
     # Faz a busca
     cliente = df_clientes_cash[df_clientes_cash['CONTATO'].isin(possiveis)]
 
-    # Mostra debug
-    st.write("DEBUG - buscando por:", list(possiveis))
-    st.write("DEBUG - encontrado:", cliente)
+    
 
     if not cliente.empty:
         row = cliente.iloc[0]
@@ -471,6 +469,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
