@@ -59,7 +59,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- NOVO LAYOUT (SEÇÕES DO MOCKUP) ---
     # ----------------------------------------------------
     
-            # --- 1. Botão Voltar (Canto Superior Esquerdo - Seta Vermelha) ---
+                # --- 1. Botão Voltar (Canto Superior Esquerdo - Seta Vermelha) ---
     if st.button("⬅️ Voltar ao Catálogo"):
         st.session_state.produto_detalhe_id = None
         st.rerun()
@@ -109,21 +109,33 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             </div>
             <script>
             (function() {{
-                const waitForPopoverButton = () => {{
-                    const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
-                    if (popoverButton) return popoverButton;
-                    const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
-                    return alt || null;
+                // Aguarda o popover aparecer no DOM
+                const waitForPopoverButton = (maxTries = 20) => {{
+                    return new Promise((resolve) => {{
+                        let tries = 0;
+                        const check = () => {{
+                            const popoverButton = document.querySelector('div[data-testid="stPopover"] > div:first-child > button');
+                            if (popoverButton) {{
+                                resolve(popoverButton);
+                            }} else if (tries < maxTries) {{
+                                tries++;
+                                setTimeout(check, 250);
+                            }} else {{
+                                resolve(null);
+                            }}
+                        }};
+                        check();
+                    }});
                 }};
+
                 const floatBtn = document.getElementById("floating_cart_btn");
                 if (floatBtn) {{
-                    floatBtn.addEventListener("click", function() {{
-                        try {{
-                            const popBtn = waitForPopoverButton();
-                            if (popBtn) popBtn.click();
-                            else alert("⚠️ Toque no botão 'Conteúdo do Carrinho' no topo da página.");
-                        }} catch (err) {{
-                            console.error("Erro ao abrir carrinho:", err);
+                    floatBtn.addEventListener("click", async function() {{
+                        const popBtn = await waitForPopoverButton();
+                        if (popBtn) {{
+                            popBtn.click();
+                        }} else {{
+                            alert("⚠️ Não foi possível abrir o carrinho. Tente novamente ou use o botão 'Conteúdo do Carrinho' no topo.");
                         }}
                     }});
                 }}
@@ -135,6 +147,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
     # --- Estrutura Principal: Imagem/Variações (Esquerda) vs Detalhes/Preço (Direita) ---
     col_img_variacao, col_detalhes_compra = st.columns([1, 2])
+
 
     
     
@@ -930,6 +943,7 @@ else:
 
 
                                
+
 
 
 
