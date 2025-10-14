@@ -214,8 +214,7 @@ carrinho_vazio = not st.session_state.carrinho
 df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
-# --- Botão Flutuante do Carrinho (AGORA NO LOCAL CORRETO) ---
-# Este bloco é renderizado antes do popover e do st.stop() final, garantindo visibilidade e clique.
+# --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
@@ -243,7 +242,7 @@ if num_itens > 0:
                         popBtn.click();
                     }} else {{
                         console.warn("Botão do popover não encontrado. Verifique o seletor.");
-                        // Não usar alert() em produção Streamlit/Canvas
+                        alert("⚠️ Não foi possível abrir o carrinho automaticamente.\nToque no botão 'Conteúdo do Carrinho' no topo da página.");
                     }}
                 }} catch (err) {{
                     console.error("Erro ao tentar abrir o popover do carrinho:", err);
@@ -254,7 +253,6 @@ if num_itens > 0:
     </script>
     """
     st.markdown(floating_cart_html, unsafe_allow_html=True)
-
 
 # --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
 # Definimos o popover e todo o seu conteúdo dentro de um container no início do código.
@@ -456,9 +454,10 @@ def copy_to_clipboard_js(text_to_copy):
     function copyTextToClipboard(text) {{
       if (navigator.clipboard) {{
         navigator.clipboard.writeText(text).then(function() {{
-          // Substituído alert por console.log para evitar bloqueio em iframes
+          alert('Resumo do pedido copiado!');
         }}, function(err) {{
           console.error('Não foi possível copiar o texto: ', err);
+          alert('Erro ao copiar o texto. Tente novamente.');
         }});
       }} else {{
         const textArea = document.createElement("textarea");
@@ -468,8 +467,10 @@ def copy_to_clipboard_js(text_to_copy):
         textArea.select();
         try {{
           document.execCommand('copy');
+          alert('Resumo do pedido copiado!');
         }} catch (err) {{
           console.error('Fallback: Não foi possível copiar o texto: ', err);
+          alert('Erro ao copiar o texto. Tente novamente.');
         }}
         document.body.removeChild(textArea);
       }}
