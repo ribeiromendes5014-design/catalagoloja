@@ -25,7 +25,6 @@ from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
     calcular_cashback_total, render_product_card
 )
-from carrinho_ui import render_carrinho_popover
 
 # --- NOVA FUNÇÃO: Tela de Detalhes do Produto ---
 def mostrar_detalhes_produto(df_catalogo_indexado):
@@ -699,4 +698,5 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
 
