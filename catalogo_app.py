@@ -650,13 +650,16 @@ with st.container():
             contato_input = st.text_input("Seu Contato (WhatsApp - apenas números, com DDD):", key='checkout_contato_dynamic')
 
             nivel_cliente, saldo_cashback = 'N/A', 0.00
-            if nome_input and contato_input and DF_CLIENTES_CASH is not None and not DF_CLIENTES_CASH.empty:
+            
+            # --- CORREÇÃO: ADICIONE ESTE BLOCO IF PARA EVITAR BUSCAR COM CONTATO VAZIO ---
+            if contato_input.strip() and DF_CLIENTES_CASH is not None and not DF_CLIENTES_CASH.empty:
                 existe, nome_encontrado, saldo_cashback, nivel_cliente = buscar_cliente_cashback(contato_input, DF_CLIENTES_CASH)
                 if existe:
                     st.success(f"🎉 **Bem-vindo(a) de volta, {nome_encontrado}!** Nível: **{nivel_cliente.upper()}**. Saldo de Cashback: **R$ {saldo_cashback:.2f}**.")
                 elif contato_input.strip():
                     st.info("👋 **Novo Cliente!** Você começará a acumular cashback após este pedido.")
-
+            # --- FIM DA CORREÇÃO ---
+            
             with st.form("form_finalizar_pedido", clear_on_submit=True):
                 st.text_input("Nome (Preenchido)", value=nome_input, disabled=True, label_visibility="collapsed")
                 st.text_input("Contato (Preenchido)", value=contato_input, disabled=True, label_visibility="collapsed")
@@ -852,6 +855,7 @@ else:
 
 
                                
+
 
 
 
