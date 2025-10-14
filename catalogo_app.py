@@ -6,7 +6,11 @@ import json
 import time
 from streamlit_autorefresh import st_autorefresh
 import requests
+import streamlit_javascript as st_js
 
+# Detecta largura da tela via JavaScript
+width = st_js.st_javascript("window.innerWidth")
+st.session_state.is_mobile = width is not None and width < 700
 
 # --- 1. CONFIGURAÇÃO DE PÁGINA (Deve ser a primeira chamada Streamlit) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
@@ -697,11 +701,25 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    cols = st.columns(4)
-    for i, row in df_filtrado.reset_index(drop=True).iterrows():
-        product_id = row['ID']
-        unique_key = f'prod_{product_id}_{i}'
-        with cols[i % 4]:
-            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+    # === Grade Responsiva de Produtos ===
+# Define número de colunas conforme o tamanho da tela (2 no celular, 4 no PC)
+if st.session_state.get("is_mobile", False):
+    num_cols = 2
+else:
+    num_cols = 4
+
+cols = st.columns(num_cols)
+for i, row in df_filtrado.reset_index(drop=True).iterrows():
+    product_id = row['ID']
+    unique_key = f'prod_{product_id}_{i}'
+    with cols[i % num_cols]:
+        render_product_card(
+            product_id,
+            row,
+            key_prefix=unique_key,
+            df_catalogo_indexado=st.session_state.df_catalogo_indexado
+        )
+
+
 
 
