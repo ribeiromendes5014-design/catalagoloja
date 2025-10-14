@@ -428,45 +428,82 @@ with st.container():
 
 # --- CONTROLE DE FLUXO PRINCIPAL ---
 # --- Botão Flutuante do Carrinho ---
-<script>
-(function() {
-    // Aguarda o botao do popover aparecer no DOM
-    async function waitForPopoverButton(maxAttempts = 20) {
-        for (let i = 0; i < maxAttempts; i++) {
-            let popBtn = document.querySelector('div[data-testid="stPopover"] button');
-            if (popBtn) return popBtn;
+num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
+if num_itens > 0:
+    st.markdown(
+        f"""
+        <div style="
+            position: fixed;
+            bottom: 110px;
+            right: 40px;
+            background-color: #D32F2F;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            box-shadow: 2px 2px 5px #999;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        " id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+            🛒
+            <span style="
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background-color: #FFD600;
+                color: black;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid white;
+            ">{num_itens}</span>
+        </div>
+        <script>
+        (function() {{
+            async function waitForPopoverButton(maxAttempts = 20) {{
+                for (let i = 0; i < maxAttempts; i++) {{
+                    let popBtn = document.querySelector('div[data-testid="stPopover"] button');
+                    if (popBtn) return popBtn;
+                    popBtn = Array.from(document.querySelectorAll("button")).find(
+                        function(b) {{ 
+                            return b.textContent.trim().includes("Conteudo do Carrinho") || 
+                                   b.textContent.trim().includes("Conteúdo do Carrinho"); 
+                        }}
+                    );
+                    if (popBtn) return popBtn;
+                    await new Promise(function(r) {{ setTimeout(r, 300); }});
+                }}
+                return null;
+            }}
 
-            // fallback - tenta achar botao pelo texto
-            popBtn = Array.from(document.querySelectorAll("button")).find(
-                function(b) { 
-                    return b.textContent.trim().includes("Conteudo do Carrinho") || 
-                           b.textContent.trim().includes("Conteúdo do Carrinho"); 
-                }
-            );
-            if (popBtn) return popBtn;
-
-            await new Promise(function(r) { setTimeout(r, 300); });
-        }
-        return null;
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const floatBtn = document.getElementById("floating_cart_btn");
-        if (floatBtn) {
-            floatBtn.addEventListener("click", async function() {
-                const popBtn = await waitForPopoverButton();
-                if (popBtn) {
-                    popBtn.click();
-                } else {
-                    alert("⚠️ Nao foi possivel abrir o carrinho automaticamente.\nToque no botao 'Conteudo do Carrinho' no topo da pagina.");
-                }
-            });
-        }
-    });
-})();
-</script>
-
-
+            document.addEventListener("DOMContentLoaded", function() {{
+                const floatBtn = document.getElementById("floating_cart_btn");
+                if (floatBtn) {{
+                    floatBtn.addEventListener("click", async function() {{
+                        const popBtn = await waitForPopoverButton();
+                        if (popBtn) {{
+                            popBtn.click();
+                        }} else {{
+                            alert("\\u26A0\\uFE0F Nao foi possivel abrir o carrinho automaticamente.\\nToque no botao 'Conteudo do Carrinho' no topo da pagina.");
+                        }}
+                    }});
+                }}
+            }});
+        }})();
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
 with st.popover("Conteúdo do Carrinho", use_container_width=True):
@@ -924,6 +961,7 @@ else:
 
 
                                
+
 
 
 
