@@ -279,20 +279,37 @@ def carregar_clientes_cashback():
     """Carrega os clientes do cashback, limpa o contato e renomeia as colunas para facilitar."""
     df = get_data_from_github(SHEET_NAME_CLIENTES_CASHBACK_CSV)
     
-    # 1. Se o get_data_from_github retornar None (erro HTTP ou arquivo não encontrado)
-    if df is None: # <--- O get_data_from_github pode retornar None!
-        # Retorna um DataFrame VAZIO com as colunas esperadas para evitar o erro.
+    if df is None or df.empty:
         return pd.DataFrame(columns=['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL'])
+        
+    # --- NOVO BLOCO DE RENOMEAÇÃO SIMPLIFICADO ---
+    # O código já transforma todas as colunas para MAIÚSCULAS e substitui ' ' por '_'
+    # A coluna 'CONTATO' e 'NOME' JÁ EXISTEM com esses nomes.
     
-    if df.empty:
-        return pd.DataFrame(columns=['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL'])
+    # Mapeamento para tratar CASHBACK_DISPONÍVEL (com acento) e APELIDO/DESCRIÇÃO
+    df.rename(columns={
+        'CASHBACK_DISPONÍVEL': 'CASHBACK_DISPONIVEL',
+        'APELIDO/DESCRIÇÃO': 'APELIDO_DESCRICAO' # Renomeia a coluna que contém a barra
+    }, inplace=True, errors='ignore')
+    
+    # ----------------------------------------------
 
-    # ... (O restante do processamento)
+    # Garante que as colunas essenciais estejam presentes (o cabeçalho do seu CSV garante isso)
+    if 'CONTATO' in df.columns:
+        # A limpeza de contato é essencial para a busca
+        df['CONTATO'] = df['CONTATO'].astype(str).str.replace(r'\D', '', regex=True).str.strip() 
+        df['CASHBACK_DISPONIVEL'] = pd.to_numeric(df['CASHBACK_DISPONIVEL'], errors='coerce').fillna(0.0)
+        df['NIVEL_ATUAL'] = df['NIVEL_ATUAL'].fillna('Prata')
     
-    # Verifique a linha 276 para garantir que o retorno de erro também seja uma tupla:
+        # Garante que o DataFrame retornado tenha as colunas que o 'buscar_cliente_cashback' usa
+        colunas_retorno = ['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL']
+        df = df.reindex(columns=colunas_retorno, fill_value='')
+        
+        return df.dropna(subset=['CONTATO'])
+        
     else:
-        st.error("Erro: A coluna 'Telefone' (ou equivalente) do clientes_cash.csv não foi encontrada para a busca.")
-        # Garante o retorno de um DataFrame vazio
+        # Este bloco só será atingido se a coluna 'CONTATO' sumir
+        st.error("Erro: A coluna 'CONTATO' não foi encontrada após o processamento. Verifique o cabeçalho.")
         return pd.DataFrame(columns=['NOME', 'CONTATO', 'CASHBACK_DISPONIVEL', 'NIVEL_ATUAL'])
 
 
@@ -411,6 +428,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
