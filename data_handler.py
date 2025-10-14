@@ -70,7 +70,23 @@ def get_data_from_github(file_name):
 
         content = base64.b64decode(data["content"]).decode("utf-8")
         csv_data = StringIO(content)
-        df = pd.read_csv(csv_data, sep=",", encoding="utf-8", engine="python", on_bad_lines="warn")
+        
+        # --- NOVO TRECHO COM A CORREÇÃO DE DTYPE ---
+        # Parâmetros de leitura padrão
+        read_params = {
+            "sep": ",",
+            "encoding": "utf-8",
+            "engine": "python",
+            "on_bad_lines": "warn"
+        }
+        
+        # Se for o arquivo de cashback, força as colunas de contato a serem string
+        if file_name == SHEET_NAME_CLIENTES_CASHBACK_CSV:
+            read_params['dtype'] = {'CONTATO': str, 'CONTATO_LIMPO': str}
+            
+        df = pd.read_csv(csv_data, **read_params)
+        # --- FIM DO NOVO TRECHO ---
+
         df.columns = [col.strip().upper().replace(' ', '_') for col in df.columns]
         return df
 
@@ -455,6 +471,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
