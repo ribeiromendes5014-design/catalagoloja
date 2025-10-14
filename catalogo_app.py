@@ -431,8 +431,9 @@ with st.container():
 
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
 if st.session_state.produto_detalhe_id:
-    # Ocultamos a âncora de texto do Popover que aparece no topo, mantendo o ícone flutuante ativo.
-    st.markdown("<style>div[data-testid='stPopover'] button:first-child { display: none !important; }</style>", unsafe_allow_html=True)
+    # CORREÇÃO: Ocultamos a âncora de texto do Popover que aparece no topo, forçando o display none.
+    # O Streamlit cria um botão no container para o Popover, que é o que você vê no topo.
+    st.markdown("<style>div[data-testid='stPopover'] button:first-child { display: none !important; visibility: hidden !important; }</style>", unsafe_allow_html=True)
 
     # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
@@ -500,13 +501,12 @@ MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
 }
 
 /* * CORREÇÃO CRÍTICA DO FLUTUANTE
-* Oculta o botão de texto "Conteúdo do Carrinho" na tela de detalhes.
-* Isso é revertido (mostrado) no fluxo principal do catálogo.
-* No bloco if st.session_state.produto_detalhe_id, ele será forçado a 'none'.
+* Regra padrão: O botão de texto do Popover deve ser visível no catálogo (display: flex).
+* Essa regra é sobrescrita para 'none' no bloco st.stop() para ocultar o botão do topo na tela de detalhes.
 */
 div[data-testid="stPopover"] button:first-child {
     display: flex !important; 
-    /* Esta regra é revertida para 'none' no bloco st.stop() para ocultar o botão do topo na tela de detalhes */
+    /* Esta é a âncora do texto "Conteúdo do Carrinho" */
 }
 
 
