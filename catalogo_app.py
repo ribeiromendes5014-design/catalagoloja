@@ -214,7 +214,8 @@ carrinho_vazio = not st.session_state.carrinho
 df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
-# --- Botão Flutuante do Carrinho ---
+# --- Botão Flutuante do Carrinho (AGORA NO LOCAL CORRETO) ---
+# Este bloco é renderizado antes do popover e do st.stop() final, garantindo visibilidade e clique.
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
@@ -224,6 +225,7 @@ if num_itens > 0:
     <script>
     (function() {{
         const waitForPopoverButton = () => {{
+            // Procura pelo botão do popover visível (no topo)
             const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
             if (popoverButton) {{
                 return popoverButton;
@@ -258,7 +260,8 @@ if num_itens > 0:
 # Definimos o popover e todo o seu conteúdo dentro de um container no início do código.
 # Isso garante que ele sempre exista no DOM para ser encontrado pelo JavaScript do botão flutuante.
 with st.container():
-    with st.popover("Conteúdo do Carrinho"):
+    # Adicionamos uma chave única ao popover
+    with st.popover("Conteúdo do Carrinho", key="main_cart_popover"):
         st.header("🛒 Detalhes do Pedido")
         if carrinho_vazio:
             st.info("Seu carrinho está vazio.")
@@ -429,6 +432,8 @@ with st.container():
 
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
 if st.session_state.produto_detalhe_id:
+    # Adicionamos uma classe CSS ao corpo do aplicativo para ocultar o botão superior apenas aqui
+    st.markdown("<style>#main_cart_popover_button { display: none !important; }</style>", unsafe_allow_html=True)
     # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
     st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
@@ -494,15 +499,23 @@ MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
     padding: 0 !important;
 }
 
-/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
-div[data-testid="stPopover"] > div:first-child > button {
+/* * CORREÇÃO CRÍTICA:
+* Oculta o botão "Conteúdo do Carrinho" no topo APENAS na tela de detalhes
+* O elemento é identificado pelo data-testid do Streamlit e a chave única
+*/
+#main_cart_popover_button {
+    display: flex !important; /* Mantém o botão visível na tela inicial */
+}
+
+/* Seleciona o botão real do Popover e move ele para a posição flutuante (sempre) */
+div[data-testid="stPopover"] button {
     position: fixed !important;
     bottom: 110px;
     right: 40px;
     width: 60px !important;
     height: 60px !important;
     opacity: 0 !important;
-    z-index: 1001 !important;
+    z-index: 1001 !important; /* Acima do ícone visual (.cart-float) */
     pointer-events: auto !important;
 }
 
