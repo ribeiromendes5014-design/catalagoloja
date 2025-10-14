@@ -317,28 +317,61 @@ def carregar_clientes_cashback():
 def buscar_cliente_cashback(numero_contato, df_clientes_cash):
     """Busca um cliente pelo número de contato (limpo) e retorna saldo e nível."""
     
-    # --- CORREÇÃO DE LIMPEZA DE CONTATO ---
-    # Usamos re.sub para remover tudo que não é dígito,
-    # garantindo que o formato é idêntico ao do DataFrame (df['CONTATO']).
+    # 1. Limpeza do Contato do Usuário
     contato_limpo = str(numero_contato).strip()
     if contato_limpo:
         contato_limpo = re.sub(r'\D', '', contato_limpo)
-    # -------------------------------------
+        
+    # 2. **NOVA PADRONIZAÇÃO (CRÍTICA)**: 
+    # Tenta resolver o problema do '55' (código do país)
+    
+    # Se o número tiver 11 dígitos (DDD + 9 + 8 dígitos) E não começar com 55:
+    # PADRONIZA para o formato com 55, assumindo que o CSV tem o 55.
+    if len(contato_limpo) == 11 and not contato_limpo.startswith('55'):
+         # Exemplo: 41998765432 -> 5541998765432
+         contato_limpo = '55' + contato_limpo 
+
+    # Se o número tiver 13 dígitos (55 + 11 dígitos) E o usuário digitou sem 55, 
+    # e o CSV SÓ tem 11 dígitos:
+    # PADRONIZA para o formato sem 55 (11 dígitos), se a busca falhar,
+    # caso os dados no CSV não tenham o 55.
+    # Vamos manter a busca com 13 dígitos primeiro, e se falhar, tentamos o de 11.
+    
     
     if df_clientes_cash.empty:
-        # This path correctly returns a 4-value tuple
         return False, None, 0.00, 'NENHUM'
         
+    # --- PRIMEIRA TENTATIVA DE BUSCA (MAIS LONGO, COM 55) ---
     cliente = df_clientes_cash[df_clientes_cash['CONTATO'] == contato_limpo]
     
     if not cliente.empty:
+        # Cliente encontrado no formato mais longo (com 55)
         saldo = cliente['CASHBACK_DISPONIVEL'].iloc[0]
         nome = cliente['NOME'].iloc[0]
         nivel = cliente['NIVEL_ATUAL'].iloc[0] 
         return True, nome, saldo, nivel
-    else:
-        # This path correctly returns a 4-value tuple
-        return False, None, 0.00, 'NENHUM' 
+    
+    # --- SEGUNDA TENTATIVA DE BUSCA (FORMATO MAIS CURTO, SEM 55) ---
+    # Se a primeira tentativa falhar, tenta o formato de 11 dígitos, 
+    # assumindo que o CSV não tem o '55'
+    
+    contato_curto = contato_limpo
+    if contato_limpo.startswith('55') and len(contato_limpo) == 13:
+        # Exemplo: 5541998765432 -> 41998765432
+        contato_curto = contato_limpo[2:] 
+
+    if contato_curto != contato_limpo:
+        cliente_curto = df_clientes_cash[df_clientes_cash['CONTATO'] == contato_curto]
+        if not cliente_curto.empty:
+            # Cliente encontrado no formato mais curto (sem 55)
+            saldo = cliente_curto['CASHBACK_DISPONIVEL'].iloc[0]
+            nome = cliente_curto['NOME'].iloc[0]
+            nivel = cliente_curto['NIVEL_ATUAL'].iloc[0] 
+            return True, nome, saldo, nivel
+            
+            
+    # Nenhuma tentativa funcionou
+    return False, None, 0.00, 'NENHUM' 
 
 
 
@@ -436,6 +469,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
