@@ -12,9 +12,15 @@ import streamlit_javascript as st_js
 # --- 1. CONFIGURAÇÃO DE PÁGINA (Deve ser a primeira chamada Streamlit) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-# Detecta largura da tela via JavaScript
-width = st_js.st_javascript("window.innerWidth")
-st.session_state.is_mobile = width is not None and width < 700
+# --- Detecta se o acesso é mobile pelo user agent ---
+import streamlit as st
+
+if "user_agent" not in st.session_state:
+    st.session_state.user_agent = st.text_input("", value="", key="ua_detect", label_visibility="collapsed")
+    
+user_agent = st.session_state.user_agent.lower()
+st.session_state.is_mobile = any(x in user_agent for x in ["iphone", "android", "mobile"])
+
 
 
 # --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
@@ -720,6 +726,7 @@ for i, row in df_filtrado.reset_index(drop=True).iterrows():
             key_prefix=unique_key,
             df_catalogo_indexado=st.session_state.df_catalogo_indexado
         )
+
 
 
 
