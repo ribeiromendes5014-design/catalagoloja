@@ -445,7 +445,7 @@ if num_itens > 0:
             font-size: 28px;
             box-shadow: 2px 2px 5px #999;
             cursor: pointer;
-            z-index: 1000;
+            z-index: 9999; /* <- aumento da prioridade */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -526,9 +526,9 @@ with st.popover("Conteúdo do Carrinho", use_container_width=True):
 
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
 if st.session_state.produto_detalhe_id:
-    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
-    st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
+    st.stop()
+
 # --- Funções Auxiliares de UI ---
 
 # --- Botão Flutuante do WhatsApp ---
@@ -961,6 +961,7 @@ else:
 
 
                                
+
 
 
 
