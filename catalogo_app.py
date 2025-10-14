@@ -310,6 +310,8 @@ def copy_to_clipboard_js(text_to_copy):
 
 # --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
+from components.global_cart import render_global_cart
+render_global_cart()
 
 # --- CSS (COM CORREÇÃO DE LAYOUT) ---
 st.markdown("""
@@ -861,6 +863,7 @@ else:
 
 
                                
+
 
 
 
