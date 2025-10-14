@@ -35,7 +35,7 @@ def render_global_cart():
         font-size: 28px;
         box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
         cursor: pointer;
-        z-index: 9999;
+        z-index: 99999 !important;
         display: flex;
         align-items: center;
         justify-content: center;
