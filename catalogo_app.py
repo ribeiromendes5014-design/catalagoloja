@@ -199,6 +199,8 @@ if 'desconto_cupom' not in st.session_state:
     st.session_state.desconto_cupom = 0.0
 if 'cupom_mensagem' not in st.session_state:
     st.session_state.cupom_mensagem = ""
+if 'processando_pedido' not in st.session_state:
+    st.session_state.processando_pedido = False
 
 # OTIMIZAÇÃO: Cache do catálogo principal no estado da sessão para evitar re-leitura constante
 if 'df_catalogo_indexado' not in st.session_state:
@@ -222,7 +224,7 @@ df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
 
-# --- REORGANIZAÇÃO: TUDO QUE PRECISA APARECER NA TELA DE DETALHES VEM PRIMEIRO ---
+# --- REORGANIZAÇÃO: TUDO QUE PRECISA APARECER NAS DUAS TELAS VEM PRIMEIRO ---
 
 # --- 1. CHAMADA DO POPOVER DO CARRINHO (Tem que existir no DOM) ---
 with st.container():
@@ -556,16 +558,9 @@ if num_itens > 0:
     st.markdown(floating_cart_html, unsafe_allow_html=True)
 
 
-# --- AGORA, O FLUXO DE CONTROLE É EXECUTADO ---
+# --- 4. FLUXO DE CONTROLE PRINCIPAL ---
 
-# Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
-if st.session_state.produto_detalhe_id:
-    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
-    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
-    st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenhado.
-
-
-# --- Tela de Pedido Confirmado ---
+# --- CRÍTICO: 4.1. TELA DE PEDIDO CONFIRMADO (DEVE SER A PRIMEIRA VERIFICAÇÃO) ---
 if st.session_state.pedido_confirmado:
     st.balloons()
     
@@ -634,7 +629,16 @@ if st.session_state.pedido_confirmado:
         limpar_carrinho()
         st.rerun() 
         
-    st.stop() 
+    st.stop() # Finaliza o script para mostrar apenas a tela de confirmação
+
+
+# --- 4.2. TELA DE DETALHES DO PRODUTO (SEGUNDA VERIFICAÇÃO) ---
+if st.session_state.produto_detalhe_id:
+    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
+    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
+    st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenhado.
+
+
 # URL do banner de Black Friday
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
 
@@ -698,5 +702,3 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
-
-
