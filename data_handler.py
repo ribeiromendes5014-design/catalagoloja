@@ -315,30 +315,52 @@ def carregar_clientes_cashback():
 
 
 def buscar_cliente_cashback(numero_contato, df_clientes_cash):
-    """Busca um cliente pelo número de contato (com tolerância a variações de formato)."""
+    """Busca um cliente pelo número de contato com tolerância total de formato."""
     import re
-    contato_limpo = re.sub(r'\D', '', str(numero_contato or '').strip())
+    import streamlit as st
 
-    if df_clientes_cash.empty:
+    if df_clientes_cash is None or df_clientes_cash.empty:
+        st.warning("⚠️ Nenhum dado de cashback carregado.")
         return False, None, 0.00, 'NENHUM'
 
-    # Limpa todos os contatos do CSV também (garantia extra)
-    df_clientes_cash['CONTATO'] = df_clientes_cash['CONTATO'].astype(str).str.replace(r'\D', '', regex=True)
+    # Mostra debug para saber o que está sendo buscado
+    st.write("DEBUG - digitado:", numero_contato)
+    st.write("DEBUG - contatos CSV:", df_clientes_cash['CONTATO'].tolist())
 
-    # Tenta encontrar usando diferentes formatos:
-    possiveis_formas = {contato_limpo}
-    if contato_limpo.startswith('55'):
-        possiveis_formas.add(contato_limpo[2:])  # sem o 55
-    elif len(contato_limpo) == 11:
-        possiveis_formas.add('55' + contato_limpo)
+    # Limpa número digitado (mantém apenas dígitos)
+    contato_digitado = re.sub(r'\D', '', str(numero_contato or '').strip())
 
-    cliente = df_clientes_cash[df_clientes_cash['CONTATO'].isin(possiveis_formas)]
+    # Normaliza contatos do CSV
+    df_clientes_cash['CONTATO'] = (
+        df_clientes_cash['CONTATO']
+        .astype(str)
+        .str.replace(r'\D', '', regex=True)
+        .str.strip()
+    )
+
+    # Gera todas as variações possíveis do número
+    possiveis = {contato_digitado}
+    if contato_digitado.startswith('55'):
+        possiveis.add(contato_digitado[2:])
+    elif len(contato_digitado) == 11:
+        possiveis.add('55' + contato_digitado)
+
+    # Faz a busca
+    cliente = df_clientes_cash[df_clientes_cash['CONTATO'].isin(possiveis)]
+
+    # Mostra debug
+    st.write("DEBUG - buscando por:", list(possiveis))
+    st.write("DEBUG - encontrado:", cliente)
 
     if not cliente.empty:
         row = cliente.iloc[0]
-        return True, row['NOME'], float(row['CASHBACK_DISPONIVEL']), row['NIVEL_ATUAL']
+        nome = row.get('NOME', 'Sem Nome')
+        saldo = float(row.get('CASHBACK_DISPONIVEL', 0))
+        nivel = row.get('NIVEL_ATUAL', 'Prata')
+        return True, nome, saldo, nivel
 
     return False, None, 0.00, 'NENHUM'
+
  
 
 
@@ -437,6 +459,7 @@ def salvar_pedido(nome_cliente, contato_cliente, valor_total, itens_json, pedido
     except Exception as e:
         st.error(f"Erro desconhecido ao enviar o pedido: {e}")
         return False, None # <--- RETORNO DE ERRO CORRIGIDO
+
 
 
 
