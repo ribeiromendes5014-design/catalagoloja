@@ -26,70 +26,61 @@ total_acumulado = sum(item["preco"] * item["quantidade"] for item in st.session_
 carrinho_vazio = len(st.session_state.carrinho) == 0
 cashback_a_ganhar = round(total_acumulado * 0.05, 2)  # exemplo: 5% de cashback
 
-# --- BLOCO DO CARRINHO ---
+# --- BLOCO DO CARRINHO (PÁGINA NORMAL, SEM POPOVER) ---
+st.header("🛒 Detalhes do Pedido")
 
-        st.header("🛒 Detalhes do Pedido")
+if carrinho_vazio:
+    st.info("Seu carrinho está vazio. Volte ao catálogo para adicionar produtos.")
+else:
+    desconto_cupom = st.session_state.get('desconto_cupom', 0.0)
+    total_com_desconto = total_acumulado - desconto_cupom
+    if total_com_desconto < 0:
+        total_com_desconto = 0
 
-        if carrinho_vazio:
-            st.info("Seu carrinho está vazio.")
-        else:
-            desconto_cupom = st.session_state.get('desconto_cupom', 0.0)
-            total_com_desconto = total_acumulado - desconto_cupom
-            if total_com_desconto < 0:
-                total_com_desconto = 0
+    st.markdown(f"Subtotal: `R$ {total_acumulado:.2f}`")
+    if desconto_cupom > 0:
+        st.markdown(
+            f"Desconto (`{st.session_state.cupom_aplicado}`): <span style='color: #D32F2F;'>- R$ {desconto_cupom:.2f}</span>",
+            unsafe_allow_html=True
+        )
 
-            st.markdown(f"Subtotal: `R$ {total_acumulado:.2f}`")
-            if desconto_cupom > 0:
-                st.markdown(
-                    f"Desconto (`{st.session_state.cupom_aplicado}`): <span style='color: #D32F2F;'>- R$ {desconto_cupom:.2f}</span>",
-                    unsafe_allow_html=True
-                )
+    st.markdown(f"<span style='color: #2E7D32; font-weight: bold;'>Cashback a Ganhar: R$ {cashback_a_ganhar:.2f}</span>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #E91E63; margin-top: 0;'>Total: R$ {total_com_desconto:.2f}</h3>", unsafe_allow_html=True)
+    st.markdown("---")
 
-            st.markdown(f"<span style='color: #2E7D32; font-weight: bold;'>Cashback a Ganhar: R$ {cashback_a_ganhar:.2f}</span>", unsafe_allow_html=True)
-            st.markdown(f"<h3 style='color: #E91E63; margin-top: 0;'>Total: R$ {total_com_desconto:.2f}</h3>", unsafe_allow_html=True)
-            st.markdown("---")
+    col_h1, col_h2, col_h3, col_h4 = st.columns([3, 1.5, 2.5, 1])
+    col_h2.markdown("**Qtd**")
+    col_h3.markdown("**Subtotal**")
+    col_h4.markdown("")
+    st.markdown('<div style="margin-top: -10px; border-top: 1px solid #ccc;"></div>', unsafe_allow_html=True)
 
-            col_h1, col_h2, col_h3, col_h4 = st.columns([3, 1.5, 2.5, 1])
-            col_h2.markdown("**Qtd**")
-            col_h3.markdown("**Subtotal**")
-            col_h4.markdown("")
-            st.markdown('<div style="margin-top: -10px; border-top: 1px solid #ccc;"></div>', unsafe_allow_html=True)
+    for prod_id, item in list(st.session_state.carrinho.items()):
+        c1, c2, c3, c4 = st.columns([3, 1.5, 2.5, 1])
+        c1.write(f"*{item['nome']}*")
 
-            for prod_id, item in list(st.session_state.carrinho.items()):
-                c1, c2, c3, c4 = st.columns([3, 1.5, 2.5, 1])
-                c1.write(f"*{item['nome']}*")
+        max_qtd = int(df_catalogo_completo.loc[prod_id, 'QUANTIDADE']) if (df_catalogo_completo is not None and prod_id in df_catalogo_completo.index) else 999999
 
-                max_qtd = int(df_catalogo_completo.loc[prod_id, 'QUANTIDADE']) if (df_catalogo_completo is not None and prod_id in df_catalogo_completo.index) else 999999
+        if item['quantidade'] > max_qtd:
+            st.session_state.carrinho[prod_id]['quantidade'] = max_qtd
+            item['quantidade'] = max_qtd
+            st.toast(f"Ajustado: {item['nome']} ao estoque máximo de {max_qtd}.", icon="⚠️")
+            st.rerun()
 
-                if item['quantidade'] > max_qtd:
-                    st.session_state.carrinho[prod_id]['quantidade'] = max_qtd
-                    item['quantidade'] = max_qtd
-                    st.toast(f"Ajustado: {item['nome']} ao estoque máximo de {max_qtd}.", icon="⚠️")
-                    st.rerun()
+        nova_quantidade = c2.number_input(label=f'Qtd_{prod_id}', min_value=1, max_value=max_qtd, value=item['quantidade'], step=1, key=f'qtd_{prod_id}_popover', label_visibility="collapsed")
 
-                nova_quantidade = c2.number_input(
-                    label=f'Qtd_{prod_id}',
-                    min_value=1,
-                    max_value=max_qtd,
-                    value=item['quantidade'],
-                    step=1,
-                    key=f'qtd_{prod_id}_popover',
-                    label_visibility="collapsed"
-                )
+        if nova_quantidade != item['quantidade']:
+            st.session_state.carrinho[prod_id]['quantidade'] = nova_quantidade
+            st.rerun()
 
-                if nova_quantidade != item['quantidade']:
-                    st.session_state.carrinho[prod_id]['quantidade'] = nova_quantidade
-                    st.rerun()
+        subtotal_item = item['preco'] * item['quantidade']
+        preco_unitario = item['preco']
+        c3.markdown(f"<div style='text-align: left; white-space: nowrap;'><strong>R$ {subtotal_item:.2f}</strong><br><span style='font-size: 0.8rem; color: #757575;'>(R$ {preco_unitario:.2f} un.)</span></div>", unsafe_allow_html=True)
 
-                subtotal_item = item['preco'] * item['quantidade']
-                preco_unitario = item['preco']
-                c3.markdown(f"<div style='text-align: left; white-space: nowrap;'><strong>R$ {subtotal_item:.2f}</strong><br><span style='font-size: 0.8rem; color: #757575;'>(R$ {preco_unitario:.2f} un.)</span></div>", unsafe_allow_html=True)
+        if c4.button("X", key=f'rem_{prod_id}_popover'):
+            remover_do_carrinho(prod_id)
+            st.rerun()
 
-                if c4.button("X", key=f'rem_{prod_id}_popover'):
-                    remover_do_carrinho(prod_id)
-                    st.rerun()
-
-            st.markdown("---")
+    st.markdown("---")
             st.subheader("🎟️ Cupom de Desconto")
 
             cupom_col1, cupom_col2 = st.columns([3, 1])
