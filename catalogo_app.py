@@ -214,8 +214,7 @@ carrinho_vazio = not st.session_state.carrinho
 df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
-# --- Botão Flutuante do Carrinho (Visível) ---
-# Este bloco é crucial e deve ser executado sempre que o script roda para desenhar o ÍCONE VISUAL.
+# --- Botão Flutuante do Carrinho ---
 if num_itens > 0:
     floating_cart_html = f"""
     <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
@@ -225,11 +224,11 @@ if num_itens > 0:
     <script>
     (function() {{
         const waitForPopoverButton = () => {{
-            // Procura pelo botão do popover (a âncora invisível)
             const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
             if (popoverButton) {{
                 return popoverButton;
             }}
+            // Tenta encontrar botão por outras abordagens (compatibilidade)
             const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
             if (alt) return alt;
             return null;
@@ -259,7 +258,6 @@ if num_itens > 0:
 # Definimos o popover e todo o seu conteúdo dentro de um container no início do código.
 # Isso garante que ele sempre exista no DOM para ser encontrado pelo JavaScript do botão flutuante.
 with st.container():
-    # Removida a chave 'key' para compatibilidade com versões antigas do Streamlit
     with st.popover("Conteúdo do Carrinho"):
         st.header("🛒 Detalhes do Pedido")
         if carrinho_vazio:
@@ -431,10 +429,6 @@ with st.container():
 
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
 if st.session_state.produto_detalhe_id:
-    # CORREÇÃO: Ocultamos a âncora de texto do Popover que aparece no topo, forçando o display none.
-    # Isso só se aplica nesta tela, já que o bloco é interrompido pelo st.stop().
-    st.markdown("<style>div[data-testid='stPopover'] button:first-child { display: none !important; visibility: hidden !important; }</style>", unsafe_allow_html=True)
-    
     # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
     st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
@@ -500,25 +494,15 @@ MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
     padding: 0 !important;
 }
 
-/* * CORREÇÃO CRÍTICA DO FLUTUANTE
-* Regra padrão: O botão de texto do Popover deve ser visível no catálogo (display: flex).
-* Essa regra é sobrescrita para 'none' no bloco st.stop() para ocultar o botão do topo na tela de detalhes.
-*/
-div[data-testid="stPopover"] button:first-child {
-    display: flex !important; 
-    /* Esta é a âncora do texto "Conteúdo do Carrinho" */
-}
-
-
-/* Seleciona o botão real do Popover e move ele para a posição flutuante (sempre) */
-div[data-testid="stPopover"] button {
+/* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
+div[data-testid="stPopover"] > div:first-child > button {
     position: fixed !important;
     bottom: 110px;
     right: 40px;
     width: 60px !important;
     height: 60px !important;
     opacity: 0 !important;
-    z-index: 1001 !important; /* Acima do ícone visual (.cart-float) */
+    z-index: 1001 !important;
     pointer-events: auto !important;
 }
 
@@ -805,31 +789,6 @@ if st.session_state.pedido_confirmado:
     {itens_formatados}
     """)
     
-    # Adicionando botão copiar, pois foi removido o alert do código original
-    js_copy = f"""
-    <script>
-    function copyOrderSummary() {{
-        const summary = `Pedido ID: {id_pedido_display}\\nCliente: {pedido['nome']} | Contato: {pedido['contato']}\\nTotal: R$ {pedido['total']:.2f}\\nCashback a Ganhar: R$ {pedido.get('cashback_a_ganhar', 0.0):.2f}\\nItens:\\n{itens_formatados.replace(/•/g, '  •')}`;
-        const textArea = document.createElement("textarea");
-        textArea.value = summary;
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {{
-            document.execCommand('copy');
-            // Usamos console.log em vez de alert para não travar o Streamlit
-            console.log('Resumo do pedido copiado!');
-        }} catch (err) {{
-            console.error('Fallback: Não foi possível copiar o texto: ', err);
-        }}
-        document.body.removeChild(textArea);
-    }}
-    document.getElementById('copy_order_btn').addEventListener('click', copyOrderSummary);
-    </script>
-    """
-    st.markdown(f'<button id="copy_order_btn" style="background-color: #616161; color: white; border-radius: 10px; padding: 8px 15px; width: 100%; margin-top: 10px; cursor: pointer;">📋 Copiar Resumo do Pedido</button>', unsafe_allow_html=True)
-    st.markdown(js_copy, unsafe_allow_html=True)
-    
     st.markdown("---")
     
     # 3. BOTÃO "Voltar ao Catálogo"
@@ -901,5 +860,16 @@ else:
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
-            render_product_card(product_id, row, key_prefix=unique_key, df_catalalogo_indexado=st.session_state.df_catalogo_indexado)
+            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
+
+                               
+
+
+
+
+
+
+
+
 
