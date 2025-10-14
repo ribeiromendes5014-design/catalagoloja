@@ -7,7 +7,8 @@ import time
 from streamlit_autorefresh import st_autorefresh
 import requests
 
-
+# --- LOCAL RECOMENDADO PARA O set_page_config ---
+st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
@@ -698,6 +699,7 @@ else:
 
 
                                
+
 
 
 
