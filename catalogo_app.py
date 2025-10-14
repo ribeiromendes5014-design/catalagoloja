@@ -357,9 +357,21 @@ h1 { font-size: 2.5rem; }
     div.block-container {
         padding: 1rem 0.5rem !important;
     }
+    
+    /* 1. Mude a direção para que os itens voltem a ficar na horizontal */
+    /* 2. Permita que eles quebrem a linha */
     div[data-testid="stColumns"] {
-        flex-direction: column !important;
+        flex-direction: row !important; /* Volta para a linha */
+        flex-wrap: wrap !important;     /* Permite a quebra para 2 por linha */
     }
+    
+    /* 3. Ajuste a largura de cada coluna para que ocupe 50% da tela */
+    /* Esta regra mira cada bloco de produto dentro do container de colunas */
+    div[data-testid="stColumns"] > div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
+        width: 50% !important; 
+        min-width: 150px !important; /* Garante que não fique muito estreito */
+    }
+
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.5rem; }
     .product-image-container {
@@ -375,20 +387,6 @@ h1 { font-size: 2.5rem; }
         bottom: 80px !important;
     }
 }
-
-div[data-testid="stButton"] > button { 
-    background-color: #D32F2F; 
-    color: white; 
-    border-radius: 10px; 
-    border: 1px solid #000000; 
-    font-weight: bold; 
-}
-div[data-testid="stButton"] > button:hover { 
-    background-color: #000000; 
-    color: white; 
-    border: 1px solid #FF4500; 
-}
-
 /* === Estilos de Produtos e Estoque === */
 .product-image-container { height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }
 .product-image-container img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }
@@ -702,3 +700,4 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
