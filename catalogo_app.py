@@ -8,16 +8,15 @@ from streamlit_autorefresh import st_autorefresh
 import requests
 
 
-# --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
+# --- 1. CONFIGURAÇÃO DE PÁGINA (Deve ser a primeira chamada Streamlit) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-from ui_components import (
-    adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
-    calcular_cashback_total, render_product_card
-)
+
+# --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
+# Importa a função do novo módulo
+from carrinho_ui import render_carrinho_popover 
 
 # Importa as funções e constantes dos novos módulos
-# CERTIFIQUE-SE DE QUE data_handler.py E ui_components.py EXISTEM NO MESMO DIRETÓRIO
 from data_handler import (
     carregar_catalogo, carregar_cupons, carregar_clientes_cashback, buscar_cliente_cashback,
     salvar_pedido, BACKGROUND_IMAGE_URL, LOGO_DOCEBELLA_URL, NUMERO_WHATSAPP
@@ -26,6 +25,7 @@ from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
     calcular_cashback_total, render_product_card
 )
+
 # --- NOVA FUNÇÃO: Tela de Detalhes do Produto ---
 def mostrar_detalhes_produto(df_catalogo_indexado):
     """Renderiza a tela de detalhes de um único produto (incluindo variações)."""
@@ -214,75 +214,22 @@ DF_CLIENTES_CASH = carregar_clientes_cashback()
 if 'produto_detalhe_id' not in st.session_state:
     st.session_state.produto_detalhe_id = None
 
-# --- Cálculos iniciais do carrinho ---
+# --- Cálculos iniciais do carrinho (CRUCIAIS para os botões flutuantes) ---
 total_acumulado = sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values())
 num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
 carrinho_vazio = not st.session_state.carrinho
 df_catalogo_completo = st.session_state.df_catalogo_indexado
 cashback_a_ganhar = calcular_cashback_total(st.session_state.carrinho, df_catalogo_completo)
 
-# --- CONTROLE DE FLUXO PRINCIPAL ---
 
-# Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
-if st.session_state.produto_detalhe_id:
-    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
-    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
-    st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenha
-# --- Funções Auxiliares de UI ---
+# --- REORGANIZAÇÃO: TUDO QUE PRECISA APARECER NA TELA DE DETALHES VEM PRIMEIRO ---
 
-# --- Botão Flutuante do WhatsApp ---
-MENSAGEM_PADRAO = "Olá, vi o catálogo de pedidos da Doce&Bella e gostaria de ajuda!"
-LINK_WHATSAPP = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(MENSAGEM_PADRAO)}"
-whatsapp_button_html = f"""
-<a href="{LINK_WHATSAPP}" class="whatsapp-float" target="_blank" title="Fale Conosco pelo WhatsApp">
-    <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-whats.png"
-         alt="WhatsApp"
-         style="width: 60px; height: 60px;" />
-</a>
-"""
-st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+# --- 1. CHAMADA DO POPOVER DO CARRINHO (Tem que existir no DOM) ---
+with st.container():
+    # Esta função está no carrinho_ui.py e renderiza o popover completo.
+    render_carrinho_popover(df_catalogo_completo, DF_CLIENTES_CASH)
 
-
-
-def copy_to_clipboard_js(text_to_copy):
-    js_code = f"""
-    <script>
-    function copyTextToClipboard(text) {{
-      if (navigator.clipboard) {{
-        navigator.clipboard.writeText(text).then(function() {{
-          alert('Resumo do pedido copiado!');
-        }}, function(err) {{
-          console.error('Não foi possível copiar o texto: ', err);
-          alert('Erro ao copiar o texto. Tente novamente.');
-        }});
-      }} else {{
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {{
-          document.execCommand('copy');
-          alert('Resumo do pedido copiado!');
-        }} catch (err) {{
-          console.error('Fallback: Não foi possível copiar o texto: ', err);
-          alert('Erro ao copiar o texto. Tente novamente.');
-        }}
-        document.body.removeChild(textArea);
-      }}
-    }}
-    </script>
-    """
-    st.markdown(js_code, unsafe_allow_html=True)
-
-
-
-# --- Layout do Aplicativo (INÍCIO DO SCRIPT PRINCIPAL) ---
-st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
-
-
-
-# --- CSS (COM CORREÇÃO DE LAYOUT) ---
+# --- 2. CSS (MANTIDO AQUI PARA GARANTIR ESTILO DOS FLUTUANTES) ---
 st.markdown("""
 <style>
 MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
@@ -520,6 +467,102 @@ div[data-testid="stButton"] > button:hover {
 """, unsafe_allow_html=True)
 
 
+# --- 3. BOTÕES FLUTUANTES (WhatsApp e Carrinho) ---
+
+# --- Botão Flutuante do WhatsApp ---
+MENSAGEM_PADRAO = "Olá, vi o catálogo de pedidos da Doce&Bella e gostaria de ajuda!"
+LINK_WHATSAPP = f"https://wa.me/{NUMERO_WHATSAPP}?text={requests.utils.quote(MENSAGEM_PADRAO)}"
+whatsapp_button_html = f"""
+<a href="{LINK_WHATSAPP}" class="whatsapp-float" target="_blank" title="Fale Conosco pelo WhatsApp">
+    <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-whats.png"
+         alt="WhatsApp"
+         style="width: 60px; height: 60px;" />
+</a>
+"""
+st.markdown(whatsapp_button_html, unsafe_allow_html=True)
+
+
+# --- Funções Auxiliares de UI (Mantidas aqui por serem JavaScript) ---
+def copy_to_clipboard_js(text_to_copy):
+    js_code = f"""
+    <script>
+    function copyTextToClipboard(text) {{
+      if (navigator.clipboard) {{
+        navigator.clipboard.writeText(text).then(function() {{
+          alert('Resumo do pedido copiado!');
+        }}, function(err) {{
+          console.error('Não foi possível copiar o texto: ', err);
+          alert('Erro ao copiar o texto. Tente novamente.');
+        }});
+      }} else {{
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {{
+          document.execCommand('copy');
+          alert('Resumo do pedido copiado!');
+        }} catch (err) {{
+          console.error('Fallback: Não foi possível copiar o texto: ', err);
+          alert('Erro ao copiar o texto. Tente novamente.');
+        }}
+        document.body.removeChild(textArea);
+      }}
+    }}
+    </script>
+    """
+    st.markdown(js_code, unsafe_allow_html=True)
+
+
+# --- Botão Flutuante do Carrinho ---
+if num_itens > 0:
+    floating_cart_html = f"""
+    <div class="cart-float" id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+        🛒
+        <span class="cart-float-count">{num_itens}</span>
+    </div>
+    <script>
+    (function() {{
+        const waitForPopoverButton = () => {{
+            const popoverButton = document.querySelector('div[data-testid="stPopover"] button');
+            if (popoverButton) {{
+                return popoverButton;
+            }}
+            // Tenta encontrar botão por outras abordagens (compatibilidade)
+            const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
+            if (alt) return alt;
+            return null;
+        }};
+        const floatBtn = document.getElementById("floating_cart_btn");
+        if (floatBtn) {{
+            floatBtn.addEventListener("click", function() {{
+                try {{
+                    const popBtn = waitForPopoverButton();
+                    if (popBtn) {{
+                        popBtn.click();
+                    }} else {{
+                        console.warn("Botão do popover não encontrado. Verifique o seletor.");
+                        // Não usar alert() - substitua por uma mensagem Streamlit se possível, mas aqui no JS é mais difícil.
+                    }}
+                }} catch (err) {{
+                    console.error("Erro ao tentar abrir o popover do carrinho:", err);
+                }}
+            }});
+        }}
+    }})();
+    </script>
+    """
+    st.markdown(floating_cart_html, unsafe_allow_html=True)
+
+
+# --- AGORA, O FLUXO DE CONTROLE É EXECUTADO ---
+
+# Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
+if st.session_state.produto_detalhe_id:
+    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
+    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
+    st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenhado.
 
 
 # --- Tela de Pedido Confirmado ---
@@ -568,8 +611,6 @@ if st.session_state.pedido_confirmado:
     )
     
     # --- SIMPLIFICAÇÃO: RESUMO ABAIXO FOI REMOVIDO OU SUBSTITUÍDO ---
-    # Se você ainda quiser mostrar o resumo em um formato simples (sem o botão copiar),
-    # você pode usar st.markdown ou st.info. Vamos remover tudo que duplicava.
 
     st.subheader(f"Resumo do Pedido (ID: {id_pedido_display})")
     
@@ -657,18 +698,3 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
-
-
-                               
-
-
-
-
-
-
-
-
-
-
-
-
