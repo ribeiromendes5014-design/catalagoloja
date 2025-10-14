@@ -427,6 +427,102 @@ with st.container():
                         st.warning("Preencha seu nome e contato.")
 
 # --- CONTROLE DE FLUXO PRINCIPAL ---
+# --- Botão Flutuante do Carrinho ---
+num_itens = sum(item['quantidade'] for item in st.session_state.carrinho.values())
+if num_itens > 0:
+    st.markdown(
+        f"""
+        <div style="
+            position: fixed;
+            bottom: 110px;
+            right: 40px;
+            background-color: #D32F2F;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            box-shadow: 2px 2px 5px #999;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        " id="floating_cart_btn" title="Ver seu pedido" role="button" aria-label="Abrir carrinho">
+            🛒
+            <span style="
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background-color: #FFD600;
+                color: black;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid white;
+            ">{num_itens}</span>
+        </div>
+        <script>
+        (function() {{
+            const waitForPopoverButton = (maxTries = 20) => {{
+                return new Promise((resolve) => {{
+                    let tries = 0;
+                    const check = () => {{
+                        const popoverButton = document.querySelector('div[data-testid="stPopover"] > div:first-child > button');
+                        if (popoverButton) {{
+                            resolve(popoverButton);
+                        }} else if (tries < maxTries) {{
+                            tries++;
+                            setTimeout(check, 250);
+                        }} else {{
+                            resolve(null);
+                        }}
+                    }};
+                    check();
+                }});
+            }};
+
+            const floatBtn = document.getElementById("floating_cart_btn");
+            if (floatBtn) {{
+                floatBtn.addEventListener("click", async function() {{
+                    const popBtn = await waitForPopoverButton();
+                    if (popBtn) {{
+                        popBtn.click();
+                    }} else {{
+                        alert("⚠️ Não foi possível abrir o carrinho. Tente novamente ou use o botão 'Conteúdo do Carrinho' no topo.");
+                    }}
+                }});
+            }}
+        }})();
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# --- CORREÇÃO: ÂNCORA E CONTEÚDO DO POPOVER ---
+with st.popover("Conteúdo do Carrinho", use_container_width=True):
+    if len(st.session_state.carrinho) == 0:
+        st.info("🛒 Seu carrinho está vazio.")
+    else:
+        for pid, item in st.session_state.carrinho.items():
+            col1, col2, col3 = st.columns([2, 3, 1])
+            with col1:
+                st.image(item["imagem"], use_container_width=True)
+            with col2:
+                st.markdown(f"**{item['nome']}**")
+                st.caption(f"{item['quantidade']}x R$ {item['preco']:.2f}")
+            with col3:
+                if st.button("❌", key=f"remove_{pid}"):
+                    del st.session_state.carrinho[pid]
+                    st.rerun()
+        st.markdown("---")
+        st.success(f"**Total:** R$ {sum(item['preco'] * item['quantidade'] for item in st.session_state.carrinho.values()):.2f}")
 
 # Se um ID de detalhe estiver definido, pare o script e mostre APENAS a tela de detalhes.
 if st.session_state.produto_detalhe_id:
@@ -865,6 +961,7 @@ else:
 
 
                                
+
 
 
 
