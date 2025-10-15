@@ -331,13 +331,24 @@ div[data-testid="stAppViewBlockContainer"] {
     line-height: 1; 
 }
 
-/* Regras Padrão (para PC/Telas Grandes) */
-h1 { font-size: 2.5rem; } 
+/* --- NOVO CSS GRID PARA O CATÁLOGO (Substitui st.columns) --- */
+.responsive-product-grid {
+    display: grid;
+    /* Padrão para telas grandes (PC): 4 colunas */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 15px; 
+}
+.product-grid-item {
+    /* Garante que o cartão do produto não tenha padding ou margem extra */
+    padding: 0 !important;
+}
 
-/* ======================================= */
-/* MEDIA QUERY: TELA PEQUENA (CELULAR) */
-/* ======================================= */
-@media only screen and (max-width: 600px) {
+/* ================================================================= */
+/* MEDIA QUERY PARA GRADE (Telas Pequenas) */
+/* ================================================================= */
+
+/* Mantenha o seu estilo antigo para telas < 600px */
+@media only screen and (max-width: 600px) { /* Este é o seu bloco antigo */
     div.block-container {
         padding: 0.5rem !important;
         margin-top: 0.5rem !important;
@@ -350,51 +361,21 @@ h1 { font-size: 2.5rem; }
     }
 }
 
-/* ================================================================= */
-/* REGRAS GERAIS PARA AJUSTE DE TELA (MEDIA QUERY) */
-/* ================================================================= */
-@media only screen and (max-width: 650px) {
-    div.block-container {
-        padding: 1rem 0.5rem !important;
-    }
-    
-    /* CRÍTICO 1: Anula o layout de 4 colunas e força um Grid de 2 colunas */
-    div[data-testid="stColumns"] {
-        display: grid !important;
-        /* Define 2 colunas com a mesma largura (1 fração cada) */
-        grid-template-columns: 1fr 1fr !important; 
-        gap: 10px; /* Espaçamento entre os cards */
-        
-        /* Garante que o container de colunas não tenha largura fixa */
-        max-width: unset !important;
-        width: 100% !important;
-    }
-    
-    /* CRÍTICO 2: Sobrescreve a largura de CADA ITEM DE COLUNA (produto) */
-    /* Este seletor mira qualquer DIV que seja filho direto do contêiner de colunas */
-    div[data-testid="stColumns"] > div:has(> [data-testid="stContainer"]) {
-        /* O Grid ja define a largura de 50%, mas Streamlit pode tentar forçar 100% */
-        width: 100% !important; /* Deve ser 100% do seu slot no Grid */
-        min-width: unset !important;
-        padding: 0 5px !important; /* Adiciona um pequeno padding interno para espaço */
-    }
 
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.5rem; }
-    .product-image-container {
-        height: 200px !important;
-    }
-    .whatsapp-float, .cart-float {
-        width: 50px !important;
-        height: 50px !important;
-        bottom: 20px !important;
-        right: 20px !important;
-    }
-    .cart-float {
-        bottom: 80px !important;
+@media (max-width: 992px) {
+    .responsive-product-grid {
+        /* Tela média/tablet: 3 colunas */
+        grid-template-columns: repeat(3, 1fr); 
     }
 }
-
+@media (max-width: 650px) {
+    .responsive-product-grid {
+        /* CRÍTICO: Celular (max 650px): 2 COLUNAS! */
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 8px; /* Espaçamento menor para celular */
+    }
+}
+/* --- FIM DO NOVO CSS GRID --- */
 div[data-testid="stButton"] > button { 
     background-color: #D32F2F; 
     color: white; 
@@ -715,12 +696,20 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    cols = st.columns(4)
+    # NOVO CÓDIGO: Implementação de Grid Layout usando st.markdown e CSS
+    st.markdown('<div class="responsive-product-grid">', unsafe_allow_html=True)
+    
     for i, row in df_filtrado.reset_index(drop=True).iterrows():
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
-        with cols[i % 4]:
-            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+        
+        # Cada produto é envolvido pelo nosso bloco de CSS Grid (.product-grid-item)
+        st.markdown('<div class="product-grid-item">', unsafe_allow_html=True)
+        render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
