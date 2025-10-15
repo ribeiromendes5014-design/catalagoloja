@@ -12,14 +12,16 @@ import streamlit_javascript as st_js
 # --- 1. CONFIGURAÇÃO DE PÁGINA (Deve ser a primeira chamada Streamlit) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
-# --- Detecta se o acesso é mobile pelo user agent ---
+# --- Detecta modo mobile simples (sem bibliotecas externas) ---
 import streamlit as st
 
-if "user_agent" not in st.session_state:
-    st.session_state.user_agent = st.text_input("", value="", key="ua_detect", label_visibility="collapsed")
-    
-user_agent = st.session_state.user_agent.lower()
-st.session_state.is_mobile = any(x in user_agent for x in ["iphone", "android", "mobile"])
+# Define como mobile se a tela for pequena ou se o usuário marcar manualmente
+st.sidebar.markdown("### ⚙️ Configurações (visível só para admin)")
+is_mobile_manual = st.sidebar.checkbox("Forçar modo celular", value=False)
+
+# Define o estado (2 colunas se for mobile)
+st.session_state.is_mobile = is_mobile_manual
+
 
 
 
@@ -726,6 +728,7 @@ for i, row in df_filtrado.reset_index(drop=True).iterrows():
             key_prefix=unique_key,
             df_catalogo_indexado=st.session_state.df_catalogo_indexado
         )
+
 
 
 
