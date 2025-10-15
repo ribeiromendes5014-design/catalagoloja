@@ -357,9 +357,21 @@ h1 { font-size: 2.5rem; }
     div.block-container {
         padding: 1rem 0.5rem !important;
     }
+    
+    /* CRÍTICO: Anula o layout de 4 colunas e força um Grid de 2 colunas */
     div[data-testid="stColumns"] {
-        flex-direction: column !important;
+        display: grid !important;
+        /* Define 2 colunas com a mesma largura (1 fração cada) */
+        grid-template-columns: 1fr 1fr !important; 
+        gap: 10px; /* Espaçamento entre os cards */
     }
+    
+    /* Garante que os itens de produto não tenham largura fixa que atrapalhe o Grid */
+    div[data-testid="stColumns"] > div {
+        width: 100% !important; 
+        min-width: unset !important;
+    }
+
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.5rem; }
     .product-image-container {
@@ -702,3 +714,4 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
