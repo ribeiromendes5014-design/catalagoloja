@@ -111,21 +111,23 @@ div[data-testid="stAppViewBlockContainer"] {
     padding-top: 0 !important;
 }
 
-/* FORÇA O TEXTO DO CABEÇALHO DO EXPANDER PARA BRANCO */
-/* Altera a cor do texto do cabeçalho (o botão que abre/fecha) */
+/* AJUSTE PARA FORÇAR O TEXTO E ÍCONE DO EXPANDER PARA BRANCO */
+
+/* 1. Altera a cor do botão/cabeçalho do expander */
 div[data-testid="stExpander"] button {
     color: white !important; 
 }
 
-/* Garante que o ícone de seta/chevron também seja branco */
+/* 2. Garante que a seta de abrir/fechar também seja branca */
 div[data-testid="stExpander"] .streamlit-expander-chevron {
     color: white !important;
 }
 
-/* Opcional: Garante que o fundo do expander seja escuro (como na sua captura) */
-div[data-testid="stExpander"] {
-    background-color: #262626; 
-    border-color: #444444;
+/* 3. Estiliza o conteúdo do expander com o fundo escuro (opcional, mas garante o estilo) */
+div[data-testid="stExpander"] > div:first-child {
+    background-color: #262626 !important;
+    border: 1px solid #444444 !important;
+    border-radius: 5px;
 }
 
 .fullwidth-banner {
@@ -594,6 +596,7 @@ else:
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
     # ----------------------------------------------------
+
 
 
 
