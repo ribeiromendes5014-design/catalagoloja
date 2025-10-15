@@ -511,19 +511,21 @@ if st.session_state.pedido_confirmado:
     st.stop() # Finaliza o script para mostrar apenas a tela de confirmação
 
 
-# --- 4.2. TELA DE DETALHES DO PRODUTO (SEGUNDA VERIFICAÇÃO) ---
+# catalogo_app.py (Bloco 4.2. TELA DE DETALHES DO PRODUTO)
+
 if st.session_state.produto_detalhe_id:
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
     
+    # REMOVER ESTE BLOCO INTEIRO (linhas 4-14 do seu snippet)
     # --- INJEÇÃO DO FORMULÁRIO DE NEWSLETTER AQUI ---
-    with st.container():
-        with st.form(key="footer_newsletter_form_detalhes", clear_on_submit=True):
-            st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True) # Use a COR_LINK definida
-            email_input = st.text_input("E-mail:", key="newsletter_email_detalhes", label_visibility="collapsed", placeholder="E-mail")
-            submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
-            # Adicione a lógica de sucesso/erro aqui
-
-    # --- INJEÇÃO DO FOOTER FIXO (Que injeta o HTML e o CSS de fixação) ---
+    # with st.container():
+    #     with st.form(key="footer_newsletter_form_detalhes", clear_on_submit=True):
+    #         st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True) 
+    #         email_input = st.text_input("E-mail:", key="newsletter_email_detalhes", label_visibility="collapsed", placeholder="E-mail")
+    #         submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
+    #         # Adicione a lógica de sucesso/erro aqui
+    
+    # --- INJEÇÃO DO FOOTER FIXO ---
     with st.container():
         render_fixed_footer()
         
@@ -618,9 +620,21 @@ else:
     # ----------------------------------------------------
 
 
-# --- Renderiza o Rodapé Fixo ---
-with st.container(): # Use um container para isolar o rodapé
-    render_fixed_footer()
+# 1. DEFINE A COR (Para o formulário usar a variável COR_LINK)
+COR_LINK = "white" # Definido no escopo global para o markdown do form
+
+# 2. RENDERIZA O FORMULÁRIO STREAMLIT (Ele será movido pelo CSS)
+with st.form(key="global_newsletter_form", clear_on_submit=True):
+    # O CSS no footer_ui.py o moverá para a Coluna 3
+    st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True) 
+    email_input = st.text_input("E-mail:", key="global_newsletter_email", label_visibility="collapsed", placeholder="E-mail")
+    submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
+    # Adicione a lógica de submissão aqui
+
+# 3. RENDERIZA O FOOTER FIXO (Este bloco que você me mostrou)
+with st.container():
+    render_fixed_footer() # <-- ESTE BLOCO CHAMA O HTML FIXO E CSS DE POSICIONAMENTO
+
 
 
 
