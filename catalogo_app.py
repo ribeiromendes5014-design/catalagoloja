@@ -364,12 +364,18 @@ h1 { font-size: 2.5rem; }
         /* Define 2 colunas com a mesma largura (1 fração cada) */
         grid-template-columns: 1fr 1fr !important; 
         gap: 10px; /* Espaçamento entre os cards */
+        
+        /* Garante que o container de colunas não tenha largura fixa */
+        max-width: unset !important;
+        width: 100% !important;
     }
     
     /* Garante que os itens de produto não tenham largura fixa que atrapalhe o Grid */
     div[data-testid="stColumns"] > div {
+        /* O Grid ja define a largura de 50%, aqui so garantimos que nao ha margens externas */
         width: 100% !important; 
         min-width: unset !important;
+        padding: 0 !important; /* Remove qualquer padding lateral extra */
     }
 
     h1 { font-size: 1.8rem; }
@@ -714,4 +720,5 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
 
