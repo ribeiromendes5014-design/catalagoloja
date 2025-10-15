@@ -604,6 +604,9 @@ else:
     # ----------------------------------------------------
 
 
+# --- Renderiza o Rodapé Fixo ---
+with st.container(): # Use um container para isolar o rodapé
+    render_fixed_footer()
 
 
 
