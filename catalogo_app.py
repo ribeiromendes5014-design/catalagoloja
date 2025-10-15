@@ -511,8 +511,20 @@ if st.session_state.pedido_confirmado:
 
 # --- 4.2. TELA DE DETALHES DO PRODUTO (SEGUNDA VERIFICAÇÃO) ---
 if st.session_state.produto_detalhe_id:
-    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
+    
+    # --- INJEÇÃO DO FORMULÁRIO DE NEWSLETTER AQUI ---
+    with st.container():
+        with st.form(key="footer_newsletter_form_detalhes", clear_on_submit=True):
+            st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True) # Use a COR_LINK definida
+            email_input = st.text_input("E-mail:", key="newsletter_email_detalhes", label_visibility="collapsed", placeholder="E-mail")
+            submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
+            # Adicione a lógica de sucesso/erro aqui
+
+    # --- INJEÇÃO DO FOOTER FIXO (Que injeta o HTML e o CSS de fixação) ---
+    with st.container():
+        render_fixed_footer()
+        
     st.stop()
 
 
@@ -607,6 +619,7 @@ else:
 # --- Renderiza o Rodapé Fixo ---
 with st.container(): # Use um container para isolar o rodapé
     render_fixed_footer()
+
 
 
 
