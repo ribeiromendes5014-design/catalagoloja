@@ -27,7 +27,9 @@ from ui_components import (
 )
 from detalhes_produto_ui import mostrar_detalhes_produto
 from footer_ui import render_fixed_footer
-
+# --- VARIÁVEIS DE COR DO FOOTER (Para uso no st.form) ---
+COR_LINK = "white"  # Use branco como fallback se não quiser um amarelo específico
+# --- FIM DAS VARIÁVEIS DE COR ---
 
 # --- Inicialização do Carrinho de Compras e Estado --- <--- DEVE COMEÇAR AQUI, SEM LINHAS INÚTEIS
 if 'carrinho' not in st.session_state:
@@ -619,6 +621,7 @@ else:
 # --- Renderiza o Rodapé Fixo ---
 with st.container(): # Use um container para isolar o rodapé
     render_fixed_footer()
+
 
 
 
