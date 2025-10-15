@@ -196,7 +196,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             if i < len(df_amostra):
                 row_card = df_amostra.loc[i]
                 with col:
-                    st.image(row_card['LINKIMAGEM'], use_column_width=True)
+                    st.image(row_card['LINKIMAGEM'], use_container_width=True)
                     st.caption(f"**{row_card['NOME']}**")
                     st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) # Avaliação Fixa
                     st.subheader(f"R$ {row_card['PRECO_FINAL']:.2f}")
@@ -227,3 +227,4 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
