@@ -6,23 +6,10 @@ import json
 import time
 from streamlit_autorefresh import st_autorefresh
 import requests
-import streamlit_javascript as st_js
 
 
 # --- 1. CONFIGURAÇÃO DE PÁGINA (Deve ser a primeira chamada Streamlit) ---
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
-
-# --- Detecta modo mobile simples (sem bibliotecas externas) ---
-import streamlit as st
-
-# Define como mobile se a tela for pequena ou se o usuário marcar manualmente
-st.sidebar.markdown("### ⚙️ Configurações (visível só para admin)")
-is_mobile_manual = st.sidebar.checkbox("Forçar modo celular", value=False)
-
-# Define o estado (2 colunas se for mobile)
-st.session_state.is_mobile = is_mobile_manual
-
-
 
 
 # --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
@@ -370,24 +357,9 @@ h1 { font-size: 2.5rem; }
     div.block-container {
         padding: 1rem 0.5rem !important;
     }
-    
-    /* 1. Altera o container principal (stColumns) para permitir a quebra de linha */
     div[data-testid="stColumns"] {
-        /* CRÍTICO: Remove flex-direction: column e força a quebra */
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
+        flex-direction: column !important;
     }
-    
-    /* 2. CRÍTICO: Força o contêiner de cada coluna individual a ter 50% de largura. */
-    /* Este seletor geralmente funciona para colunas criadas com st.columns() */
-    div[data-testid="stColumns"] > div[data-testid^="stBlock"] { 
-        width: 50% !important;
-        min-width: 150px !important;
-        /* Adicione padding lateral para não colar */
-        padding-left: 5px !important; 
-        padding-right: 5px !important;
-    }
-
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.5rem; }
     .product-image-container {
@@ -403,6 +375,20 @@ h1 { font-size: 2.5rem; }
         bottom: 80px !important;
     }
 }
+
+div[data-testid="stButton"] > button { 
+    background-color: #D32F2F; 
+    color: white; 
+    border-radius: 10px; 
+    border: 1px solid #000000; 
+    font-weight: bold; 
+}
+div[data-testid="stButton"] > button:hover { 
+    background-color: #000000; 
+    color: white; 
+    border: 1px solid #FF4500; 
+}
+
 /* === Estilos de Produtos e Estoque === */
 .product-image-container { height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }
 .product-image-container img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }
@@ -710,57 +696,9 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    # === Grade Responsiva de Produtos (CSS + HTML) ===
-import streamlit as st
-
-# Define o número de colunas padrão (4 no PC)
-num_cols = 4 if not st.session_state.get("is_mobile", False) else 2
-
-# Aplica um estilo CSS responsivo
-st.markdown("""
-<style>
-.catalog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-}
-@media (max-width: 768px) {
-  .catalog-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px;
-  }
-}
-.catalog-item {
-  background-color: white;
-  border-radius: 10px;
-  padding: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Container HTML de grade
-st.markdown('<div class="catalog-grid">', unsafe_allow_html=True)
-
-# Renderiza cada produto dentro do container
-for i, row in df_filtrado.reset_index(drop=True).iterrows():
-    product_id = row['ID']
-    unique_key = f'prod_{product_id}_{i}'
-    st.markdown('<div class="catalog-item">', unsafe_allow_html=True)
-    render_product_card(
-        product_id,
-        row,
-        key_prefix=unique_key,
-        df_catalogo_indexado=st.session_state.df_catalogo_indexado
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# Fecha o container
-st.markdown('</div>', unsafe_allow_html=True)
-
-
-
-
-
-
-
+    cols = st.columns(4)
+    for i, row in df_filtrado.reset_index(drop=True).iterrows():
+        product_id = row['ID']
+        unique_key = f'prod_{product_id}_{i}'
+        with cols[i % 4]:
+            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
