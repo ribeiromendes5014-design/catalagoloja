@@ -681,8 +681,25 @@ if df_filtrado.empty:
     st.info(f"Nenhum produto encontrado com os critérios selecionados.")
 else:
     st.subheader("✨ Nossos Produtos")
+    
+    # ----------------------------------------------------
+    # --- NOVO: Adiciona a opção de Grade na coluna criada ---
+    opcoes_grade = [4, 3, 2] # Opções de colunas
+    
+    # IMPORTANTE: Coloque o selectbox na nova coluna col_grade_opcoes
+    colunas_por_linha = col_grade_opcoes.selectbox(
+        "Produtos por linha:",
+        opcoes_grade, 
+        index=0, # 4 será o padrão
+        key='grade_produtos'
+    )
+    # ----------------------------------------------------
+    
     opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome do Produto (A-Z)']
+    
+    # IMPORTANTE: Mantenha o selectbox na coluna original col_select_ordem
     ordem_selecionada = col_select_ordem.selectbox("Ordenar por:", opcoes_ordem, key='ordem_produtos')
+    
     df_filtrado['EM_PROMOCAO'] = df_filtrado['PRECO_PROMOCIONAL'].notna()
 
     sort_map = {
@@ -696,9 +713,16 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    cols = st.columns(4)
+    # ----------------------------------------------------
+    # --- NOVO: Usa a variável colunas_por_linha (Ex: 4, 3 ou 2) ---
+    cols = st.columns(colunas_por_linha)
+    
     for i, row in df_filtrado.reset_index(drop=True).iterrows():
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
-        with cols[i % 4]:
+        
+        # NOVO: Usa colunas_por_linha no operador módulo
+        with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+    # ----------------------------------------------------
+
