@@ -331,51 +331,66 @@ div[data-testid="stAppViewBlockContainer"] {
     line-height: 1; 
 }
 
-/* --- NOVO CSS GRID PARA O CATÁLOGO (Substitui st.columns) --- */
-.responsive-product-grid {
-    display: grid;
-    /* Padrão para telas grandes (PC): 4 colunas */
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 15px; 
-}
-.product-grid-item {
-    /* Garante que o cartão do produto não tenha padding ou margem extra */
-    padding: 0 !important;
+/* Regras Padrão (para PC/Telas Grandes) */
+h1 { font-size: 2.5rem; }
+
+/* ======================================= */
+/* MEDIA QUERY: TELA PEQUENA (CELULAR) */
+/* ======================================= */
+@media only screen and (max-width: 600px) { /* Seu bloco antigo */
+    div.block-container {
+        padding: 0.5rem !important;
+        margin-top: 0.5rem !important;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    .product-image-container {
+        height: 180px;
+    }
 }
 
-/* ================================================================= */
-/* MEDIA QUERY PARA GRADE (Telas Pequenas) */
-/* ================================================================= */
 
-/* Mantenha o seu estilo antigo para telas < 600px */
-@media only screen and (max-width: 600px) { /* Este é o seu bloco antigo */
+/* ================================================================= */
+/* REGRAS GERAIS PARA AJUSTE DE TELA (MEDIA QUERY) */
+/* ================================================================= */
+@media only screen and (max-width: 650px) {
     div.block-container {
-        padding: 0.5rem !important;
-        margin-top: 0.5rem !important;
+        padding: 1rem 0.5rem !important;
     }
-    h1 {
-        font-size: 1.8rem;
+    
+    /* CRÍTICO: FORÇA GRID NO CONTEINER PAI DO CATÁLOGO */
+    /* Este seletor (stVerticalBlock) é o pai que contém todos os cartões de produtos. */
+    /* Ele anula o CSS interno do Streamlit que empilha os elementos. */
+    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:nth-child(2) {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* 2 COLUNAS */
+        gap: 10px;
+        width: 100% !important;
     }
+    
+    /* Garante que os cartões individuais ocupem o espaço do Grid */
+    div[data-testid^="stBlock"] {
+        width: 100% !important;
+        min-width: unset !important;
+        padding: 0 !important;
+    }
+
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
     .product-image-container {
-        height: 180px;
+        height: 200px !important;
+    }
+    .whatsapp-float, .cart-float {
+        width: 50px !important;
+        height: 50px !important;
+        bottom: 20px !important;
+        right: 20px !important;
+    }
+    .cart-float {
+        bottom: 80px !important;
     }
 }
-
-
-@media (max-width: 992px) {
-    .responsive-product-grid {
-        /* Tela média/tablet: 3 colunas */
-        grid-template-columns: repeat(3, 1fr); 
-    }
-}
-@media (max-width: 650px) {
-    .responsive-product-grid {
-        /* CRÍTICO: Celular (max 650px): 2 COLUNAS! */
-        grid-template-columns: repeat(2, 1fr); 
-        gap: 8px; /* Espaçamento menor para celular */
-    }
-}
-/* --- FIM DO NOVO CSS GRID --- */
 div[data-testid="stButton"] > button { 
     background-color: #D32F2F; 
     color: white; 
@@ -696,19 +711,16 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    # NOVO CÓDIGO: Implementação de Grid Layout usando st.markdown e CSS
-    st.markdown('<div class="responsive-product-grid">', unsafe_allow_html=True)
+    # NOVO CÓDIGO: REMOVE O st.columns(4) E OS st.markdown CUSTOMIZADOS
     
+    # O CSS deve forçar o contêiner Streamlit pai (stVerticalBlock) a ser a grade.
     for i, row in df_filtrado.reset_index(drop=True).iterrows():
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
         
-        # Cada produto é envolvido pelo nosso bloco de CSS Grid (.product-grid-item)
-        st.markdown('<div class="product-grid-item">', unsafe_allow_html=True)
+        # Apenas renderiza o cartão de produto, sem nenhum contêiner extra
         render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
-        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 
