@@ -158,71 +158,39 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("---")
     
    # =================================================================
-    # --- 4. Seção "Produtos Relacionados" (COM CARROSSEL) ---
-    # =================================================================
-    st.header("PRODUTOS RELACIONADOS")
-    st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True)
+# --- 4. Seção "Produtos Relacionados" (VOLTA ÀS COLUNAS NATIVAS) ---
+# =================================================================
+st.header("PRODUTOS RELACIONADOS")
+st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) 
 
-    # Seleciona produtos reais (que não sejam o produto atual) para a seção
-    # Aumentamos a amostragem para fazer sentido no carrossel
-    df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(6).reset_index()
+# Seleciona produtos reais (que não sejam o produto atual) para a seção
+df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(4).reset_index()
     
-    if not df_amostra.empty:
-        
-        # 1. PREPARA OS ITEMS PARA O CARROSSEL
-        items_carrossel = []
-        for _, row_card in df_amostra.iterrows():
+if not df_amostra.empty:
+    # Retorna para as colunas Streamlit nativas (melhor layout garantido)
+    cols_cards = st.columns(len(df_amostra))
+
+    for i, col in enumerate(cols_cards):
+        if i < len(df_amostra):
+            row_card = df_amostra.loc[i]
             prod_id_card = row_card['ID']
             
-            # --- Cria o conteúdo HTML/Markdown do Card ---
-            # Nota: Dentro do carrossel, a interatividade por clique na IMAGEM (via JS)
-            # pode ser complexa. Usaremos um botão explícito para garantir a navegação.
-            
-            card_html = f"""
-            <div style="
-                border: 1px solid #ccc; 
-                border-radius: 8px; 
-                padding: 10px; 
-                text-align: center;
-                background-color: white;
-                height: 350px; /* Altura fixa para uniformidade */
-            ">
-                <img src="{row_card['LINKIMAGEM']}" 
-                     alt="{row_card['NOME']}" 
-                     style="max-height: 180px; width: auto; object-fit: contain; margin-bottom: 10px;">
-                <p style="font-weight: bold; margin: 0;">{row_card['NOME']}</p>
-                <p style="color: gray; margin: 0;">⭐⭐⭐⭐ (342)</p>
-                <h4 style="color: #D32F2F; margin: 5px 0;">R$ {row_card['PRECO_FINAL']:.2f}</h4>
+            with col:
+                # 1. O CARD É TOTALMENTE CLICÁVEL com esta função do ui_components.py
+                render_product_image_clickable(row_card['LINKIMAGEM'], prod_id_card) 
                 
-                </div>
-            """
-            
-            items_carrossel.append(
-                {
-                    "title": f"R$ {row_card['PRECO_FINAL']:.2f}",
-                    "text": row_card['NOME'],
-                    "img": row_card['LINKIMAGEM'],
-                    "interval": 2000 # Troca a cada 2 segundos (simulação)
-                }
-            )
+                # 2. Informações do Produto (sem subheader para manter o card limpo)
+                st.caption(f"**{row_card['NOME']}**")
+                st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) 
+                
+                st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {row_card['PRECO_FINAL']:.2f}</h5>", unsafe_allow_html=True)
 
-        # 2. RENDERIZA O CARROSSEL
-        carousel(
-            items=items_carrossel, 
-            key="produtos_relacionados_carousel" # Deixe apenas os argumentos essenciais
-        )
-        
-        # 3. GARANTIA DE CLIQUE: Como o carrossel Custom Component Dificulta o clique,
-        #    deixamos a função de click via imagem (render_product_image_clickable)
-        #    ou botão na tela principal para fazer a navegação. 
-        
-        st.info("⚠️ **Navegação:** Clique na imagem do produto para ir aos detalhes.")
+                # Mantemos o botão de fallback invisível que render_product_image_clickable cria
 
+else:
+    st.info("Simulação de produtos relacionados indisponível.")
 
-    else:
-        st.info("Simulação de produtos relacionados indisponível.")
-
-    st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 
 
