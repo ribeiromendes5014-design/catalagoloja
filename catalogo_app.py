@@ -511,8 +511,13 @@ if st.session_state.pedido_confirmado:
 
 # --- 4.2. TELA DE DETALHES DO PRODUTO (SEGUNDA VERIFICAÇÃO) ---
 if st.session_state.produto_detalhe_id:
-    # Chama a nova função (usando df_catalogo_completo que é o df_catalogo_indexado)
+    # 1. Chama a função que renderiza a TELA DE DETALHES
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
+    
+    # 2. CHAMA O FOOTER AQUI para garantir que ele apareça na tela de detalhes
+    with st.container():
+        render_fixed_footer()
+        
     st.stop() # CRUCIAL: Impede que o resto do catálogo seja desenhado.
 
 
@@ -607,6 +612,7 @@ else:
 # --- Renderiza o Rodapé Fixo ---
 with st.container(): # Use um container para isolar o rodapé
     render_fixed_footer()
+
 
 
 
