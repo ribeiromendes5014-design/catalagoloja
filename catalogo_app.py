@@ -84,7 +84,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # =================================================================
     with col_img_variacao:
         # Imagem Principal (Corpo da Imagem)
-        st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
+        st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
         
         # --- Lógica de Seleção de Variação (Quadrado Roxo) ---
         if not df_variacoes.empty:
@@ -737,6 +737,7 @@ else:
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
     # ----------------------------------------------------
+
 
 
 
