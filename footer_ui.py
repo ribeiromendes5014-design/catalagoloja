@@ -69,45 +69,48 @@ def render_fixed_footer():
         /* ---------------------------------------------------- */
 
         /* 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO */
-        /* Este CSS move o formulário Streamlit (renderizado em outro lugar) para a Coluna 3 */
-        div[data-testid="stForm"] {{
+        /* Seleciona o container geral do form */
+        div[data-testid="stForm"] {
+            /* Força a saída do fluxo normal e o alinhamento */
             position: absolute; 
-            /* Valores ajustados visualmente para a Coluna 3 no layout wide */
-            top: 70px;             /* Ajuste Y para ficar abaixo do 'Newsletter' */
-            right: 40px;           /* Ajuste X para alinhar com a direita */
+            
+            /* COORDENADAS AJUSTADAS para posicionar o form sobre a Coluna 3 */
+            top: 60px;             /* Ajusta para ficar alinhado com o 'Newsletter' */
+            right: 40px;           /* Alinha com a borda direita do rodapé */
+            
             width: 300px;          /* Largura da Coluna 3 */
             z-index: 9999;
             padding: 0;
             margin: 0;
             background-color: transparent; 
-        }}
-
-        /* 2. ESTILO DO INPUT E BOTÃO */
-        /* Força os inputs e botões a ficarem na mesma linha e alinhados */
-        div[data-testid="stForm"] > div > div:not([role="button"]) {{ 
+       }}
+        
+        /* 2. ESTILO DOS INPUTS E BOTÕES */
+        /* Torna os campos internos e o botão alinhados horizontalmente (Newsletter style) */
+        div[data-testid="stForm"] > div > div:not([role="button"]) { 
             display: flex;
             gap: 5px;
             align-items: center;
         }}
 
-        /* Oculta o título e labels do formulário Streamlit */
-        div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{
+        /* Oculta o título e labels (apenas queremos o input e o botão) */
+        div[data-testid="stForm"] h4, div[data-testid="stForm"] label {
             display: none !important;
         }}
         
-        /* Estilo específico para o campo E-mail */
-        div[data-testid="stForm"] input {{
-            background-color: #F8B4C0 !important; /* Fundo rosa claro */
-            color: #333 !important; /* Texto escuro legível */
+        /* Estiliza o campo E-mail */
+        div[data-testid="stForm"] input {
+            background-color: #F8B4C0 !important;
+            color: #333 !important;
             border: none;
             flex-grow: 1; 
             padding: 8px;
             min-width: 150px;
-        }}
+       }}
 
-        /* Estilo específico para o botão ENVIAR */
-        div[data-testid="stForm"] button {{
-            background-color: #E91E63 !important; /* Rosa Escuro/Vermelho (Botão de Ação) */
+        /* Estilo para o botão ENVIAR */
+        div[data-testid="stForm"] button {
+            background-color: #E91E63 !important;
             color: white !important;
             font-weight: bold;
             flex-grow: 0; 
@@ -201,3 +204,4 @@ def render_fixed_footer():
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
