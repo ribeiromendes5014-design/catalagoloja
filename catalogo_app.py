@@ -357,9 +357,7 @@ h1 { font-size: 2.5rem; }
     div.block-container {
         padding: 1rem 0.5rem !important;
     }
-    div[data-testid="stColumns"] {
-        flex-direction: column !important;
-    }
+    
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.5rem; }
     .product-image-container {
@@ -725,5 +723,6 @@ else:
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
     # ----------------------------------------------------
+
 
 
