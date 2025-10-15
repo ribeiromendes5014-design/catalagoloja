@@ -710,24 +710,53 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    # === Grade Responsiva de Produtos ===
-# Define número de colunas conforme o tamanho da tela (2 no celular, 4 no PC)
-if st.session_state.get("is_mobile", False):
-    num_cols = 2
-else:
-    num_cols = 4
+    # === Grade Responsiva de Produtos (CSS + HTML) ===
+import streamlit as st
 
-cols = st.columns(num_cols)
+# Define o número de colunas padrão (4 no PC)
+num_cols = 4 if not st.session_state.get("is_mobile", False) else 2
+
+# Aplica um estilo CSS responsivo
+st.markdown("""
+<style>
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .catalog-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+  }
+}
+.catalog-item {
+  background-color: white;
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Container HTML de grade
+st.markdown('<div class="catalog-grid">', unsafe_allow_html=True)
+
+# Renderiza cada produto dentro do container
 for i, row in df_filtrado.reset_index(drop=True).iterrows():
     product_id = row['ID']
     unique_key = f'prod_{product_id}_{i}'
-    with cols[i % num_cols]:
-        render_product_card(
-            product_id,
-            row,
-            key_prefix=unique_key,
-            df_catalogo_indexado=st.session_state.df_catalogo_indexado
-        )
+    st.markdown('<div class="catalog-item">', unsafe_allow_html=True)
+    render_product_card(
+        product_id,
+        row,
+        key_prefix=unique_key,
+        df_catalogo_indexado=st.session_state.df_catalogo_indexado
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Fecha o container
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 
