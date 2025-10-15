@@ -207,7 +207,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             )
 
         # 2. RENDERIZA O CARROSSEL
-        st_carousel(
+        carousel(  # <--- CORRIGIDO: mudou de st_carousel para carousel
             items=items_carrossel, 
             width=1000, 
             height=350, 
@@ -230,5 +230,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
