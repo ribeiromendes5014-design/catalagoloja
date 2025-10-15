@@ -332,24 +332,23 @@ div[data-testid="stAppViewBlockContainer"] {
 }
 
 /* Regras Padrão (para PC/Telas Grandes) */
-h1 { font-size: 2.5rem; }
+h1 { font-size: 2.5rem; } 
 
 /* ======================================= */
 /* MEDIA QUERY: TELA PEQUENA (CELULAR) */
 /* ======================================= */
-@media only screen and (max-width: 600px) { /* Seu bloco antigo */
-    div.block-container {
-        padding: 0.5rem !important;
-        margin-top: 0.5rem !important;
-    }
-    h1 {
-        font-size: 1.8rem;
-    }
-    .product-image-container {
-        height: 180px;
-    }
+@media only screen and (max-width: 600px) {
+    div.block-container {
+        padding: 0.5rem !important;
+        margin-top: 0.5rem !important;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    .product-image-container {
+        height: 180px;
+    }
 }
-
 
 /* ================================================================= */
 /* REGRAS GERAIS PARA AJUSTE DE TELA (MEDIA QUERY) */
@@ -358,24 +357,9 @@ h1 { font-size: 2.5rem; }
     div.block-container {
         padding: 1rem 0.5rem !important;
     }
-    
-    /* CRÍTICO: FORÇA GRID NO CONTEINER PAI DO CATÁLOGO */
-    /* Este seletor (stVerticalBlock) é o pai que contém todos os cartões de produtos. */
-    /* Ele anula o CSS interno do Streamlit que empilha os elementos. */
-    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:nth-child(2) {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important; /* 2 COLUNAS */
-        gap: 10px;
-        width: 100% !important;
+    div[data-testid="stColumns"] {
+        flex-direction: column !important;
     }
-    
-    /* Garante que os cartões individuais ocupem o espaço do Grid */
-    div[data-testid^="stBlock"] {
-        width: 100% !important;
-        min-width: unset !important;
-        padding: 0 !important;
-    }
-
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.5rem; }
     .product-image-container {
@@ -391,6 +375,7 @@ h1 { font-size: 2.5rem; }
         bottom: 80px !important;
     }
 }
+
 div[data-testid="stButton"] > button { 
     background-color: #D32F2F; 
     color: white; 
@@ -711,17 +696,9 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    # NOVO CÓDIGO: REMOVE O st.columns(4) E OS st.markdown CUSTOMIZADOS
-    
-    # O CSS deve forçar o contêiner Streamlit pai (stVerticalBlock) a ser a grade.
+    cols = st.columns(4)
     for i, row in df_filtrado.reset_index(drop=True).iterrows():
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
-        
-        # Apenas renderiza o cartão de produto, sem nenhum contêiner extra
-        render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
-
-
-
-
-
+        with cols[i % 4]:
+            render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
