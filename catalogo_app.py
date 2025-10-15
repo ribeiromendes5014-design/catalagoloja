@@ -15,7 +15,12 @@ st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sid
 # --- Detecta modo mobile simples (sem bibliotecas externas) ---
 import streamlit as st
 
+# Define como mobile se a tela for pequena ou se o usuário marcar manualmente
+st.sidebar.markdown("### ⚙️ Configurações (visível só para admin)")
+is_mobile_manual = st.sidebar.checkbox("Forçar modo celular", value=False)
 
+# Define o estado (2 colunas se for mobile)
+st.session_state.is_mobile = is_mobile_manual
 
 
 
@@ -716,7 +721,7 @@ st.markdown("""
 <style>
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
 }
 @media (max-width: 768px) {
@@ -752,9 +757,6 @@ for i, row in df_filtrado.reset_index(drop=True).iterrows():
 
 # Fecha o container
 st.markdown('</div>', unsafe_allow_html=True)
-
-
-
 
 
 
