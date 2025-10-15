@@ -22,7 +22,7 @@ def render_fixed_footer():
     f"""
     <style>
     /* Estilos do Rodapé Principal */
-    .footer-container-full {{  <-- CORREÇÃO: Chave Dupla
+    .footer-container-full {{ /* <-- Corrigido */
         position: fixed;
         bottom: 0;
         left: 0;
@@ -31,123 +31,122 @@ def render_fixed_footer():
         color: {COR_TEXTO};
         padding-top: 30px;
         padding-bottom: 50px;
-        z-index: 9990; 
+        z-index: 9990;
         font-size: 14px;
-    }}  <-- CORREÇÃO: Chave Dupla
+    }} /* <-- Corrigido */
     
     /* ADICIONA ESPAÇAMENTO NA PARTE INFERIOR DO CORPO DO SITE */
-    .stApp > header, .stApp > div:last-child {{ <-- CORREÇÃO
+    .stApp > header, .stApp > div:last-child {{ /* <-- Corrigido */
         margin-bottom: 250px !important; /* Ajuste este valor se o rodapé for muito alto */
-    }} <-- CORREÇÃO
+    }} /* <-- Corrigido */
 
-    .footer-grid {{ <-- CORREÇÃO
+    .footer-grid {{ /* <-- Corrigido */
         display: grid;
         grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas iguais */
         gap: 20px;
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 40px;
-    }} <-- CORREÇÃO
-    .footer-column h4, .footer-column p {{ <-- CORREÇÃO
+    }} /* <-- Corrigido */
+    .footer-column h4, .footer-column p {{ /* <-- Corrigido */
         font-weight: bold;
         margin-bottom: 15px;
         color: {COR_TEXTO};
-    }} <-- CORREÇÃO
-    .footer-column a {{ <-- CORREÇÃO
+    }} /* <-- Corrigido */
+    .footer-column a {{ /* <-- Corrigido */
         color: {COR_LINK};
         text-decoration: none;
         display: block;
         margin-bottom: 8px;
         font-weight: normal;
-    }} <-- CORREÇÃO
-    .footer-column a:hover {{ <-- CORREÇÃO
+    }} /* <-- Corrigido */
+    .footer-column a:hover {{ /* <-- Corrigido */
         text-decoration: underline;
-    }} <-- CORREÇÃO
-        
-        /* ---------------------------------------------------- */
-        /* CSS PARA POSICIONAMENTO E ESTILIZAÇÃO DO FORMULÁRIO */
-        /* ---------------------------------------------------- */
+    }} /* <-- Corrigido */
+    
+    /* ---------------------------------------------------- */
+    /* CSS PARA POSICIONAMENTO E ESTILIZAÇÃO DO FORMULÁRIO */
+    /* ---------------------------------------------------- */
 
-        # 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO
-        # Seleciona o container geral do form
-        div[data-testid="stForm"] {
-            # Força a saída do fluxo normal e o alinhamento
-            position: absolute; 
-            
-            # Valores ajustados visualmente para a Coluna 3 no layout wide
-            top: 70px;             # Ajuste Y para ficar abaixo do 'Newsletter' 
-            right: 40px;           # Alinha com a borda direita do rodapé 
-            
-            width: 300px;          # Largura da Coluna 3 
-            z-index: 9999;
-            padding: 0;
-            margin: 0;
-            background-color: transparent; 
-        }
-
-        # 2. ESTILO DOS INPUTS E BOTÕES
-        # Torna os campos internos e o botão alinhados horizontalmente (Newsletter style)
-        div[data-testid="stForm"] > div > div:not([role="button"]) { 
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
+    /* 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO */
+    /* Seleciona o container geral do form */
+    div[data-testid="stForm"] {{ /* <-- Corrigido */
+        position: absolute; 
         
-        # Oculta o título e labels do formulário Streamlit
-        div[data-testid="stForm"] h4, div[data-testid="stForm"] label {
-            display: none !important;
-        }
+        /* Valores ajustados visualmente para a Coluna 3 no layout wide */
+        top: 70px; 
+        right: 40px; 
         
-        # Estiliza o campo E-mail
-        div[data-testid="stForm"] input {
-            background-color: #F8B4C0 !important;
-            color: #333 !important;
-            border: none;
-            flex-grow: 1; 
-            padding: 8px;
-            min-width: 150px;
-        }
-        
-        # Estilo específico para o botão ENVIAR
-        div[data-testid="stForm"] button {
-            background-color: #E91E63 !important;
-            color: white !important;
-            font-weight: bold;
-            flex-grow: 0; 
-            padding: 8px 15px;
-            min-width: 80px;
-        }
-        
-        /* Rodapé Secundário (Bottom Bar) */
-        .footer-bottom {{
-            width: 100%;
-            background-color: rgba(0, 0, 0, 0.1); 
-            color: {COR_TEXTO};
-            padding: 10px 40px;
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }}
+        width: 300px;
+        z-index: 9999;
+        padding: 0;
+        margin: 0;
+        background-color: transparent; 
+    }} /* <-- Corrigido */
 
-        /* Media Query para responsividade */
-        @media (max-width: 768px) {{
-            /* ... (Seções de media query) ... */
+    /* 2. ESTILO DOS INPUTS E BOTÕES */
+    /* Torna os campos internos e o botão alinhados horizontalmente (Newsletter style) */
+    div[data-testid="stForm"] > div > div:not([role="button"]) {{ /* <-- Corrigido */
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }} /* <-- Corrigido */
+    
+    /* Oculta o título e labels do formulário Streamlit */
+    div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{ /* <-- Corrigido */
+        display: none !important;
+    }} /* <-- Corrigido */
+    
+    /* Estiliza o campo E-mail */
+    div[data-testid="stForm"] input {{ /* <-- Corrigido */
+        background-color: #F8B4C0 !important;
+        color: #333 !important;
+        border: none;
+        flex-grow: 1; 
+        padding: 8px;
+        min-width: 150px;
+    }} /* <-- Corrigido */
+    
+    /* Estilo específico para o botão ENVIAR */
+    div[data-testid="stForm"] button {{ /* <-- Corrigido */
+        background-color: #E91E63 !important;
+        color: white !important;
+        font-weight: bold;
+        flex-grow: 0; 
+        padding: 8px 15px;
+        min-width: 80px;
+    }} /* <-- Corrigido */
+    
+    /* Rodapé Secundário (Bottom Bar) */
+    .footer-bottom {{ /* <-- Corrigido */
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.1); 
+        color: {COR_TEXTO};
+        padding: 10px 40px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }} /* <-- Corrigido */
 
-            /* Ajuste o formulário para o centro no mobile */
-            div[data-testid="stForm"] {{
-                position: relative; /* Volta para o fluxo normal no mobile */
-                width: 90%;
-                margin: 20px auto 0 auto;
-                top: auto;
-                right: auto;
-            }}
-        }}
+    /* Media Query para responsividade */
+    @media (max-width: 768px) {{ /* <-- Corrigido */
+        /* ... (Seções de media query) ... */
 
-        </style>
-        """, 
-        unsafe_allow_html=True
-    )
+        /* Ajuste o formulário para o centro no mobile */
+        div[data-testid="stForm"] {{ /* <-- Corrigido */
+            position: relative; /* Volta para o fluxo normal no mobile */
+            width: 90%;
+            margin: 20px auto 0 auto;
+            top: auto;
+            right: auto;
+        }} /* <-- Corrigido */
+    }} /* <-- Corrigido */
+
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
     
     # --- Estrutura do Rodapé (HTML e Injeção do Formulário) ---
     
@@ -204,6 +203,7 @@ def render_fixed_footer():
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
