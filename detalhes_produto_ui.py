@@ -157,40 +157,40 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     
     st.markdown("---")
     
-   # =================================================================
-# --- 4. Seção "Produtos Relacionados" (VOLTA ÀS COLUNAS NATIVAS) ---
-# =================================================================
-st.header("PRODUTOS RELACIONADOS")
-st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) 
+    # =================================================================
+    # --- 4. Seção "Produtos Relacionados" (VOLTA ÀS COLUNAS NATIVAS) ---
+    # =================================================================
+    st.header("PRODUTOS RELACIONADOS")
+    st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) 
 
-# Seleciona produtos reais (que não sejam o produto atual) para a seção
-df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(4).reset_index()
+    # ESTE BLOCO ESTÁ CORRETAMENTE DENTRO DA FUNÇÃO AGORA
+    df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(4).reset_index()
     
-if not df_amostra.empty:
-    # Retorna para as colunas Streamlit nativas (melhor layout garantido)
-    cols_cards = st.columns(len(df_amostra))
+    if not df_amostra.empty:
+        # Retorna para as colunas Streamlit nativas (melhor layout garantido)
+        cols_cards = st.columns(len(df_amostra))
 
-    for i, col in enumerate(cols_cards):
-        if i < len(df_amostra):
-            row_card = df_amostra.loc[i]
-            prod_id_card = row_card['ID']
-            
-            with col:
-                # 1. O CARD É TOTALMENTE CLICÁVEL com esta função do ui_components.py
-                render_product_image_clickable(row_card['LINKIMAGEM'], prod_id_card) 
+        for i, col in enumerate(cols_cards):
+            if i < len(df_amostra):
+                row_card = df_amostra.loc[i]
+                prod_id_card = row_card['ID']
                 
-                # 2. Informações do Produto (sem subheader para manter o card limpo)
-                st.caption(f"**{row_card['NOME']}**")
-                st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) 
-                
-                st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {row_card['PRECO_FINAL']:.2f}</h5>", unsafe_allow_html=True)
+                with col:
+                    # 1. O CARD É TOTALMENTE CLICÁVEL com esta função do ui_components.py
+                    render_product_image_clickable(row_card['LINKIMAGEM'], prod_id_card) 
+                    
+                    # 2. Informações do Produto (sem subheader para manter o card limpo)
+                    st.caption(f"**{row_card['NOME']}**")
+                    st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) 
+                    
+                    st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {row_card['PRECO_FINAL']:.2f}</h5>", unsafe_allow_html=True)
 
-                # Mantemos o botão de fallback invisível que render_product_image_clickable cria
 
-else:
-    st.info("Simulação de produtos relacionados indisponível.")
+    else:
+        st.info("Simulação de produtos relacionados indisponível.")
 
-st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
