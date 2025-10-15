@@ -8,7 +8,7 @@ import time
 # Importações CRÍTICAS para a lógica de compra e estado (Do seu projeto)
 from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable
 from data_handler import ESTOQUE_BAIXO_LIMITE 
-from streamlit_carousel import st_carousel
+from streamlit_carousel import carousel
 
 
 def mostrar_detalhes_produto(df_catalogo_indexado):
@@ -230,4 +230,5 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
