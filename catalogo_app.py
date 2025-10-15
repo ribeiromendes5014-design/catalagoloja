@@ -15,12 +15,7 @@ st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sid
 # --- Detecta modo mobile simples (sem bibliotecas externas) ---
 import streamlit as st
 
-# Define como mobile se a tela for pequena ou se o usuário marcar manualmente
-st.sidebar.markdown("### ⚙️ Configurações (visível só para admin)")
-is_mobile_manual = st.sidebar.checkbox("Forçar modo celular", value=False)
 
-# Define o estado (2 colunas se for mobile)
-st.session_state.is_mobile = is_mobile_manual
 
 
 
@@ -710,43 +705,46 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    # === Grade Responsiva de Produtos (CSS + HTML) ===
+    # === Grade Responsiva Automática ===
 import streamlit as st
 
-# Define o número de colunas padrão (4 no PC)
-num_cols = 4 if not st.session_state.get("is_mobile", False) else 2
-
-# Aplica um estilo CSS responsivo
+# CSS para grade responsiva
 st.markdown("""
 <style>
-.catalog-grid {
+.product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
-@media (max-width: 768px) {
-  .catalog-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px;
+@media (max-width: 850px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
-.catalog-item {
-  background-color: white;
-  border-radius: 10px;
-  padding: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.product-card {
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Container HTML de grade
-st.markdown('<div class="catalog-grid">', unsafe_allow_html=True)
+# Abre container da grade
+st.markdown('<div class="product-grid">', unsafe_allow_html=True)
 
-# Renderiza cada produto dentro do container
+# Cada produto vira um "cartão" Streamlit dentro da grid
 for i, row in df_filtrado.reset_index(drop=True).iterrows():
     product_id = row['ID']
     unique_key = f'prod_{product_id}_{i}'
-    st.markdown('<div class="catalog-item">', unsafe_allow_html=True)
+
+    # Abre bloco de card com HTML
+    st.markdown('<div class="product-card">', unsafe_allow_html=True)
     render_product_card(
         product_id,
         row,
@@ -757,6 +755,8 @@ for i, row in df_filtrado.reset_index(drop=True).iterrows():
 
 # Fecha o container
 st.markdown('</div>', unsafe_allow_html=True)
+
+
 
 
 
