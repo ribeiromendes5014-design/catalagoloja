@@ -19,50 +19,50 @@ def render_fixed_footer():
     # --- HTML e CSS para o Rodapé Fixo ---
     
     st.markdown(
-        f"""
-        <style>
-        /* Estilos do Rodapé Principal */
-        .footer-container-full {{
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: {COR_RODAPE};
-            color: {COR_TEXTO};
-            padding-top: 30px; 
-            padding-bottom: 50px;
-            z-index: 9990; 
-            font-size: 14px;
-        }}
-        
-        /* ADICIONA ESPAÇAMENTO NA PARTE INFERIOR DO CORPO DO SITE */
-        .stApp > header, .stApp > div:last-child {{
-            margin-bottom: 250px !important; /* Ajuste este valor se o rodapé for muito alto */
-        }}
+    f"""
+    <style>
+    /* Estilos do Rodapé Principal */
+    .footer-container-full {{  <-- CORREÇÃO: Chave Dupla
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: {COR_RODAPE};
+        color: {COR_TEXTO};
+        padding-top: 30px;
+        padding-bottom: 50px;
+        z-index: 9990; 
+        font-size: 14px;
+    }}  <-- CORREÇÃO: Chave Dupla
+    
+    /* ADICIONA ESPAÇAMENTO NA PARTE INFERIOR DO CORPO DO SITE */
+    .stApp > header, .stApp > div:last-child {{ <-- CORREÇÃO
+        margin-bottom: 250px !important; /* Ajuste este valor se o rodapé for muito alto */
+    }} <-- CORREÇÃO
 
-        .footer-grid {{
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas iguais */
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 40px;
-        }}
-        .footer-column h4, .footer-column p {{
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: {COR_TEXTO};
-        }}
-        .footer-column a {{
-            color: {COR_LINK};
-            text-decoration: none;
-            display: block;
-            margin-bottom: 8px;
-            font-weight: normal;
-        }}
-        .footer-column a:hover {{
-            text-decoration: underline;
-        }}
+    .footer-grid {{ <-- CORREÇÃO
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas iguais */
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 40px;
+    }} <-- CORREÇÃO
+    .footer-column h4, .footer-column p {{ <-- CORREÇÃO
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: {COR_TEXTO};
+    }} <-- CORREÇÃO
+    .footer-column a {{ <-- CORREÇÃO
+        color: {COR_LINK};
+        text-decoration: none;
+        display: block;
+        margin-bottom: 8px;
+        font-weight: normal;
+    }} <-- CORREÇÃO
+    .footer-column a:hover {{ <-- CORREÇÃO
+        text-decoration: underline;
+    }} <-- CORREÇÃO
         
         /* ---------------------------------------------------- */
         /* CSS PARA POSICIONAMENTO E ESTILIZAÇÃO DO FORMULÁRIO */
@@ -204,5 +204,6 @@ def render_fixed_footer():
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
