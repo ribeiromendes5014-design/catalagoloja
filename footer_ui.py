@@ -2,132 +2,112 @@
 
 import streamlit as st
 import requests
-import pandas as pd
-import time
 import re
 import urllib.parse
-from data_handler import NUMERO_WHATSAPP, carregar_clientes_cashback # Assumindo que essas variáveis são úteis
+# Importamos o NUMERO_WHATSAPP para o bloco de contato, caso ele seja usado.
+from data_handler import NUMERO_WHATSAPP 
 
-# Variáveis de Configuração do Footer (Ajuste conforme suas necessidades)
-COR_RODAPE = "#E91E63" # Rosa vibrante
+# Variáveis de Configuração do Novo Layout
+COR_RODAPE = "#F28C9D" # Rosa claro/salmão (Ajustado com base na imagem)
 COR_TEXTO = "white"
-COR_LINK = "#FFD600" # Amarelo para destaque
-
+COR_LINK = "white" # Links brancos para contraste
+NUMERO_EXIBIDO = "5511999999999" # Número fictício para exibição
 
 def render_fixed_footer():
-    """Renderiza um rodapé fixo com links, redes sociais e formulário de cadastro no WhatsApp."""
+    """Renderiza o rodapé fixo no estilo e-commerce (3 colunas, rosa) com formulário de e-mail."""
 
-    # --- LÓGICA DE CADASTRO DO FORMULÁRIO ---
+    # --- HTML e CSS para o Rodapé Fixo ---
     
-    # Este formulário é processado ao clicar, o que força um rerun para salvar.
-    
-    # É necessário um truque: Streamlit não tem submissão de formulário puro que NÃO chame rerun.
-    # Vamos usar st.session_state para um formulário simples.
-    
-    with st.container():
-        # Este container simula o layout do rodapé antes da injeção do CSS
-        
-        # Formulário de Cadastro (Simples, para evitar a complexidade do JS)
-        with st.form(key="footer_cadastro_form", clear_on_submit=False):
-            st.markdown(f'<h4 style="color:{COR_LINK};">Receba nossas promoções!</h4>', unsafe_allow_html=True)
-            
-            nome_cadastro = st.text_input("Seu Nome:", key="nome_cadastro_footer", label_visibility="collapsed", placeholder="Seu Nome Completo")
-            contato_cadastro = st.text_input("WhatsApp (DDD+números):", key="contato_cadastro_footer", label_visibility="collapsed", placeholder="Ex: 5541987876191")
-            
-            submit_button = st.form_submit_button(label="Quero Receber Promoções", type="primary", use_container_width=True)
-
-            if submit_button:
-                if nome_cadastro and contato_cadastro:
-                    contato_limpo = re.sub(r'\D', '', contato_cadastro)
-                    
-                    if len(contato_limpo) < 11:
-                        st.error("Por favor, insira um número de WhatsApp válido (com DDD).")
-                    else:
-                        # 1. Logica de Processamento (Salvar o Opt-in)
-                        # NOTA: O Streamlit não tem um backend direto. Aqui, você faria a integração
-                        # com um Google Sheet, Planilha ou endpoint API para salvar o contato.
-                        # Para esta simulação, vamos apenas construir a mensagem.
-                        
-                        mensagem_optin = (
-                            f"Olá, Doce&Bella! Meu nome é {nome_cadastro} e confirmo meu Opt-in. "
-                            "Quero receber as promoções exclusivas e novidades!"
-                        )
-                        
-                        # 2. Redirecionar para o WhatsApp
-                        link_whats_final = f"https://wa.me/{contato_limpo}?text={urllib.parse.quote(mensagem_optin)}"
-                        
-                        # Truque Streamlit para abrir link: usa markdown + HTML
-                        st.markdown(
-                            f'<a href="{link_whats_final}" target="_blank">'
-                            f'<button style="background-color: #25D366; color: white; border-radius: 5px; padding: 10px 20px; font-weight: bold; cursor: pointer;">'
-                            f'✅ CLIQUE PARA ABRIR O WHATSAPP E CONFIRMAR'
-                            f'</button></a>',
-                            unsafe_allow_html=True
-                        )
-                        st.success("Clique no botão verde acima para confirmar seu Opt-in no WhatsApp!")
-                else:
-                    st.warning("Preencha seu nome e contato para se cadastrar.")
-
-        
-    # --- HTML e CSS para o Rodapé Fixo (Design) ---
-    
-    # CSS que torna o rodapé fixo e responsivo
     st.markdown(
         f"""
         <style>
-        .footer-container {{
+        /* Estilos do Rodapé Principal */
+        .footer-container-full {{
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
             background-color: {COR_RODAPE};
             color: {COR_TEXTO};
-            padding: 20px 40px;
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 9990; /* Abaixo dos botões flutuantes, mas acima do conteúdo */
+            padding-top: 30px; /* Mais espaço no topo */
+            padding-bottom: 50px;
+            z-index: 9990; 
+            font-size: 14px;
         }}
-        .footer-content {{
-            display: flex;
-            justify-content: space-between;
+        .footer-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas iguais */
+            gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
-            flex-wrap: wrap; /* Permite quebras em telas pequenas */
+            padding: 0 40px;
         }}
-        .footer-column {{
-            flex: 1;
-            min-width: 200px; /* Garante que a coluna não fique muito estreita */
-            padding: 10px;
+        .footer-column h4, .footer-column p {{
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: {COR_TEXTO};
         }}
         .footer-column a {{
             color: {COR_LINK};
             text-decoration: none;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: normal;
         }}
         .footer-column a:hover {{
             text-decoration: underline;
         }}
-        .footer-column h4 {{
-            border-bottom: 2px solid {COR_LINK};
-            padding-bottom: 5px;
-            margin-bottom: 10px;
+        
+        /* Estilos do Formulário */
+        .email-input-container {{
+            display: flex;
+            gap: 5px;
+            margin-top: 15px;
+        }}
+        /* Estilo para simular o input com fundo claro/rosa */
+        .email-input-container input {{
+            background-color: #F8B4C0 !important; /* Cor mais clara que o fundo */
+            color: #333 !important;
+            border: none;
+            border-radius: 4px;
+            padding: 8px;
+            flex-grow: 1;
+        }}
+        /* Estilo para o botão "Enviar" */
+        .email-input-container button {{
+            background-color: #E91E63 !important; /* Rosa Escuro/Vermelho para o botão */
+            color: white !important;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }}
+        
+        /* Rodapé Secundário (Bottom Bar) */
+        .footer-bottom {{
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.1); /* Faixa mais escura no fundo */
             color: {COR_TEXTO};
+            padding: 10px 40px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }}
-        
-        /* Oculta os widgets Streamlit nativos e usa nosso HTML/Markdown */
-        div[data-testid="stForm"] {{
-             background: none;
-             padding: 0;
-             margin: 0;
-        }}
-        
-        /* Media Query para responsividade em telas muito pequenas */
+
+        /* Media Query para responsividade */
         @media (max-width: 768px) {{
-            .footer-content {{
-                flex-direction: column;
+            .footer-grid {{
+                grid-template-columns: 1fr; /* 1 coluna em mobile */
+                padding: 0 20px;
             }}
-            .footer-container {{
-                padding: 10px 20px;
+            .footer-container-full {{
+                padding-bottom: 10px;
+            }}
+            .footer-bottom {{
+                flex-direction: column;
+                text-align: center;
             }}
         }}
 
@@ -136,42 +116,64 @@ def render_fixed_footer():
         unsafe_allow_html=True
     )
     
-    # Estrutura do Rodapé (HTML)
+    # --- Estrutura do Rodapé (HTML e Injeção do Formulário) ---
+    
+    # Criamos um form Streamlit simples que irá forçar um rerun (newsletter simulada)
+    with st.form(key="footer_newsletter_form", clear_on_submit=True):
+        
+        # O formulário Streamlit deve ser renderizado aqui, mas seu HTML
+        # real com as colunas será injetado abaixo.
+        
+        # Campos visíveis no layout Streamlit (mas serão escondidos/re-estilizados pelo CSS)
+        email_input = st.text_input("E-mail:", key="newsletter_email", label_visibility="collapsed", placeholder="E-mail")
+        submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
+
+        if submit_newsletter:
+            if re.match(r"[^@]+@[^@]+\.[^@]+", email_input):
+                st.success(f"Obrigado! E-mail '{email_input}' cadastrado (simulação).")
+                # Aqui você faria a integração real da newsletter
+            else:
+                st.error("Insira um e-mail válido.")
+
+    
+    # Injeção do HTML principal do rodapé
     html_footer = f"""
-    <div class="footer-container">
-        <div class="footer-content">
+    <div class="footer-container-full">
+        <div class="footer-grid">
             
             <div class="footer-column">
-                <h4>CATEGORIAS</h4>
-                <a href="#catalogo">Maquiagem</a>
-                <a href="#catalogo">Cabelo</a>
-                <a href="#catalogo">Skincare</a>
-                <a href="#catalogo">Lançamentos</a>
+                <p style="margin-top: 0;"><i class="fa fa-instagram"></i></p>
+                <p>{NUMERO_EXIBIDO}</p>
+                <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
+                <a href="https://www.instagram.com/doce_bella" target="_blank">Instagram</a>
             </div>
 
             <div class="footer-column">
-                <h4>PAGAMENTO E ENTREGA</h4>
-                <a href="#contato">Formas de Pagamento</a>
-                <a href="#contato">Política de Frete</a>
-                <a href="#contato">Política de Troca</a>
+                <h4>MARCAS</h4>
+                <a href="#maquiagens">MAQUIAGENS</a>
+                <a href="#acessorios">ACESSÓRIOS</a>
+                <a href="#skincare">SKINCARE</a>
             </div>
 
             <div class="footer-column">
-                <h4>REDES E CONTATO</h4>
-                <a href="https://www.instagram.com/doce_bella" target="_blank">Instagram (@doce_bella)</a>
-                <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">Fale Conosco (WhatsApp)</a>
-                <a href="#sobre">Sobre a Loja</a>
+                <h4>Newsletter</h4>
+                <p style="margin: 0;">Receba novidades e promoções!</p>
+                
+                <div style="margin-top: 10px; width: 100%;">
+                    </div>
             </div>
 
-            <div class="footer-column">
-                <h4>Fique por dentro!</h4>
-                <p style="font-size: 0.9rem; margin-top: 5px; color: {COR_TEXTO};">Cadastre seu nome e WhatsApp para receber as melhores promoções!</p>
-                </div>
-
+        </div>
+        
+        <div class="footer-bottom">
+            <div>Meios de pagamento <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" style="height: 18px; vertical-align: middle; margin-left: 5px;"></div>
+            <div>
+                criado por <span><img src="https://i.ibb.co/6R2b0S4/nuvemshop-logo.png" alt="Nuvemshop" style="height: 16px; vertical-align: middle;"></span> | Copyright WE MAKE - 2025. Todos os direitos reservados.
+            </div>
         </div>
     </div>
     """
     
-    # st.markdown(html_footer, unsafe_allow_html=True) # Descomente se for testar o HTML Puro.
+    st.markdown(html_footer, unsafe_allow_html=True) 
 
 # A função render_fixed_footer será chamada no catalogo_app.py
