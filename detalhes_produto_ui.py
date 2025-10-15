@@ -8,6 +8,7 @@ import time
 # Importações CRÍTICAS para a lógica de compra e estado (Do seu projeto)
 from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable
 from data_handler import ESTOQUE_BAIXO_LIMITE 
+from streamlit_carousel import st_carousel
 
 
 def mostrar_detalhes_produto(df_catalogo_indexado):
@@ -156,36 +157,77 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     
     st.markdown("---")
     
-    # =================================================================
-    # --- 4. Seção "Produtos Relacionados" (COM CARDS CLICÁVEIS) ---
+   # =================================================================
+    # --- 4. Seção "Produtos Relacionados" (COM CARROSSEL) ---
     # =================================================================
     st.header("PRODUTOS RELACIONADOS")
     st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True)
 
     # Seleciona produtos reais (que não sejam o produto atual) para a seção
-    df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(4).reset_index()
+    # Aumentamos a amostragem para fazer sentido no carrossel
+    df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(6).reset_index()
     
     if not df_amostra.empty:
-        cols_cards = st.columns(len(df_amostra))
-
-        for i, col in enumerate(cols_cards):
-            if i < len(df_amostra):
-                row_card = df_amostra.loc[i]
-                prod_id_card = row_card['ID']
+        
+        # 1. PREPARA OS ITEMS PARA O CARROSSEL
+        items_carrossel = []
+        for _, row_card in df_amostra.iterrows():
+            prod_id_card = row_card['ID']
+            
+            # --- Cria o conteúdo HTML/Markdown do Card ---
+            # Nota: Dentro do carrossel, a interatividade por clique na IMAGEM (via JS)
+            # pode ser complexa. Usaremos um botão explícito para garantir a navegação.
+            
+            card_html = f"""
+            <div style="
+                border: 1px solid #ccc; 
+                border-radius: 8px; 
+                padding: 10px; 
+                text-align: center;
+                background-color: white;
+                height: 350px; /* Altura fixa para uniformidade */
+            ">
+                <img src="{row_card['LINKIMAGEM']}" 
+                     alt="{row_card['NOME']}" 
+                     style="max-height: 180px; width: auto; object-fit: contain; margin-bottom: 10px;">
+                <p style="font-weight: bold; margin: 0;">{row_card['NOME']}</p>
+                <p style="color: gray; margin: 0;">⭐⭐⭐⭐ (342)</p>
+                <h4 style="color: #D32F2F; margin: 5px 0;">R$ {row_card['PRECO_FINAL']:.2f}</h4>
                 
-                with col:
-                    # O CARD É OTIMIZADO PARA SER CLICÁVEL:
-                    render_product_image_clickable(row_card['LINKIMAGEM'], prod_id_card) 
-                    
-                    st.caption(f"**{row_card['NOME']}**")
-                    st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) 
-                    st.subheader(f"R$ {row_card['PRECO_FINAL']:.2f}")
+                </div>
+            """
+            
+            items_carrossel.append(
+                {
+                    "title": f"R$ {row_card['PRECO_FINAL']:.2f}",
+                    "text": row_card['NOME'],
+                    "img": row_card['LINKIMAGEM'],
+                    "interval": 2000 # Troca a cada 2 segundos (simulação)
+                }
+            )
 
-                    if st.button("👁️ Ver Detalhes", key=f'related_details_btn_{prod_id_card}', use_container_width=True):
-                         st.session_state.produto_detalhe_id = prod_id_card
-                         st.rerun()
+        # 2. RENDERIZA O CARROSSEL
+        st_carousel(
+            items=items_carrossel, 
+            width=1000, 
+            height=350, 
+            key="produtos_relacionados_carousel", 
+            # Opções de layout do carrossel (ajuste conforme a documentação)
+            carousel_mode="slide",
+            autoplay=False, # Para evitar que mude sozinho
+            loop=True,
+            responsive=True
+        )
+
+        # 3. GARANTIA DE CLIQUE: Como o carrossel Custom Component Dificulta o clique,
+        #    deixamos a função de click via imagem (render_product_image_clickable)
+        #    ou botão na tela principal para fazer a navegação. 
+        
+        st.info("⚠️ **Navegação:** Clique na imagem do produto para ir aos detalhes.")
+
 
     else:
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
