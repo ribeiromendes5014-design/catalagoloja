@@ -25,10 +25,10 @@ from ui_components import (
     adicionar_qtd_ao_carrinho, remover_do_carrinho, limpar_carrinho,
     calcular_cashback_total, render_product_card
 )
-from detalhes_produto_ui import mostrar_detalhes_produto 
-if 'carrinho' not in st.session_state:
-            
-# --- Inicialização do Carrinho de Compras e Estado ---
+from detalhes_produto_ui import mostrar_detalhes_produto # <--- FIM DAS IMPORTAÇÕES
+
+
+# --- Inicialização do Carrinho de Compras e Estado --- <--- DEVE COMEÇAR AQUI, SEM LINHAS INÚTEIS
 if 'carrinho' not in st.session_state:
     st.session_state.carrinho = {}
 if 'pedido_confirmado' not in st.session_state:
@@ -577,6 +577,7 @@ else:
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
     # ----------------------------------------------------
+
 
 
 
