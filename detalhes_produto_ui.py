@@ -207,18 +207,11 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             )
 
         # 2. RENDERIZA O CARROSSEL
-        carousel(  # <--- CORRIGIDO: mudou de st_carousel para carousel
+        carousel(
             items=items_carrossel, 
-            width=1000, 
-            height=350, 
-            key="produtos_relacionados_carousel", 
-            # Opções de layout do carrossel (ajuste conforme a documentação)
-            carousel_mode="slide",
-            autoplay=False, # Para evitar que mude sozinho
-            loop=True,
-            responsive=True
+            key="produtos_relacionados_carousel" # Deixe apenas os argumentos essenciais
         )
-
+        
         # 3. GARANTIA DE CLIQUE: Como o carrossel Custom Component Dificulta o clique,
         #    deixamos a função de click via imagem (render_product_image_clickable)
         #    ou botão na tela principal para fazer a navegação. 
@@ -230,6 +223,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
