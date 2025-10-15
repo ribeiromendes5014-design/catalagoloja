@@ -65,83 +65,83 @@ def render_fixed_footer():
     }} /* <-- Corrigido */
     
     /* ---------------------------------------------------- */
-    /* CSS PARA POSICIONAMENTO E ESTILIZAÇÃO DO FORMULÁRIO */
-    /* ---------------------------------------------------- */
+/* CSS PARA POSICIONAMENTO E ESTILIZAÇÃO DO FORMULÁRIO */
+/* ---------------------------------------------------- */
 
-    /* 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO */
-    /* Seleciona o container geral do form */
-    div[data-testid="stForm"] {{ /* <-- Corrigido */
-        position: absolute; 
-        
-        /* Valores ajustados visualmente para a Coluna 3 no layout wide */
-        top: 70px; 
-        right: 40px; 
-        
-        width: 300px;
-        z-index: 9999;
-        padding: 0;
-        margin: 0;
-        background-color: transparent; 
-    }} /* <-- Corrigido */
+/* 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO */
+/* Seleciona o container geral do form */
+div[data-testid="stForm"] {{
+    position: absolute;
+    
+    /* CORREÇÃO CRÍTICA: Ajusta a posição Y para o rodapé fixo.
+       (70px era muito pouco, move para baixo, ajuste este valor se necessário) */
+    top: 600px;
+    
+    right: 40px;
+    
+    width: 300px;
+    z-index: 9999;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+}}
 
-    /* 2. ESTILO DOS INPUTS E BOTÕES */
-    /* Torna os campos internos e o botão alinhados horizontalmente (Newsletter style) */
-    div[data-testid="stForm"] > div > div:not([role="button"]) {{ /* <-- Corrigido */
-        display: flex;
-        gap: 5px;
-        align-items: center;
-    }} /* <-- Corrigido */
-    
-    /* Oculta o título e labels do formulário Streamlit */
-    div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{ /* <-- Corrigido */
-        display: none !important;
-    }} /* <-- Corrigido */
-    
-    /* Estiliza o campo E-mail */
-    div[data-testid="stForm"] input {{ /* <-- Corrigido */
-        background-color: #F8B4C0 !important;
-        color: #333 !important;
-        border: none;
-        flex-grow: 1; 
-        padding: 8px;
-        min-width: 150px;
-    }} /* <-- Corrigido */
-    
-    /* Estilo específico para o botão ENVIAR */
-    div[data-testid="stForm"] button {{ /* <-- Corrigido */
-        background-color: #E91E63 !important;
-        color: white !important;
-        font-weight: bold;
-        flex-grow: 0; 
-        padding: 8px 15px;
-        min-width: 80px;
-    }} /* <-- Corrigido */
-    
-    /* Rodapé Secundário (Bottom Bar) */
-    .footer-bottom {{ /* <-- Corrigido */
-        width: 100%;
-        background-color: rgba(0, 0, 0, 0.1); 
-        color: {COR_TEXTO};
-        padding: 10px 40px;
-        margin-top: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }} /* <-- Corrigido */
+/* 2. ESTILO DOS INPUTS E BOTÕES */
+/* Torna os campos internos e o botão alinhados horizontalmente (Newsletter style) */
+div[data-testid="stForm"] > div > div:not([role="button"]) {{
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}}
 
-    /* Media Query para responsividade */
-    @media (max-width: 768px) {{ /* <-- Corrigido */
-        /* ... (Seções de media query) ... */
+/* Oculta o título e labels do formulário Streamlit */
+div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{
+    display: none !important;
+}}
 
-        /* Ajuste o formulário para o centro no mobile */
-        div[data-testid="stForm"] {{ /* <-- Corrigido */
-            position: relative; /* Volta para o fluxo normal no mobile */
-            width: 90%;
-            margin: 20px auto 0 auto;
-            top: auto;
-            right: auto;
-        }} /* <-- Corrigido */
-    }} /* <-- Corrigido */
+/* Estiliza o campo E-mail */
+div[data-testid="stForm"] input {{
+    background-color: #F8B4C0 !important;
+    color: #333 !important;
+    border: none;
+    flex-grow: 1;
+    padding: 8px;
+    min-width: 150px;
+}}
+
+/* Estilo específico para o botão ENVIAR */
+div[data-testid="stForm"] button {{
+    background-color: #E91E63 !important;
+    color: white !important;
+    font-weight: bold;
+    flex-grow: 0;
+    padding: 8px 15px;
+    min-width: 80px;
+}}
+
+/* Rodapé Secundário (Bottom Bar) */
+.footer-bottom {{
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: {COR_TEXTO};
+    padding: 10px 40px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}}
+
+/* Media Query para responsividade */
+@media (max-width: 768px) {{
+    /* Ajuste o formulário para o centro no mobile */
+    div[data-testid="stForm"] {{
+        position: relative; /* Volta para o fluxo normal no mobile */
+        width: 90%;
+        margin: 20px auto 0 auto;
+        top: auto;
+        right: auto;
+    }}
+}}
 
     </style>
     """, 
@@ -203,6 +203,7 @@ def render_fixed_footer():
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
