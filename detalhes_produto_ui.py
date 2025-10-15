@@ -6,14 +6,14 @@ import pandas as pd
 import time
 
 # Importações CRÍTICAS para a lógica de compra e estado (Do seu projeto)
-from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable # <- Importa o render_product_image_clickable
+from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable
 from data_handler import ESTOQUE_BAIXO_LIMITE 
 
 
 def mostrar_detalhes_produto(df_catalogo_indexado):
     """
     Renderiza a tela de detalhes de um único produto, puxando dados do CSV (df_catalogo_indexado).
-    O layout é organizado, removendo os elementos de Frete, Métricas e Rodapé simulados.
+    Remove o bloco "Vendido e Entregue por" e mantém a estrutura de descrição.
     """
     
     # 1. BUSCA E VALIDA O PRODUTO CLICADO
@@ -42,12 +42,12 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
     # --- 2. LAYOUT INICIAL E BOTÃO VOLTAR ---
     
-    # st.button é a única forma de voltar no Streamlit
-    if st.button("⬅️ Voltar ao Catálogo", type="primary"): # Mantendo o estilo do botão em destaque
+    if st.button("⬅️ Voltar ao Catálogo", type="primary"):
         st.session_state.produto_detalhe_id = None
         st.rerun()
     
     st.markdown("---") 
+    st.title(row_principal['NOME']) # Título do produto
 
     # --- 3. ESTRUTURA PRINCIPAL: COLUNAS [Imagem, Detalhes/Compra] ---
     col_img_variacao, col_detalhes_compra = st.columns([1, 2])
@@ -58,7 +58,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # =================================================================
     with col_img_variacao:
         # Imagem Principal (Dinâmica do CSV)
-        st.image(row_principal.get('LINKIMAGEM'), use_container_width=True) # Usando use_container_width
+        st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
 
         # Lógica de Seleção de Variação (Dinâmica do CSV)
         if not df_variacoes.empty and len(df_variacoes) > 1:
@@ -118,20 +118,11 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
         st.markdown("---")
         
-        # --- REMOVIDO: Bloco de Frete Simulado (Em Vermelho/Laranja) ---
-        
-        # --- INÍCIO: Opções do Vendedor (Com Remocão das Métricas) ---
-        with st.expander("Vendido e Entregue por:", expanded=True): # Mantendo expandido como na imagem
-            st.subheader("Doce&Bella Cosméticos")
-            st.caption("Ativo há 5 minutos atrás")
-            st.button("Ver página da Loja", key="btn_ver_loja", use_container_width=True, type="secondary")
-
-            # --- REMOVIDO: Bloco de Métricas da Loja (Em Vermelho/Laranja) ---
-            
-        # --- FIM: Opções do Vendedor ---
-
+        # --- REMOVIDO: Opções do Vendedor (Circulado em Vermelho/Laranja) ---
+        # Removido o bloco "with st.expander("Vendido e Entregue por:", expanded=True):"
 
         # --- Descrição em Expander (Dinâmico do CSV) ---
+        # O st.expander é crucial para o estilo da "caixa preta" no Streamlit.
         with st.expander("Descrição Detalhada e Especificações", expanded=True):
             st.markdown(f"**Marca:** {row_principal.get('MARCA', 'N/A')}")
             st.markdown(f"**Descrição:** {row_principal.get('DESCRICAOLONGA', row_principal.get('DESCRICAOCURTA', 'Sem descrição detalhada'))}")
@@ -169,10 +160,9 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- 4. Seção "Produtos Relacionados" (COM CARDS CLICÁVEIS) ---
     # =================================================================
     st.header("PRODUTOS RELACIONADOS")
-    st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) # Destacando "Ver tudo >"
+    st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True)
 
     # Seleciona produtos reais (que não sejam o produto atual) para a seção
-    # Filtra o produto atual e pega os 4 próximos
     df_amostra = df_catalogo_indexado[df_catalogo_indexado.index != id_principal_para_info].head(4).reset_index()
     
     if not df_amostra.empty:
@@ -185,15 +175,12 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 with col:
                     # O CARD É OTIMIZADO PARA SER CLICÁVEL:
-                    # 1. Usamos render_product_image_clickable (do ui_components.py) para a imagem
                     render_product_image_clickable(row_card['LINKIMAGEM'], prod_id_card) 
                     
                     st.caption(f"**{row_card['NOME']}**")
-                    st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) # Avaliação Fixa (Simulação)
+                    st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) 
                     st.subheader(f"R$ {row_card['PRECO_FINAL']:.2f}")
 
-                    # 2. Adicionamos um botão de "Ver Detalhes" extra (o clique na imagem já faz isso)
-                    # Não é estritamente necessário, mas melhora a UX.
                     if st.button("👁️ Ver Detalhes", key=f'related_details_btn_{prod_id_card}', use_container_width=True):
                          st.session_state.produto_detalhe_id = prod_id_card
                          st.rerun()
@@ -202,4 +189,3 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
-
