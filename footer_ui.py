@@ -148,23 +148,6 @@ div[data-testid="stForm"] button {{
     unsafe_allow_html=True
 )
     
-    # --- Estrutura do Rodapé (HTML e Injeção do Formulário) ---
-    
-    # 1. O Form Streamlit é renderizado AQUI e movido via CSS
-    with st.form(key="footer_newsletter_form", clear_on_submit=True):
-        
-        # Campos de entrada
-        # Usamos st.columns para alinhar Input e Botão horizontalmente, se o CSS falhar,
-        # MAS neste caso, confiamos no CSS do stForm para o layout horizontal.
-        # Mantemos o input e o botão simples:
-        email_input = st.text_input("E-mail:", key="newsletter_email", label_visibility="collapsed", placeholder="E-mail")
-        submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
-
-        if submit_newsletter:
-            if re.match(r"[^@]+@[^@]+\.[^@]+", email_input):
-                st.success(f"Obrigado! E-mail '{email_input}' cadastrado (simulação).")
-            else:
-                st.error("Insira um e-mail válido.")
 
     
     # 2. Injeção do HTML principal (que é fixo)
@@ -203,6 +186,7 @@ div[data-testid="stForm"] button {{
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
