@@ -664,7 +664,7 @@ categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 
 categorias.sort()
 categorias.insert(0, "TODAS AS CATEGORIAS")
 
-col_filtro_cat, col_select_ordem, _ = st.columns([1, 1, 3])
+col_filtro_cat, col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 1, 2])
 termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 
 categoria_selecionada = col_filtro_cat.selectbox("Filtrar por:", categorias, key='filtro_categoria_barra')
@@ -725,4 +725,5 @@ else:
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
     # ----------------------------------------------------
+
 
