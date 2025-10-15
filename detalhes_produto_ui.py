@@ -64,7 +64,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # =================================================================
     with col_img_variacao:
         # Imagem Principal (Dinâmica do CSV)
-        st.image(row_principal.get('LINKIMAGEM'), use_column_width=True)
+        st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
         
         # Lógica de Seleção de Variação (Dinâmica do CSV)
         if not df_variacoes.empty and len(df_variacoes) > 1:
@@ -224,5 +224,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     col_add.button("Adicionar ao carrinho", key="btn_add_cart_sim", use_container_width=True)
     
     col_buy.button("🔥 Compre agora", key="btn_buy_now_detalhes", use_container_width=True, type="primary")
+
 
     st.markdown("<br><br>", unsafe_allow_html=True)
