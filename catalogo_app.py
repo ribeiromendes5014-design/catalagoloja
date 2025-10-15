@@ -358,11 +358,11 @@ h1 { font-size: 2.5rem; }
         padding: 1rem 0.5rem !important;
     }
     
-    /* CRÍTICO: Anula o layout de 4 colunas e força um Grid de 2 colunas */
+    /* CRÍTICO 1: Anula o layout de 4 colunas e força um Grid de 2 colunas */
     div[data-testid="stColumns"] {
         display: grid !important;
         /* Define 2 colunas com a mesma largura (1 fração cada) */
-        grid-template-columns: 1fr 1fr !important; 
+        grid-template-columns: 1fr 1fr !important; 
         gap: 10px; /* Espaçamento entre os cards */
         
         /* Garante que o container de colunas não tenha largura fixa */
@@ -370,12 +370,13 @@ h1 { font-size: 2.5rem; }
         width: 100% !important;
     }
     
-    /* Garante que os itens de produto não tenham largura fixa que atrapalhe o Grid */
-    div[data-testid="stColumns"] > div {
-        /* O Grid ja define a largura de 50%, aqui so garantimos que nao ha margens externas */
-        width: 100% !important; 
+    /* CRÍTICO 2: Sobrescreve a largura de CADA ITEM DE COLUNA (produto) */
+    /* Este seletor mira qualquer DIV que seja filho direto do contêiner de colunas */
+    div[data-testid="stColumns"] > div:has(> [data-testid="stContainer"]) {
+        /* O Grid ja define a largura de 50%, mas Streamlit pode tentar forçar 100% */
+        width: 100% !important; /* Deve ser 100% do seu slot no Grid */
         min-width: unset !important;
-        padding: 0 !important; /* Remove qualquer padding lateral extra */
+        padding: 0 5px !important; /* Adiciona um pequeno padding interno para espaço */
     }
 
     h1 { font-size: 1.8rem; }
@@ -720,5 +721,6 @@ else:
         unique_key = f'prod_{product_id}_{i}'
         with cols[i % 4]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
+
 
 
