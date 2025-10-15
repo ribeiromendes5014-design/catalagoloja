@@ -29,11 +29,17 @@ def render_fixed_footer():
             width: 100%;
             background-color: {COR_RODAPE};
             color: {COR_TEXTO};
-            padding-top: 30px; /* Mais espaço no topo */
+            padding-top: 30px; 
             padding-bottom: 50px;
             z-index: 9990; 
             font-size: 14px;
         }}
+        
+        /* ADICIONA ESPAÇAMENTO NA PARTE INFERIOR DO CORPO DO SITE */
+        .stApp > header, .stApp > div:last-child {{
+            margin-bottom: 250px !important; /* Ajuste este valor se o rodapé for muito alto */
+        }}
+
         .footer-grid {{
             display: grid;
             grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas iguais */
@@ -58,36 +64,61 @@ def render_fixed_footer():
             text-decoration: underline;
         }}
         
-        /* Estilos do Formulário */
-        .email-input-container {{
+        /* ---------------------------------------------------- */
+        /* CSS PARA POSICIONAMENTO E ESTILIZAÇÃO DO FORMULÁRIO */
+        /* ---------------------------------------------------- */
+
+        /* 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO */
+        /* Este CSS move o formulário Streamlit (renderizado em outro lugar) para a Coluna 3 */
+        div[data-testid="stForm"] {{
+            position: absolute; 
+            /* Valores ajustados visualmente para a Coluna 3 no layout wide */
+            top: 70px;             /* Ajuste Y para ficar abaixo do 'Newsletter' */
+            right: 40px;           /* Ajuste X para alinhar com a direita */
+            width: 300px;          /* Largura da Coluna 3 */
+            z-index: 9999;
+            padding: 0;
+            margin: 0;
+            background-color: transparent; 
+        }}
+
+        /* 2. ESTILO DO INPUT E BOTÃO */
+        /* Força os inputs e botões a ficarem na mesma linha e alinhados */
+        div[data-testid="stForm"] > div > div:not([role="button"]) {{ 
             display: flex;
             gap: 5px;
-            margin-top: 15px;
+            align-items: center;
         }}
-        /* Estilo para simular o input com fundo claro/rosa */
-        .email-input-container input {{
-            background-color: #F8B4C0 !important; /* Cor mais clara que o fundo */
-            color: #333 !important;
+
+        /* Oculta o título e labels do formulário Streamlit */
+        div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{
+            display: none !important;
+        }}
+        
+        /* Estilo específico para o campo E-mail */
+        div[data-testid="stForm"] input {{
+            background-color: #F8B4C0 !important; /* Fundo rosa claro */
+            color: #333 !important; /* Texto escuro legível */
             border: none;
-            border-radius: 4px;
+            flex-grow: 1; 
             padding: 8px;
-            flex-grow: 1;
+            min-width: 150px;
         }}
-        /* Estilo para o botão "Enviar" */
-        .email-input-container button {{
-            background-color: #E91E63 !important; /* Rosa Escuro/Vermelho para o botão */
+
+        /* Estilo específico para o botão ENVIAR */
+        div[data-testid="stForm"] button {{
+            background-color: #E91E63 !important; /* Rosa Escuro/Vermelho (Botão de Ação) */
             color: white !important;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
             font-weight: bold;
+            flex-grow: 0; 
+            padding: 8px 15px;
+            min-width: 80px;
         }}
         
         /* Rodapé Secundário (Bottom Bar) */
         .footer-bottom {{
             width: 100%;
-            background-color: rgba(0, 0, 0, 0.1); /* Faixa mais escura no fundo */
+            background-color: rgba(0, 0, 0, 0.1); 
             color: {COR_TEXTO};
             padding: 10px 40px;
             margin-top: 20px;
@@ -98,16 +129,15 @@ def render_fixed_footer():
 
         /* Media Query para responsividade */
         @media (max-width: 768px) {{
-            .footer-grid {{
-                grid-template-columns: 1fr; /* 1 coluna em mobile */
-                padding: 0 20px;
-            }}
-            .footer-container-full {{
-                padding-bottom: 10px;
-            }}
-            .footer-bottom {{
-                flex-direction: column;
-                text-align: center;
+            /* ... (Seções de media query) ... */
+
+            /* Ajuste o formulário para o centro no mobile */
+            div[data-testid="stForm"] {{
+                position: relative; /* Volta para o fluxo normal no mobile */
+                width: 90%;
+                margin: 20px auto 0 auto;
+                top: auto;
+                right: auto;
             }}
         }}
 
@@ -118,25 +148,24 @@ def render_fixed_footer():
     
     # --- Estrutura do Rodapé (HTML e Injeção do Formulário) ---
     
-    # Criamos um form Streamlit simples que irá forçar um rerun (newsletter simulada)
+    # 1. O Form Streamlit é renderizado AQUI e movido via CSS
     with st.form(key="footer_newsletter_form", clear_on_submit=True):
         
-        # O formulário Streamlit deve ser renderizado aqui, mas seu HTML
-        # real com as colunas será injetado abaixo.
-        
-        # Campos visíveis no layout Streamlit (mas serão escondidos/re-estilizados pelo CSS)
+        # Campos de entrada
+        # Usamos st.columns para alinhar Input e Botão horizontalmente, se o CSS falhar,
+        # MAS neste caso, confiamos no CSS do stForm para o layout horizontal.
+        # Mantemos o input e o botão simples:
         email_input = st.text_input("E-mail:", key="newsletter_email", label_visibility="collapsed", placeholder="E-mail")
         submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
 
         if submit_newsletter:
             if re.match(r"[^@]+@[^@]+\.[^@]+", email_input):
                 st.success(f"Obrigado! E-mail '{email_input}' cadastrado (simulação).")
-                # Aqui você faria a integração real da newsletter
             else:
                 st.error("Insira um e-mail válido.")
 
     
-    # Injeção do HTML principal do rodapé
+    # 2. Injeção do HTML principal (que é fixo)
     html_footer = f"""
     <div class="footer-container-full">
         <div class="footer-grid">
@@ -158,10 +187,7 @@ def render_fixed_footer():
             <div class="footer-column">
                 <h4>Newsletter</h4>
                 <p style="margin: 0;">Receba novidades e promoções!</p>
-                
-                <div style="margin-top: 10px; width: 100%;">
-                    </div>
-            </div>
+                </div>
 
         </div>
         
@@ -174,6 +200,4 @@ def render_fixed_footer():
     </div>
     """
     
-    st.markdown(html_footer, unsafe_allow_html=True) 
-
-# A função render_fixed_footer será chamada no catalogo_app.py
+    st.markdown(html_footer, unsafe_allow_html=True)
