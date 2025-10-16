@@ -1,7 +1,7 @@
 # detalhes_produto_ui.py
 # Arquivo separado para a UI da Tela de Detalhes do Produto
-# VERSÃO CORRIGIDA 5: Usa colunas padronizadas (MAIÚSCULAS)
-# e as colunas de preço corretas (PRECO, PRECO_FINAL, PRECO_PROMOCIONAL)
+# VERSÃO CORRIGIDA 6: Corrige KeyError (PRECO/PRECOCARTAO), move o preço
+# e estiliza os botões de variação (st.radio)
 
 import streamlit as st
 import pandas as pd
@@ -17,8 +17,7 @@ from streamlit_carousel import carousel # Importação principal para a soluçã
 def mostrar_detalhes_produto(df_catalogo_indexado):
     """
     Renderiza a tela de detalhes de um único produto, puxando dados do CSV (df_catalogo_indexado).
-    Usa 'PAIID' (maiúsculo) para compatibilidade.
-    Usa colunas de preço consistentes com catalogo_app.py (PRECO, PRECO_FINAL, etc.)
+    Usa colunas em MAIÚSCULAS (PAIID, PRECOCARTAO, PRECOVISTA, etc.)
     """
     
     # 1. BUSCA E VALIDA O PRODUTO CLICADO
@@ -27,7 +26,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     if not produto_id_clicado or produto_id_clicado not in df_catalogo_indexado.index:
         st.error("Produto não encontrado ou ID de detalhe ausente.")
         st.session_state.produto_detalhe_id = None
-        # Adiciona um botão para voltar
         if st.button("Voltar ao catálogo"):
             st.session_state.produto_detalhe_id = None
             st.rerun()
@@ -36,7 +34,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- LÓGICA DE VARIAÇÕES (PRODUTO PAI) ---
     row_clicada = df_catalogo_indexado.loc[produto_id_clicado].copy()
     
-    # Usa 'PAIID' (maiúsculo) consistentemente
     id_pai_real = row_clicada.get('PAIID') 
     
     if pd.notna(id_pai_real):
@@ -59,7 +56,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     ].copy()
     
     try:
-        # Usa 'DETALHESGRADE' (maiúsculo)
         detalhes_pai = ast.literal_eval(row_para_info.get('DETALHESGRADE', '{}'))
         if not isinstance(detalhes_pai, dict):
             detalhes_pai = {}
@@ -73,17 +69,53 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- FIM LÓGICA VARIAÇÕES ---
 
 
-    # --- 2. APLICAÇÃO DE ESTILO CSS ---
+    # --- 2. APLICAÇÃO DE ESTILO CSS (INCLUI ESTILO DOS BOTÕES DE VARIAÇÃO) ---
     st.markdown("""
     <style>
         .stButton>button { width: 100%; color: white; }
         .stButton>button[kind="primary"] { background-color: #880E4F; } /* Botão Voltar */
         .stButton>button[kind="secondary"] { background-color: #D32F2F; } /* Botão Add Carrinho */
         .stButton>button[kind="secondary"]:hover { background-color: #000000; }
+        
         h1 { font-size: 1.8rem; }
         h3 { font-size: 1.3rem; }
-        .stRadio [role="radiogroup"] { justify-content: flex-start; }
-        .stRadio [role="radio"] { margin-right: 15px; }
+
+        /* --- NOVO: Estilo Minimalista para st.radio (Botões de Variação) --- */
+        
+        /* Remove o "ponto" do rádio */
+        div[data-testid="stRadio"] input {
+            display: none;
+        }
+        
+        /* Estiliza a label (o texto) como um botão */
+        div[data-testid="stRadio"] label {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #f0f2f6; /* Cor de fundo padrão */
+            color: #31333F; /* Cor do texto padrão */
+            border: 1px solid #DCDCDC;
+            border-radius: 20px; /* Bordas arredondadas */
+            margin-right: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        /* Estiliza o botão SELECIONADO */
+        div[data-testid="stRadio"] input:checked + div {
+            background-color: #D32F2F; /* Cor de fundo (vermelho) quando selecionado */
+            color: white; /* Cor do texto quando selecionado */
+            border: 1px solid #D32F2F;
+            font-weight: 600;
+        }
+        
+        /* Hover (mouse em cima) - não selecionado */
+        div[data-testid="stRadio"] label:hover {
+             border: 1px solid #A0A0A0;
+        }
+        /* --- FIM Estilo st.radio --- */
+
     </style>
     """, unsafe_allow_html=True)
     
@@ -102,13 +134,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         image_items = []
         urls_adicionadas = set() 
         
-        # Usa 'FOTOURL' (maiúsculo)
         foto_principal_url = row_para_info.get('FOTOURL', row_para_info.get('LINKIMAGEM')) 
         
         if pd.notna(foto_principal_url) and foto_principal_url not in urls_adicionadas:
             image_items.append(
                 {
                     "title": row_para_info['NOME'],
+                    # CORREÇÃO: Texto do carrossel não deve ter preço
                     "text": row_para_info.get('CATEGORIA', row_para_info.get('MARCA', '')), 
                     "img": foto_principal_url,
                 }
@@ -121,9 +153,9 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 if pd.notna(foto_var_url) and foto_var_url not in urls_adicionadas:
                     try:
-                        # Usa 'DETALHESGRADE' (maiúsculo)
                         detalhes_var = ast.literal_eval(row_var.get('DETALHESGRADE', '{}'))
                         if isinstance(detalhes_var, dict) and detalhes_var:
+                            # CORREÇÃO: Texto do carrossel é SÓ a variação
                             desc_var = ", ".join([f"{k}: {v}" for k, v in detalhes_var.items()])
                         else:
                             desc_var = row_var['NOME'] 
@@ -159,27 +191,78 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         row_produto_selecionado = None
         id_produto_selecionado = None
 
-        # Concatena o PAI e os FILHOS para criar os seletores
         all_products_for_grade = pd.concat([row_para_info.to_frame().T, df_variacoes])
         all_products_for_grade = all_products_for_grade[~all_products_for_grade.index.duplicated(keep='first')]
         
         products_with_grade = []
         for idx, row in all_products_for_grade.iterrows():
             try:
-                # Usa 'DETALHESGRADE' (maiúsculo)
                 detalhe_str = str(row.get('DETALHESGRADE', '')).strip() 
-                
                 if not detalhe_str or detalhe_str == 'nan' or detalhe_str == '{}':
                     continue 
-
                 detalhes = ast.literal_eval(detalhe_str)
-                
                 if isinstance(detalhes, dict) and detalhes: 
                     products_with_grade.append(row)
             except (ValueError, SyntaxError, NameError):
                 continue
         
         df_grade = pd.DataFrame(products_with_grade)
+
+        # --- MUDANÇA DE LAYOUT (REQUEST 1): Bloco de Preço movido para ANTES da grade ---
+        
+        # --- PREÇO (SERÁ ATUALIZADO PELOS SELETORES ABAIXO) ---
+        
+        # Define um produto inicial (o clicado) para mostrar o preço
+        # Este 'row_produto_selecionado_inicial' será substituído pela seleção da grade
+        if not df_grade.empty:
+            # Se tem grade, tenta usar o 'row_clicada' como padrão
+            row_produto_selecionado_inicial = row_clicada
+        else:
+            # Se não tem grade, usa o produto principal
+            row_produto_selecionado_inicial = row_para_info
+
+        # CORREÇÃO KeyError: Usa PRECOCARTAO e PRECOVISTA
+        preco_original = row_produto_selecionado_inicial['PRECOCARTAO'] 
+        preco_final_selecionado = row_produto_selecionado_inicial['PRECOVISTA']
+        
+        is_promotion = preco_original > preco_final_selecionado
+        condicao_pagamento = row_produto_selecionado_inicial.get('CONDICAOPAGAMENTO', 'Preço à vista')
+
+        st.markdown("---")
+        
+        # O preço será renderizado dentro de um container para poder ser atualizado
+        price_placeholder = st.empty()
+        
+        def render_price(row_selecionada):
+            # Função para desenhar o preço
+            po = row_selecionada['PRECOCARTAO']
+            pf = row_selecionada['PRECOVISTA']
+            is_promo = po > pf
+            cp = row_selecionada.get('CONDICAOPAGAMENTO', 'Preço à vista')
+            
+            with price_placeholder.container():
+                if is_promo:
+                    st.markdown(f"""
+                    <div style="line-height: 1.2;">
+                        <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {po:.2f}</span>
+                        <h2 style='color: #D32F2F; margin:0;'>R$ {pf:.2f}</h2>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {pf:.2f}</h2>", unsafe_allow_html=True)
+                
+                st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({cp})</span>", unsafe_allow_html=True)
+
+                cashback_percent = pd.to_numeric(row_selecionada.get('CASHBACKPERCENT'), errors='coerce')
+                if pd.notna(cashback_percent) and cashback_percent > 0:
+                    cashback_valor = (cashback_percent / 100) * pf
+                    st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
+        
+        # Renderiza o preço inicial
+        render_price(row_produto_selecionado_inicial)
+        
+        # --- FIM DO BLOCO DE PREÇO (MOVIDO) ---
+
 
         if not df_grade.empty:
             st.markdown("---")
@@ -189,26 +272,22 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             opcoes_disponiveis = {} 
             
             for idx, row_g in df_grade.iterrows():
-                # Usa 'DETALHESGRADE' (maiúsculo)
                 detalhes_g = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
                 for k, v in detalhes_g.items():
                     if k not in opcoes_disponiveis:
                         opcoes_disponiveis[k] = set()
-                    
                     opcoes_disponiveis[k].add(str(v))
             
             for k in opcoes_disponiveis:
                 opcoes_disponiveis[k] = sorted(list(opcoes_disponiveis[k]))
 
-            # 2. Renderiza os st.radio/st.selectbox para cada tipo de grade
+            # 2. Renderiza os st.radio (agora estilizados com CSS)
             selecao_usuario = {}
             
             try:
-                # Usa 'DETALHESGRADE' (maiúsculo)
                 detalhes_clicados_raw = ast.literal_eval(str(row_clicada.get('DETALHESGRADE', '{}')).strip())
                 if not isinstance(detalhes_clicados_raw, dict):
                     detalhes_clicados_raw = {}
-                
                 detalhes_clicados = {k: str(v) for k, v in detalhes_clicados_raw.items()}
             except:
                 detalhes_clicados = {}
@@ -231,7 +310,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             
             # 3. Filtra o produto final com base na seleção
             for idx, row_g in df_grade.iterrows():
-                # Usa 'DETALHESGRADE' (maiúsculo)
                 detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
                 detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
                 
@@ -254,42 +332,21 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
              st.error("Não foi possível selecionar o produto. Tente novamente.")
              return
 
-        # --- PREÇO (CORRIGIDO) ---
-        # Usa as colunas PRECO, PRECO_FINAL, e PRECO_PROMOCIONAL
-        # (Consistente com catalogo_app.py)
+        # --- ATUALIZA O PREÇO ---
+        # Agora que 'row_produto_selecionado' está definido (seja pelo rádio ou padrão),
+        # re-renderiza o bloco de preço com os valores corretos.
+        render_price(row_produto_selecionado)
         
-        preco_original = row_produto_selecionado['PRECO'] 
-        preco_final_selecionado = row_produto_selecionado['PRECO_FINAL']
-        
-        preco_promo_val = row_produto_selecionado.get('PRECO_PROMOCIONAL')
-        is_promotion = pd.notna(preco_promo_val) and preco_promo_val > 0
-        condicao_pagamento = row_produto_selecionado.get('CONDICAOPAGAMENTO', 'Preço à vista')
-
-        st.markdown("---")
-        
-        if is_promotion and preco_original > preco_final_selecionado:
-            st.markdown(f"""
-            <div style="line-height: 1.2;">
-                <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
-                <h2 style='color: #D32F2F; margin:0;'>R$ {preco_final_selecionado:.2f}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final_selecionado:.2f}</h2>", unsafe_allow_html=True)
-        
-        st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
-
-        # Usa 'CASHBACKPERCENT' (maiúsculo)
-        cashback_percent = pd.to_numeric(row_produto_selecionado.get('CASHBACKPERCENT'), errors='coerce')
-        if pd.notna(cashback_percent) and cashback_percent > 0:
-            cashback_valor = (cashback_percent / 100) * preco_final_selecionado
-            st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
+        # Pega o preço final para o botão "Adicionar"
+        preco_final_selecionado = row_produto_selecionado['PRECOVISTA']
 
 
         # --- 5. LÓGICA DE COMPRA (Quantidade e Estoque) ---
         
-        # Usa 'QUANTIDADE' (maiúsculo)
+        # A lógica de estoque está correta, ela usa o 'row_produto_selecionado'
         estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('QUANTIDADE', 0), errors='coerce'))
+        
+        st.markdown("---") # Divisor
         
         if estoque_disponivel > ESTOQUE_BAIXO_LIMITE:
             st.success(f"**Em estoque** ({estoque_disponivel} unidades)")
@@ -350,7 +407,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
     with tab_desc:
         st.subheader("Descrição")
-        # Usa 'DESCRICAOLONGA' e 'DESCRICAOCURTA' (maiúsculo)
         descricao = row_para_info.get('DESCRICAOLONGA', row_para_info.get('DESCRICAOCURTA', 'Sem descrição detalhada'))
         st.write(descricao)
 
@@ -402,13 +458,12 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                     
                     st.caption(f"**{row_card['NOME']}**")
                     
-                    # Usa 'PRECO' e 'PRECO_FINAL'
-                    preco_card_orig = row_card['PRECO']
-                    preco_card_final = row_card['PRECO_FINAL']
-                    preco_promo_card = row_card.get('PRECO_PROMOCIONAL')
-                    is_promo_card = pd.notna(preco_promo_card) and preco_promo_card > 0
+                    # CORREÇÃO KeyError: Usa PRECOCARTAO e PRECOVISTA
+                    preco_card_orig = row_card['PRECOCARTAO']
+                    preco_card_final = row_card['PRECOVISTA']
+                    is_promo_card = preco_card_orig > preco_card_final
 
-                    if is_promo_card and preco_card_orig > preco_card_final:
+                    if is_promo_card:
                         st.write(f"<span style='text-decoration: line-through; color: #888; font-size: 0.9rem;'>R$ {preco_card_orig:,.2f}</span>", unsafe_allow_html=True)
                     else:
                         st.write("<br>", unsafe_allow_html=True) 
