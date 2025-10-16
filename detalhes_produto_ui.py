@@ -30,9 +30,23 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     row_clicada = df_catalogo_indexado.loc[produto_id_clicado].copy()
     
     id_pai = row_clicada.get('PAIID', produto_id_clicado)
-    id_principal_para_info = id_pai if pd.notna(id_pai) and id_pai in df_catalogo_indexado.index else produto_id_clicado
-    row_principal = df_catalogo_indexado.loc[id_principal_para_info].copy()
 
+    # CRÍTICO: Se a linha clicada é um produto filho (tem PAIID), usamos o PAIID para agrupar.
+    # Caso contrário, usamos o próprio ID do produto.
+    id_principal_para_info = id_pai if pd.notna(id_pai) else produto_id_clicado
+    
+    # Redefine row_principal para garantir que a linha PAI seja a base para a imagem/descrição principal
+    try:
+        row_principal = df_catalogo_indexado.loc[id_principal_para_info].copy()
+    except KeyError:
+        # Se o PAIID for inválido, usa o produto clicado como principal
+        row_principal = row_clicada
+        id_principal_para_info = produto_id_clicado
+
+
+    # GARANTE QUE df_variacoes INCLUA:
+    # 1. O produto principal (id_principal_para_info)
+    # 2. Todos os produtos filhos que apontam para id_principal_para_info
     df_variacoes = df_catalogo_indexado[
         (df_catalogo_indexado['PAIID'] == id_principal_para_info) | 
         (df_catalogo_indexado.index == id_principal_para_info)
@@ -207,6 +221,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
