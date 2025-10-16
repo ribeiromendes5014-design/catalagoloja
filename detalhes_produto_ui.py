@@ -329,6 +329,16 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         # --- FIM DA SELEÇÃO DE VARIAÇÃO ---
 
+        # --- GARANTIA: row_produto_selecionado sempre será uma Series válida ---
+        if isinstance(row_produto_selecionado, (int, float)):
+            try:
+                row_produto_selecionado = df_catalogo_indexado.loc[int(row_produto_selecionado)]
+            except Exception as e:
+                st.error(f"Erro ao recuperar dados do produto selecionado: {e}")
+                return
+        elif isinstance(row_produto_selecionado, dict):
+            row_produto_selecionado = pd.Series(row_produto_selecionado)
+
         if row_produto_selecionado is None:
              st.error("Não foi possível selecionar o produto. Tente novamente.")
              return
@@ -468,6 +478,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
 
 
