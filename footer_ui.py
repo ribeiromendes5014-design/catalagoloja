@@ -22,7 +22,7 @@ WHATSAPP_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/W
 
 # --- FUNÇÃO: Salvar CSV no GitHub ---
 def save_csv_github(nome, telefone):
-    # (O resto desta função continua igual, não precisa mexer)
+    # (Esta função permanece a mesma)
     try:
         token = st.secrets["github"]["token"]
         owner = st.secrets["github"]["owner"]
@@ -61,7 +61,7 @@ def save_csv_github(nome, telefone):
 
 def render_fixed_footer():
     """
-    Renderiza o rodapé com os ícones de imagem lado a lado.
+    Renderiza o rodapé com os ícones e a nova informação de pagamento.
     """
 
     st.markdown(textwrap.dedent(f"""
@@ -97,21 +97,33 @@ def render_fixed_footer():
                 font-size: 13px;
                 gap: 15px;
             }}
-
-            /* --- ESTILO CORRIGIDO E SIMPLIFICADO --- */
             .social-icons-container-corrigido {{
-                display: flex;       /* Alinha os itens lado a lado */
-                align-items: center; /* Centraliza verticalmente */
-                gap: 25px;           /* Espaço entre os ícones */
+                display: flex;
+                align-items: center;
+                gap: 25px;
                 margin-top: 15px;
             }}
             .social-icons-container-corrigido img {{
-                width: 45px !important;  /* Força o tamanho do ícone */
-                height: 45px !important; /* Força o tamanho do ícone */
-                transition: transform 0.2s; /* Efeito suave ao passar o mouse */
+                width: 45px !important;
+                height: 45px !important;
+                transition: transform 0.2s;
             }}
             .social-icons-container-corrigido img:hover {{
-                transform: scale(1.1); /* Aumenta um pouco o ícone ao passar o mouse */
+                transform: scale(1.1);
+            }}
+
+            /* --- NOVO ESTILO PARA A ÁREA DE PAGAMENTO --- */
+            .payment-info {{
+                display: flex;
+                align-items: center;
+                gap: 10px; /* Espaço entre a imagem e o texto */
+            }}
+            .payment-info img {{
+                height: 25px; /* Altura do logo do Mercado Pago */
+            }}
+            .payment-info span {{
+                color: #dddddd;
+                font-size: 13px;
             }}
         </style>
     """), unsafe_allow_html=True)
@@ -121,7 +133,6 @@ def render_fixed_footer():
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        # --- HTML CORRIGIDO E SIMPLIFICADO ---
         st.markdown(f"""
             <h4>ATENDIMENTO</h4>
             <div class="social-icons-container-corrigido">
@@ -150,16 +161,20 @@ def render_fixed_footer():
                         st.success("Obrigado por se inscrever! 🎉")
                     else:
                         st.error("Ocorreu um erro ao salvar sua inscrição.")
-                        # st.error(message) # Comentado para não mostrar erro técnico
+                        # st.error(message)
                 else:
                     st.warning("Por favor, preencha seu nome e telefone.")
 
+    # --- HTML DA BARRA INFERIOR ATUALIZADO ---
     st.markdown("""
         <div class="footer-bottom-bar">
-            <div>Meios de pagamento
-                <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" style="height: 18px; vertical-align: middle; margin-left: 5px;">
+            <div class="payment-info">
+                <img src="https://jequitai.khalsms.com.br/product_images/n/478/mercado-pago-logo__05862_zoom.png" alt="Logo Mercado Pago">
+                <span>em até 3x no cartão</span>
             </div>
-            <div>Copyright Doce&Bella - 2025.</div>
+            <div>
+                Copyright Doce&Bella - 2025.
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
