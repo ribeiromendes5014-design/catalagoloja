@@ -539,6 +539,12 @@ st.markdown("</div></div>", unsafe_allow_html=True)
 
 # --- Filtros e Exibição dos Produtos ---
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
+
+# === ADICIONE O FILTRO AQUI ===
+# Filtra: mantém apenas produtos que NÃO são variações (PAIID é nulo/NaN)
+df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
+# ===============================
+
 categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
 categorias.sort()
 categorias.insert(0, "TODAS AS CATEGORIAS")
@@ -612,6 +618,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
