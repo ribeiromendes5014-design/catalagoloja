@@ -111,15 +111,13 @@ def render_fixed_footer():
             .social-icons-container-corrigido img:hover {{
                 transform: scale(1.1);
             }}
-
-            /* --- NOVO ESTILO PARA A ÁREA DE PAGAMENTO --- */
             .payment-info {{
                 display: flex;
                 align-items: center;
-                gap: 10px; /* Espaço entre a imagem e o texto */
+                gap: 10px;
             }}
             .payment-info img {{
-                height: 25px; /* Altura do logo do Mercado Pago */
+                height: 35px; /* <--- VALOR ALTERADO AQUI */
             }}
             .payment-info span {{
                 color: #dddddd;
@@ -165,7 +163,6 @@ def render_fixed_footer():
                 else:
                     st.warning("Por favor, preencha seu nome e telefone.")
 
-    # --- HTML DA BARRA INFERIOR ATUALIZADO ---
     st.markdown("""
         <div class="footer-bottom-bar">
             <div class="payment-info">
