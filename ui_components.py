@@ -25,44 +25,49 @@ def calcular_cashback_total(carrinho, df_catalogo_indexado):
     return cashback_total
 
 
-def adicionar_qtd_ao_carrinho(produto_id, produto_row, quantidade):
-    produto_nome = produto_row['NOME']
-    produto_preco = produto_row['PRECO_FINAL']
+def adicionar_qtd_ao_carrinho(produto_row, quantidade, preco_final):
+    if isinstance(produto_row, (int, float)):
+        st.error("Erro interno: produto_row veio incorreto (int/float).")
+        return
+
+    produto_id = produto_row.get('ID')
+    produto_nome = produto_row.get('NOME', 'Produto sem nome')
+    produto_preco = produto_row.get('PRECO_FINAL', preco_final)
     produto_imagem = produto_row.get('LINKIMAGEM', '')
-    
+
     df_catalogo = st.session_state.df_catalogo_indexado
-    
-    # Garante que a quantidade seja um número inteiro
+
     try:
         quantidade_max_raw = df_catalogo.loc[produto_id, 'QUANTIDADE']
         quantidade_max = int(pd.to_numeric(quantidade_max_raw, errors='coerce'))
     except (KeyError, ValueError):
         quantidade_max = 999999
-    
+
     if quantidade_max <= 0:
-         st.warning(f"⚠️ Produto '{produto_nome}' está esgotado.")
-         return
+        st.warning(f"⚠️ Produto '{produto_nome}' está esgotado.")
+        return
 
     if produto_id in st.session_state.carrinho:
         nova_quantidade = st.session_state.carrinho[produto_id]['quantidade'] + quantidade
-        
         if nova_quantidade > quantidade_max:
             disponivel = quantidade_max - st.session_state.carrinho[produto_id]['quantidade']
             st.warning(f"⚠️ Você só pode adicionar mais {disponivel} unidades. Total disponível: {quantidade_max}.")
             return
-            
         st.session_state.carrinho[produto_id]['quantidade'] = nova_quantidade
     else:
         if quantidade > quantidade_max:
-             st.warning(f"⚠️ Quantidade solicitada ({quantidade}) excede o estoque ({quantidade_max}) para '{produto_nome}'.")
-             return
+            st.warning(f"⚠️ Quantidade solicitada ({quantidade}) excede o estoque ({quantidade_max}) para '{produto_nome}'.")
+            return
         st.session_state.carrinho[produto_id] = {
             'nome': produto_nome,
             'preco': produto_preco,
             'quantidade': quantidade,
             'imagem': produto_imagem
         }
-    st.toast(f"✅ {quantidade}x {produto_nome} adicionado(s)!", icon="🛍️"); time.sleep(0.1)
+
+    st.toast(f"✅ {quantidade}x {produto_nome} adicionado(s)!", icon="🛍️")
+    time.sleep(0.1)
+
 
 
 def remover_do_carrinho(produto_id):
@@ -237,6 +242,7 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
 
 
 
