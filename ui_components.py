@@ -26,40 +26,64 @@ def calcular_cashback_total(carrinho, df_catalogo_indexado):
 
 
 def adicionar_qtd_ao_carrinho(produto_row, quantidade, preco_final):
+    """
+    Adiciona um item ao carrinho, corrigindo a busca de ID para variações
+    e formatando o nome do produto com os detalhes da grade.
+    """
     if isinstance(produto_row, (int, float)):
         st.error("Erro interno: produto_row veio incorreto (int/float).")
         return
 
-    # --- INÍCIO DA CORREÇÃO ---
-    # 1. Corrige a busca do ID
+    # --- CORREÇÃO 1: Obter o ID corretamente ---
+    # Para variações (pd.Series), o ID está no 'name'.
+    # Para produtos normais (dict), está em 'ID'.
     if isinstance(produto_row, pd.Series):
         produto_id = produto_row.name
     else:
-        produto_id = produto_row.get('ID') # Fallback para caso não seja uma Series
+        produto_id = produto_row.get('ID') # Fallback
 
-    # 2. Garante que o ID não seja nulo (MUITO IMPORTANTE)
+    # Garante que o ID não seja nulo (resolve o bug da imagem/cashback)
     if pd.isna(produto_id):
         st.error("Erro interno: ID do produto não pôde ser determinado.")
         return
-    # --- FIM DA CORREÇÃO ---
+    # --- FIM CORREÇÃO 1 ---
 
-    produto_nome = produto_row.get('NOME', 'Produto sem nome')
-    produto_preco = produto_row.get('PRECO_FINAL', preco_final)
     
-    # 3. Corrige a busca da Imagem (para ser consistente com 'FOTOURL' dos detalhes)
-    produto_imagem = produto_row.get('FOTOURL', produto_row.get('LINKIMAGEM', ''))
+    # --- CORREÇÃO 2: Formatar o nome com a variação ---
+    produto_nome_base = produto_row.get('NOME', 'Produto sem nome')
+    produto_nome_final = produto_nome_base
+    
+    try:
+        # Tenta ler os detalhes da grade (ex: "{'Cor': 'Preto', 'Tamanho': 'G'}")
+        detalhes_str = produto_row.get('DETALHESGRADE', '{}')
+        if pd.notna(detalhes_str) and detalhes_str.strip() not in ('{}', 'nan', ''):
+            detalhes_dict = ast.literal_eval(detalhes_str)
+            if isinstance(detalhes_dict, dict) and detalhes_dict:
+                # Formata os detalhes: "Cor: Preto, Tamanho: G"
+                detalhes_formatados = ", ".join([f"{k}: {v}" for k, v in detalhes_dict.items()])
+                # Cria o nome final: "Produto (Cor: Preto, Tamanho: G)"
+                produto_nome_final = f"{produto_nome_base} ({detalhes_formatados})"
+    except Exception as e:
+        # Se falhar a formatação, usa o nome base
+        pass 
+    # --- FIM CORREÇÃO 2 ---
+
+    
+    produto_preco = produto_row.get('PRECO_FINAL', preco_final)
+    # Prioriza 'FOTOURL' que é usada na tela de detalhes
+    produto_imagem = produto_row.get('FOTOURL', produto_row.get('LINKIMAGEM', '')) 
 
     df_catalogo = st.session_state.df_catalogo_indexado
 
     try:
-        # Esta linha agora vai funcionar, pois 'produto_id' está correto
+        # Esta busca agora vai funcionar
         quantidade_max_raw = df_catalogo.loc[produto_id, 'QUANTIDADE']
         quantidade_max = int(pd.to_numeric(quantidade_max_raw, errors='coerce'))
     except (KeyError, ValueError):
         quantidade_max = 999999
 
     if quantidade_max <= 0:
-        st.warning(f"⚠️ Produto '{produto_nome}' está esgotado.")
+        st.warning(f"⚠️ Produto '{produto_nome_final}' está esgotado.")
         return
 
     if produto_id in st.session_state.carrinho:
@@ -71,18 +95,19 @@ def adicionar_qtd_ao_carrinho(produto_row, quantidade, preco_final):
         st.session_state.carrinho[produto_id]['quantidade'] = nova_quantidade
     else:
         if quantidade > quantidade_max:
-            st.warning(f"⚠️ Quantidade solicitada ({quantidade}) excede o estoque ({quantidade_max}) para '{produto_nome}'.")
+            st.warning(f"⚠️ Quantidade solicitada ({quantidade}) excede o estoque ({quantidade_max}) para '{produto_nome_final}'.")
             return
         
-        # Esta parte agora vai funcionar, pois 'produto_id' está correto
+        # Salva o produto no carrinho com o NOME CORRETO
         st.session_state.carrinho[produto_id] = {
-            'nome': produto_nome,
+            'nome': produto_nome_final, # <-- USA O NOME FORMATADO
             'preco': produto_preco,
             'quantidade': quantidade,
             'imagem': produto_imagem
         }
 
-    st.toast(f"✅ {quantidade}x {produto_nome} adicionado(s)!", icon="🛍️")
+    # Mostra o toast com o NOME CORRETO
+    st.toast(f"✅ {quantidade}x {produto_nome_final} adicionado(s)!", icon="🛍️")
     time.sleep(0.1)
 
 
@@ -259,6 +284,7 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
 
 
 
