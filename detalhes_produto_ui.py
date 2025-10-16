@@ -163,14 +163,14 @@ with col_detalhes_compra:
         
         adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
         st.rerun()
+    # FIM do with col_detalhes_compra:
 
-
-st.markdown("---")
+    st.markdown("---") # <-- ESTE DEVE TER APENAS 4 ESPAÇOS DE INDENTAÇÃO
     
     # =================================================================
     # --- 4. Seção "Produtos Relacionados" (VOLTA ÀS COLUNAS NATIVAS) ---
     # =================================================================
-    st.header("PRODUTOS RELACIONADOS")
+    st.header("PRODUTOS RELACIONADOS") # <-- ESTE DEVE TER APENAS 4 ESPAÇOS DE INDENTAÇÃO
     st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) 
 
     # ESTE BLOCO ESTÁ CORRETAMENTE DENTRO DA FUNÇÃO AGORA
@@ -200,6 +200,7 @@ st.markdown("---")
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
