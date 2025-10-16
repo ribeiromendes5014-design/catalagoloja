@@ -1,6 +1,6 @@
 # detalhes_produto_ui.py
 # Arquivo separado para a UI da Tela de Detalhes do Produto
-# VERSÃO CORRIGIDA 3: Lógica mais robusta para ler 'DetalhesGrade'
+# VERSÃO CORRIGIDA 4: Converte TODOS os valores da grade para STRING
 
 import streamlit as st
 import pandas as pd
@@ -159,29 +159,22 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         all_products_for_grade = pd.concat([row_para_info.to_frame().T, df_variacoes])
         all_products_for_grade = all_products_for_grade[~all_products_for_grade.index.duplicated(keep='first')]
         
-        # --- CORREÇÃO AQUI: LÓGICA MAIS ROBUSTA PARA CRIAR df_grade ---
         products_with_grade = []
         for idx, row in all_products_for_grade.iterrows():
             try:
-                # Converte para string e remove espaços, assim como seu arquivo original
                 detalhe_str = str(row.get('DetalhesGrade', '')).strip() 
                 
-                # Pula se for string vazia, 'nan' (de um float NaN) ou string de dict vazio
                 if not detalhe_str or detalhe_str == 'nan' or detalhe_str == '{}':
                     continue 
 
-                # Agora sim, tenta o ast.literal_eval
                 detalhes = ast.literal_eval(detalhe_str)
                 
-                if isinstance(detalhes, dict) and detalhes: # Verifica se é um dict e não está vazio
+                if isinstance(detalhes, dict) and detalhes: 
                     products_with_grade.append(row)
             except (ValueError, SyntaxError, NameError):
-                # Se ast.literal_eval falhar (ex: string mal formatada), pula a linha
                 continue
         
         df_grade = pd.DataFrame(products_with_grade)
-        # --- FIM DA CORREÇÃO ---
-
 
         if not df_grade.empty:
             st.markdown("---")
@@ -191,14 +184,16 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             opcoes_disponiveis = {} # Ex: {'Cor': ['Café', 'Vermelho'], 'Tamanho': ['37/38', '35/36']}
             
             for idx, row_g in df_grade.iterrows():
-                # Já sabemos que a 'DetalhesGrade' é válida por causa do filtro anterior
                 detalhes_g = ast.literal_eval(str(row_g.get('DetalhesGrade', '{}')).strip())
                 for k, v in detalhes_g.items():
                     if k not in opcoes_disponiveis:
                         opcoes_disponiveis[k] = set()
-                    opcoes_disponiveis[k].add(v)
+                    
+                    # --- CORREÇÃO AQUI ---
+                    # Converte TODOS os valores para string (ex: 38 vira '38')
+                    opcoes_disponiveis[k].add(str(v))
             
-            # Converte sets para listas ordenadas
+            # Converte sets para listas ordenadas (agora seguro, pois são todas strings)
             for k in opcoes_disponiveis:
                 opcoes_disponiveis[k] = sorted(list(opcoes_disponiveis[k]))
 
@@ -207,9 +202,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             
             # Tenta pré-selecionar com base no 'row_clicada'
             try:
-                detalhes_clicados = ast.literal_eval(str(row_clicada.get('DetalhesGrade', '{}')).strip())
-                if not isinstance(detalhes_clicados, dict):
-                    detalhes_clicados = {}
+                detalhes_clicados_raw = ast.literal_eval(str(row_clicada.get('DetalhesGrade', '{}')).strip())
+                if not isinstance(detalhes_clicados_raw, dict):
+                    detalhes_clicados_raw = {}
+                
+                # --- CORREÇÃO AQUI ---
+                # Converte os valores para string para bater com as 'opcoes_disponiveis'
+                detalhes_clicados = {k: str(v) for k, v in detalhes_clicados_raw.items()}
             except:
                 detalhes_clicados = {}
 
@@ -232,8 +231,14 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             
             # 3. Filtra o produto final com base na seleção
             for idx, row_g in df_grade.iterrows():
-                detalhes_g = ast.literal_eval(str(row_g.get('DetalhesGrade', '{}')).strip())
-                if detalhes_g == selecao_usuario:
+                # --- CORREÇÃO AQUI ---
+                # Pega o dicionário original do CSV (com int, str, etc.)
+                detalhes_g_raw = ast.literal_eval(str(row_g.get('DetalhesGrade', '{}')).strip())
+                # Converte seus valores para string ANTES de comparar
+                detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
+                
+                # Compara o dicionário (str:str) com o dicionário (str:str) do st.radio
+                if detalhes_g_str == selecao_usuario:
                     id_produto_selecionado = idx
                     row_produto_selecionado = row_g
                     break # Encontrou
@@ -255,14 +260,16 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
              return
 
         # --- PREÇO (CORRIGIDO) ---
-        preco_original = row_produto_selecionado['PRECO'] 
-        preco_final_selecionado = row_produto_selecionado['PRECO_FINAL']
-        is_promotion = pd.notna(row_produto_selecionado.get('PRECO_PROMOCIONAL'))
-        condicao_pagamento = row_produto_selecionado.get('CONDICAOPAGAMENTO', 'Preço à vista')
+        preco_original = row_produto_selecionado['PRECO_CARTAO'] # Usei PrecoCartao como base do seu CSV
+        preco_final_selecionado = row_produto_selecionado['PRECO_VISTA'] # Usei PrecoVista como base
+        
+        # Lógica de Promoção (se PrecoCartao for maior que PrecoVista)
+        is_promotion = preco_original > preco_final_selecionado
+        condicao_pagamento = "Preço à vista" # Definido manualmente com base no PrecoVista
 
         st.markdown("---")
         
-        if is_promotion and preco_original > preco_final_selecionado:
+        if is_promotion:
             st.markdown(f"""
             <div style="line-height: 1.2;">
                 <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
@@ -282,7 +289,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
         # --- 5. LÓGICA DE COMPRA (Quantidade e Estoque) ---
         
-        estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('QUANTIDADE', 0), errors='coerce'))
+        estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('Quantidade', 0), errors='coerce'))
         
         if estoque_disponivel > ESTOQUE_BAIXO_LIMITE:
             st.success(f"**Em estoque** ({estoque_disponivel} unidades)")
@@ -327,9 +334,10 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 qtd = st.session_state.get(key_qtd, 1)
                 
+                # Usa 'PrecoVista' (preco_final_selecionado) como preço de adição
                 adicionar_qtd_ao_carrinho(row_produto_selecionado, qtd, preco_final_selecionado)
                 
-                st.toast(f"{qtd}x {row_produto_selecionado['NOME']} adicionado(s)!")
+                st.toast(f"{qtd}x {row_produto_selecionado['Nome']} adicionado(s)!")
                 time.sleep(0.5)
         else:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -349,8 +357,8 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with tab_details:
         st.subheader("Detalhes Técnicos")
         st.text(f"ID do Produto: {id_principal_para_info}")
-        st.text(f"Marca: {row_para_info.get('Marca', row_para_info.get('MARCA', 'N/D'))}") 
-        st.text(f"Categoria: {row_para_info.get('CATEGORIA', 'N/D')}")
+        st.text(f"Marca: {row_para_info.get('Marca', 'N/D')}") 
+        st.text(f"Categoria: {row_para_info.get('Categoria', 'N/D')}")
         st.text(f"Código de Barras: {row_para_info.get('CodigoBarras', 'N/D')}")
 
 
@@ -366,10 +374,10 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
     ids_para_excluir = [id_principal_para_info] + list(df_variacoes.index)
     
-    categoria_pai = row_para_info.get('CATEGORIA')
+    categoria_pai = row_para_info.get('Categoria') # Corrigido para 'Categoria' (minúsculo)
     df_relacionados = df_catalogo_indexado[
         (~df_catalogo_indexado.index.isin(ids_para_excluir)) &
-        (df_catalogo_indexado['CATEGORIA'] == categoria_pai) &
+        (df_catalogo_indexado['Categoria'] == categoria_pai) &
         (df_catalogo_indexado['PAIID'].isna()) 
     ]
 
@@ -392,13 +400,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 with col:
                     render_product_image_clickable(row_card.get('LINKIMAGEM', row_card.get('FotoURL')), prod_id_card) 
                     
-                    st.caption(f"**{row_card['NOME']}**")
+                    st.caption(f"**{row_card['Nome']}**")
                     
-                    preco_card_orig = row_card['PRECO']
-                    preco_card_final = row_card['PRECO_FINAL']
-                    is_promo_card = pd.notna(row_card.get('PRECO_PROMOCIONAL'))
+                    preco_card_orig = row_card['PrecoCartao']
+                    preco_card_final = row_card['PrecoVista']
+                    is_promo_card = preco_card_orig > preco_card_final
 
-                    if is_promo_card and preco_card_orig > preco_card_final:
+                    if is_promo_card:
                         st.write(f"<span style='text-decoration: line-through; color: #888; font-size: 0.9rem;'>R$ {preco_card_orig:,.2f}</span>", unsafe_allow_html=True)
                     else:
                         st.write("<br>", unsafe_allow_html=True) 
