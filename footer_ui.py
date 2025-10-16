@@ -2,106 +2,120 @@
 
 import streamlit as st
 import textwrap
-import urllib.parse
 
 # Se o arquivo data_handler.py existir, este import funciona.
-# Caso contrário, defina as variáveis manualmente.
 try:
     from data_handler import NUMERO_WHATSAPP
 except ImportError:
     NUMERO_WHATSAPP = "5511999999999" # Coloque seu número aqui
 
 # Variáveis de Configuração do Layout
-COR_RODAPE = "#F28C9D"  # Rosa claro/salmão
+COR_RODAPE = "#F28C9D"
 COR_TEXTO = "white"
 COR_LINK = "white"
-NUMERO_EXIBIDO = "55 11 99999-9999"  # Exemplo formatado
+NUMERO_EXIBIDO = "55 11 99999-9999"
 
 def render_fixed_footer():
-    """Renderiza o rodapé fixo no estilo e-commerce (3 colunas, rosa)."""
+    """Renderiza o rodapé fixo, incluindo o formulário de newsletter."""
 
-    css_style = textwrap.dedent(f"""
+    # --- ALTERAÇÃO 1: CSS para o container principal e colunas ---
+    # Usamos um ID (#footer-container) para aplicar o fundo rosa
+    st.markdown(textwrap.dedent(f"""
         <style>
-        .footer-container-full {{
-            position: relative;
-            width: 100%;
-            background-color: {COR_RODAPE};
-            color: {COR_TEXTO};
-            padding-top: 30px;
-            padding-bottom: 30px;
-            font-size: 14px;
-            margin-top: 50px;
-        }}
-        .footer-grid {{
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 40px;
-        }}
-        .footer-column h4, .footer-column p {{
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: {COR_TEXTO};
-        }}
-        .footer-column a {{
-            color: {COR_LINK};
-            text-decoration: none;
-            display: block;
-            margin-bottom: 8px;
-        }}
-        .footer-column a:hover {{
-            text-decoration: underline;
-        }}
-        .footer-bottom {{
-            width: 100%;
-            background-color: rgba(0,0,0,0.05);
-            color: {COR_TEXTO};
-            padding: 10px 40px;
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            font-size: 13px;
-        }}
-        @media (max-width: 768px) {{
-            .footer-grid {{
-                grid-template-columns: 1fr;
-                padding: 0 20px;
+            #footer-container {{
+                background-color: {COR_RODAPE};
+                padding: 30px 40px;
+                margin-top: 50px;
+                border-radius: 8px; /* Opcional: bordas arredondadas */
+            }}
+            #footer-container h4, #footer-container p, #footer-container label {{
+                color: {COR_TEXTO};
+                font-weight: bold;
+            }}
+            #footer-container a {{
+                color: {COR_LINK};
+                text-decoration: none;
+                display: block;
+                margin-bottom: 8px;
+            }}
+            #footer-container a:hover {{
+                text-decoration: underline;
+            }}
+            #footer-container .stButton > button {{
+                background-color: white;
+                color: {COR_RODAPE};
+                border: 2px solid white;
+                font-weight: bold;
+            }}
+             #footer-container .stButton > button:hover {{
+                background-color: #eee;
+                color: {COR_RODAPE};
             }}
             .footer-bottom {{
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+                width: 100%;
+                background-color: rgba(0,0,0,0.05);
+                color: {COR_TEXTO};
+                padding: 10px 40px;
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                font-size: 13px;
+                border-radius: 0 0 8px 8px; /* Arredonda cantos inferiores */
             }}
-        }}
         </style>
-    """)
-    st.markdown(css_style, unsafe_allow_html=True)
+    """), unsafe_allow_html=True)
 
-    html_footer = f"""
-    <div class="footer-container-full">
-        <div class="footer-grid">
-            <div class="footer-column">
-                <h4>ATENDIMENTO</h4>
-                <p>{NUMERO_EXIBIDO}</p>
-                <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
-                <a href="https://www.instagram.com/doce_bella" target="_blank">Instagram</a>
-            </div>
-            <div class="footer-column">
-                <h4>MARCAS</h4>
-                <a href="#">MAQUIAGENS</a>
-                <a href="#">ACESSÓRIOS</a>
-                <a href="#">SKINCARE</a>
-            </div>
-            <div class="footer-column">
-                <h4>INSTITUCIONAL</h4>
-                <a href="#">Sobre Nós</a>
-                <a href="#">Políticas de Privacidade</a>
-            </div>
-        </div>
+    # --- ALTERAÇÃO 2: Usar st.container e st.columns para o layout ---
+    # Envolvemos tudo em um container para aplicar o estilo
+    st.markdown('<div id="footer-container">', unsafe_allow_html=True)
+
+    # Criamos 4 colunas para o conteúdo do rodapé
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 1.5]) # A última coluna é um pouco maior
+
+    with col1:
+        st.markdown(textwrap.dedent(f"""
+            <h4>ATENDIMENTO</h4>
+            <p>{NUMERO_EXIBIDO}</p>
+            <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
+            <a href="https://www.instagram.com/doce_bella" target="_blank">Instagram</a>
+        """), unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(textwrap.dedent("""
+            <h4>MARCAS</h4>
+            <a href="#">MAQUIAGENS</a>
+            <a href="#">ACESSÓRIOS</a>
+            <a href="#">SKINCARE</a>
+        """), unsafe_allow_html=True)
+
+    with col3:
+        st.markdown(textwrap.dedent("""
+            <h4>INSTITUCIONAL</h4>
+            <a href="#">Sobre Nós</a>
+            <a href="#">Políticas de Privacidade</a>
+        """), unsafe_allow_html=True)
+
+    # --- ALTERAÇÃO 3: O formulário agora vive na última coluna ---
+    with col4:
+        st.markdown("<h4>Newsletter</h4>", unsafe_allow_html=True)
+        st.markdown("<p style='font-weight: normal;'>Receba novidades e promoções!</p>", unsafe_allow_html=True)
+        
+        # O formulário em si
+        with st.form(key="footer_newsletter_form", clear_on_submit=True):
+            nome = st.text_input("Nome", key="footer_nome", label_visibility="collapsed", placeholder="Seu Nome")
+            telefone = st.text_input("Telefone", key="footer_telefone", label_visibility="collapsed", placeholder="DDD + Número")
+            
+            submitted = st.form_submit_button("Enviar")
+            if submitted and nome and telefone:
+                # Aqui você pode adicionar a lógica para salvar os dados
+                st.success("Obrigado por se inscrever! 🎉")
+
+    st.markdown('</div>', unsafe_allow_html=True) # Fecha o container principal
+    
+    # O "footer-bottom" continua sendo um HTML separado
+    st.markdown(textwrap.dedent("""
         <div class="footer-bottom">
             <div>
                 Meios de pagamento
@@ -115,8 +129,4 @@ def render_fixed_footer():
                 | Copyright WE MAKE - 2025.
             </div>
         </div>
-    </div>
-    """
-
-    # A correção principal: remover a indentação do bloco de texto
-    st.markdown(textwrap.dedent(html_footer), unsafe_allow_html=True)
+    """), unsafe_allow_html=True)
