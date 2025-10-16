@@ -75,13 +75,18 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with col_img_variacao:
         
         # EXIBIÇÃO DINÂMICA DA IMAGEM DA VARIAÇÃO ATUALMENTE SELECIONADA/CLICADA
-        # CRÍTICO: Adiciona uma string vazia como fallback caso 'FotoURL' seja None/NaN.
         image_url = produto_selecionado_row.get('FotoURL')
         
-        # AQUI ESTÁ A CORREÇÃO: Passa "" se for None/NaN.
-        st.image(image_url if image_url else "", use_container_width=True) 
-        # NOTA: O LINKIMAGEM foi substituído por FotoURL conforme o CSV anterior
-        
+        # === CORREÇÃO CRÍTICA: Verifica se a URL existe ANTES de chamar st.image ===
+        if image_url and image_url.strip():
+            st.image(image_url, use_container_width=True)
+        else:
+            # Opção 1: Deixa o espaço em branco (Melhor para UX)
+            st.empty()
+            # Opção 2: Mostra um placeholder simples (Descomente se quiser)
+            # st.markdown("<div>Sem imagem disponível</div>", unsafe_allow_html=True)
+        # ===========================================================================
+
         # Lógica de Seleção de Variação (Dinâmica do CSV)
         if not df_variacoes.empty and len(df_variacoes) > 1:
             st.markdown("---")
@@ -253,6 +258,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
