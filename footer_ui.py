@@ -4,6 +4,9 @@ import streamlit as st
 import requests
 import re
 import urllib.parse
+# --- ALTERAÇÃO 1: Importar a biblioteca textwrap ---
+import textwrap 
+
 # Importamos o NUMERO_WHATSAPP para o bloco de contato, caso ele seja usado.
 from data_handler import NUMERO_WHATSAPP 
 
@@ -17,8 +20,8 @@ NUMERO_EXIBIDO = "5511999999999"  # Exemplo
 def render_fixed_footer():
     """Renderiza o rodapé fixo no estilo e-commerce (3 colunas, rosa)."""
 
-    st.markdown(
-        f"""
+    # --- ALTERAÇÃO 2: Aplicar textwrap.dedent() ao CSS (Boa prática) ---
+    css_style = textwrap.dedent(f"""
         <style>
         .footer-container-full {{
             position: relative; /* Fica no fim da página */
@@ -81,13 +84,9 @@ def render_fixed_footer():
             }}
         }}
         </style>
-        """,
-        unsafe_allow_html=True
-    )
+    """)
+    st.markdown(css_style, unsafe_allow_html=True)
 
-    # footer_ui.py (Dentro da variável html_footer)
-
-# ⚠️ NÃO ALTERE A INDENTAÇÃO ABAIXO ⚠️
     html_footer = f"""
     <div class="footer-container-full">
         <div class="footer-grid">
@@ -127,18 +126,5 @@ def render_fixed_footer():
     </div>
     """
 
-    st.markdown(html_footer, unsafe_allow_html=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # --- ALTERAÇÃO 3: Aplicar textwrap.dedent() ao HTML (A correção principal) ---
+    st.markdown(textwrap.dedent(html_footer), unsafe_allow_html=True)
