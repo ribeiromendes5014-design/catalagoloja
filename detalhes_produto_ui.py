@@ -1,7 +1,7 @@
 # detalhes_produto_ui.py
 # Arquivo separado para a UI da Tela de Detalhes do Produto
-# VERSÃO CORRIGIDA 6: Corrige KeyError (PRECO/PRECOCARTAO), move o preço
-# e estiliza os botões de variação (st.radio)
+# VERSÃO CORRIGIDA 7: Corrige o KeyError final.
+# Usa PRECO (original) e PRECO_FINAL (de venda), consistentes com catalogo_app.py
 
 import streamlit as st
 import pandas as pd
@@ -17,7 +17,7 @@ from streamlit_carousel import carousel # Importação principal para a soluçã
 def mostrar_detalhes_produto(df_catalogo_indexado):
     """
     Renderiza a tela de detalhes de um único produto, puxando dados do CSV (df_catalogo_indexado).
-    Usa colunas em MAIÚSCULAS (PAIID, PRECOCARTAO, PRECOVISTA, etc.)
+    Usa colunas em MAIÚSCULAS e as colunas de preço corretas (PRECO, PRECO_FINAL)
     """
     
     # 1. BUSCA E VALIDA O PRODUTO CLICADO
@@ -140,7 +140,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             image_items.append(
                 {
                     "title": row_para_info['NOME'],
-                    # CORREÇÃO: Texto do carrossel não deve ter preço
                     "text": row_para_info.get('CATEGORIA', row_para_info.get('MARCA', '')), 
                     "img": foto_principal_url,
                 }
@@ -155,7 +154,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                     try:
                         detalhes_var = ast.literal_eval(row_var.get('DETALHESGRADE', '{}'))
                         if isinstance(detalhes_var, dict) and detalhes_var:
-                            # CORREÇÃO: Texto do carrossel é SÓ a variação
                             desc_var = ", ".join([f"{k}: {v}" for k, v in detalhes_var.items()])
                         else:
                             desc_var = row_var['NOME'] 
@@ -212,36 +210,34 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         # --- PREÇO (SERÁ ATUALIZADO PELOS SELETORES ABAIXO) ---
         
-        # Define um produto inicial (o clicado) para mostrar o preço
-        # Este 'row_produto_selecionado_inicial' será substituído pela seleção da grade
         if not df_grade.empty:
-            # Se tem grade, tenta usar o 'row_clicada' como padrão
             row_produto_selecionado_inicial = row_clicada
         else:
-            # Se não tem grade, usa o produto principal
             row_produto_selecionado_inicial = row_para_info
 
-        # CORREÇÃO KeyError: Usa PRECOCARTAO e PRECOVISTA
-        preco_original = row_produto_selecionado_inicial['PRECOCARTAO'] 
-        preco_final_selecionado = row_produto_selecionado_inicial['PRECOVISTA']
+        # CORREÇÃO KeyError: Usa PRECO e PRECO_FINAL
+        preco_original = row_produto_selecionado_inicial['PRECO'] 
+        preco_final_selecionado = row_produto_selecionado_inicial['PRECO_FINAL']
         
-        is_promotion = preco_original > preco_final_selecionado
+        preco_promo_val = row_produto_selecionado_inicial.get('PRECO_PROMOCIONAL')
+        is_promotion = pd.notna(preco_promo_val) and preco_promo_val > 0
         condicao_pagamento = row_produto_selecionado_inicial.get('CONDICAOPAGAMENTO', 'Preço à vista')
 
         st.markdown("---")
         
-        # O preço será renderizado dentro de um container para poder ser atualizado
         price_placeholder = st.empty()
         
         def render_price(row_selecionada):
             # Função para desenhar o preço
-            po = row_selecionada['PRECOCARTAO']
-            pf = row_selecionada['PRECOVISTA']
-            is_promo = po > pf
+            # CORREÇÃO KeyError: Usa PRECO e PRECO_FINAL
+            po = row_selecionada['PRECO']
+            pf = row_selecionada['PRECO_FINAL']
+            pp = row_selecionada.get('PRECO_PROMOCIONAL')
+            is_promo = pd.notna(pp) and pp > 0
             cp = row_selecionada.get('CONDICAOPAGAMENTO', 'Preço à vista')
             
             with price_placeholder.container():
-                if is_promo:
+                if is_promo and po > pf:
                     st.markdown(f"""
                     <div style="line-height: 1.2;">
                         <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {po:.2f}</span>
@@ -333,17 +329,14 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
              return
 
         # --- ATUALIZA O PREÇO ---
-        # Agora que 'row_produto_selecionado' está definido (seja pelo rádio ou padrão),
-        # re-renderiza o bloco de preço com os valores corretos.
         render_price(row_produto_selecionado)
         
-        # Pega o preço final para o botão "Adicionar"
-        preco_final_selecionado = row_produto_selecionado['PRECOVISTA']
+        # CORREÇÃO KeyError: Pega o PRECO_FINAL para o botão "Adicionar"
+        preco_final_selecionado = row_produto_selecionado['PRECO_FINAL']
 
 
         # --- 5. LÓGICA DE COMPRA (Quantidade e Estoque) ---
         
-        # A lógica de estoque está correta, ela usa o 'row_produto_selecionado'
         estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('QUANTIDADE', 0), errors='coerce'))
         
         st.markdown("---") # Divisor
@@ -458,12 +451,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                     
                     st.caption(f"**{row_card['NOME']}**")
                     
-                    # CORREÇÃO KeyError: Usa PRECOCARTAO e PRECOVISTA
-                    preco_card_orig = row_card['PRECOCARTAO']
-                    preco_card_final = row_card['PRECOVISTA']
-                    is_promo_card = preco_card_orig > preco_card_final
+                    # CORREÇÃO KeyError: Usa PRECO e PRECO_FINAL
+                    preco_card_orig = row_card['PRECO']
+                    preco_card_final = row_card['PRECO_FINAL']
+                    preco_promo_card = row_card.get('PRECO_PROMOCIONAL')
+                    is_promo_card = pd.notna(preco_promo_card) and preco_promo_card > 0
 
-                    if is_promo_card:
+                    if is_promo_card and preco_card_orig > preco_card_final:
                         st.write(f"<span style='text-decoration: line-through; color: #888; font-size: 0.9rem;'>R$ {preco_card_orig:,.2f}</span>", unsafe_allow_html=True)
                     else:
                         st.write("<br>", unsafe_allow_html=True) 
