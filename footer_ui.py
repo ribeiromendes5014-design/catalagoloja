@@ -138,11 +138,11 @@ def render_fixed_footer():
                     if success:
                         st.success("Obrigado por se inscrever! 🎉")
                     else:
-                    st.error("Ocorreu um erro ao salvar sua inscrição.")
-                    # Para depuração, você pode querer ver o erro real:
-                    st.error(message) # <-- LINHA ALTERADA
-            else:
-                st.warning("Por favor, preencha seu nome e telefone.")
+                        st.error("Ocorreu um erro ao salvar sua inscrição.")
+                        # Para depuração, você pode querer ver o erro real:
+                        st.error(message)
+                else:
+                    st.warning("Por favor, preencha seu nome e telefone.")
 
     st.markdown("""
         <div class="footer-bottom-bar">
@@ -154,4 +154,5 @@ def render_fixed_footer():
     """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 
