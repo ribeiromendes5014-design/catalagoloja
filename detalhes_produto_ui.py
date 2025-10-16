@@ -76,8 +76,8 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         if carousel_items:
             # Renderiza o Carrossel com todas as imagens de variação
-            # A altura de 350px é um bom ponto de partida
-            carousel(items=carousel_items, width=1, height=350, key="product_carousel")
+            # REMOVA 'height=350'
+            carousel(items=carousel_items, width=1, key="product_carousel")
         else:
              # Fallback para a imagem principal (que pode ser a do produto pai)
              st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
@@ -224,6 +224,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
