@@ -78,34 +78,47 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
 
         # Lógica de Seleção de Variação (Dinâmica do CSV)
-        if not df_variacoes.empty and len(df_variacoes) > 1:
-            st.markdown("---")
-            
-            # ESTE BLOCO DEFINE mapa_variacoes, DEVE ESTAR DENTRO DO IF
-            mapa_variacoes = {
-                f"{row['NOME']} ({row.get('DESCRICAOCURTA', '')})" : row.name
-                for _, row in df_variacoes.iterrows()
-            }
-            
-            try:
-                indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
-            except ValueError:
-                 indice_selecionado = 0
-            
-            # ESTE BLOCO USA mapa_variacoes, DEVE ESTAR DENTRO DO IF
-            opcao_selecionada_nome = st.radio(
-                "Selecione a Variação:", options=list(mapa_variacoes.keys()), index=indice_selecionado, key='seletor_variacao_radio', label_visibility="visible"
-            )
-            
-            id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
-            
-            # Redefine produto_selecionado_row com base na seleção do rádio
-            produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
-            
-        elif len(df_variacoes) == 1:
-             st.info("Este produto é uma variação única.")
+if not df_variacoes.empty and len(df_variacoes) > 1:
+    st.markdown("---")
+    
+    # --- SUBSTITUIÇÃO: LÓGICA DE MAPA USANDO DETALHESGRADE ---
+    mapa_variacoes = {}
+    for index, row in df_variacoes.iterrows():
+        
+        # Tenta usar DetalhesGrade.
+        detalhe_grade = str(row.get('DetalhesGrade', '')).strip()
+        
+        # Se DetalhesGrade existe e não é a string vazia de um objeto Python/NaN
+        if detalhe_grade and detalhe_grade != '{}' and detalhe_grade != 'nan':
+             # Usamos os DetalhesGrade + Preço como o rótulo principal
+             # Exemplo: "Chinelo (Cor: Vermelho, Tamanho: 37) - R$ 49.99"
+             label = f"{row['Nome']} ({detalhe_grade}) - R$ {row['PRECO_FINAL']:.2f}"
         else:
-             st.info("Este produto não possui variações.")
+             # Fallback usando o nome e preço, para que o rádio não quebre
+             label = f"{row['Nome']} - R$ {row['PRECO_FINAL']:.2f}"
+
+        mapa_variacoes[label] = index
+    # --- FIM DA LÓGICA DE MAPA COM DETALHESGRADE ---
+
+    try:
+        indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
+    except ValueError:
+         indice_selecionado = 0
+    
+    # ESTE BLOCO USA mapa_variacoes, DEVE ESTAR DENTRO DO IF
+    opcao_selecionada_nome = st.radio(
+        "Selecione a Variação:", options=list(mapa_variacoes.keys()), index=indice_selecionado, key='seletor_variacao_radio', label_visibility="visible"
+    )
+    
+    id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
+    
+    # Redefine produto_selecionado_row com base na seleção do rádio
+    produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
+    
+elif len(df_variacoes) == 1:
+    st.info("Este produto é uma variação única.")
+else:
+    st.info("Este produto não possui variações.")
 
     
     # =================================================================
@@ -221,6 +234,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
