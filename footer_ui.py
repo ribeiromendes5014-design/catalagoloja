@@ -1,30 +1,29 @@
 # footer_ui.py
 
 import streamlit as st
-import requests
-import re
+import textwrap
 import urllib.parse
-# --- ALTERAÇÃO 1: Importar a biblioteca textwrap ---
-import textwrap 
 
-# Importamos o NUMERO_WHATSAPP para o bloco de contato, caso ele seja usado.
-from data_handler import NUMERO_WHATSAPP 
+# Se o arquivo data_handler.py existir, este import funciona.
+# Caso contrário, defina as variáveis manualmente.
+try:
+    from data_handler import NUMERO_WHATSAPP
+except ImportError:
+    NUMERO_WHATSAPP = "5511999999999" # Coloque seu número aqui
 
-# Variáveis de Configuração do Novo Layout
+# Variáveis de Configuração do Layout
 COR_RODAPE = "#F28C9D"  # Rosa claro/salmão
 COR_TEXTO = "white"
 COR_LINK = "white"
-NUMERO_EXIBIDO = "5511999999999"  # Exemplo
-
+NUMERO_EXIBIDO = "55 11 99999-9999"  # Exemplo formatado
 
 def render_fixed_footer():
     """Renderiza o rodapé fixo no estilo e-commerce (3 colunas, rosa)."""
 
-    # --- ALTERAÇÃO 2: Aplicar textwrap.dedent() ao CSS (Boa prática) ---
     css_style = textwrap.dedent(f"""
         <style>
         .footer-container-full {{
-            position: relative; /* Fica no fim da página */
+            position: relative;
             width: 100%;
             background-color: {COR_RODAPE};
             color: {COR_TEXTO};
@@ -33,7 +32,6 @@ def render_fixed_footer():
             font-size: 14px;
             margin-top: 50px;
         }}
-
         .footer-grid {{
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -42,13 +40,11 @@ def render_fixed_footer():
             margin: 0 auto;
             padding: 0 40px;
         }}
-
         .footer-column h4, .footer-column p {{
             font-weight: bold;
             margin-bottom: 15px;
             color: {COR_TEXTO};
         }}
-
         .footer-column a {{
             color: {COR_LINK};
             text-decoration: none;
@@ -58,7 +54,6 @@ def render_fixed_footer():
         .footer-column a:hover {{
             text-decoration: underline;
         }}
-
         .footer-bottom {{
             width: 100%;
             background-color: rgba(0,0,0,0.05);
@@ -71,7 +66,6 @@ def render_fixed_footer():
             flex-wrap: wrap;
             font-size: 13px;
         }}
-
         @media (max-width: 768px) {{
             .footer-grid {{
                 grid-template-columns: 1fr;
@@ -91,40 +85,38 @@ def render_fixed_footer():
     <div class="footer-container-full">
         <div class="footer-grid">
             <div class="footer-column">
-                <p style="margin-top: 0;"><i class="fa fa-instagram"></i></p>
+                <h4>ATENDIMENTO</h4>
                 <p>{NUMERO_EXIBIDO}</p>
                 <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
                 <a href="https://www.instagram.com/doce_bella" target="_blank">Instagram</a>
             </div>
-
             <div class="footer-column">
                 <h4>MARCAS</h4>
-                <a href="#maquiagens">MAQUIAGENS</a>
-                <a href="#acessorios">ACESSÓRIOS</a>
-                <a href="#skincare">SKINCARE</a>
+                <a href="#">MAQUIAGENS</a>
+                <a href="#">ACESSÓRIOS</a>
+                <a href="#">SKINCARE</a>
             </div>
-
             <div class="footer-column">
-                </div>
+                <h4>INSTITUCIONAL</h4>
+                <a href="#">Sobre Nós</a>
+                <a href="#">Políticas de Privacidade</a>
+            </div>
         </div>
-
         <div class="footer-bottom">
             <div>
-                Meios de pagamento 
-                <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" 
-                     style="height: 18px; vertical-align: middle; margin-left: 5px;">
+                Meios de pagamento
+                <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" style="height: 18px; vertical-align: middle; margin-left: 5px;">
             </div>
             <div>
-                criado por 
+                criado por
                 <span>
-                    <img src="https://i.ibb.co/6R2b0S4/nuvemshop-logo.png" alt="Nuvemshop" 
-                         style="height: 16px; vertical-align: middle;">
-                </span> 
-                | Copyright WE MAKE - 2025. Todos os direitos reservados.
+                    <img src="https://i.ibb.co/6R2b0S4/nuvemshop-logo.png" alt="Nuvemshop" style="height: 16px; vertical-align: middle;">
+                </span>
+                | Copyright WE MAKE - 2025.
             </div>
         </div>
     </div>
     """
 
-    # --- ALTERAÇÃO 3: Aplicar textwrap.dedent() ao HTML (A correção principal) ---
+    # A correção principal: remover a indentação do bloco de texto
     st.markdown(textwrap.dedent(html_footer), unsafe_allow_html=True)
