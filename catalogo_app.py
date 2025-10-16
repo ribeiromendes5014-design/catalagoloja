@@ -515,20 +515,6 @@ if st.session_state.pedido_confirmado:
 
 if st.session_state.produto_detalhe_id:
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
-    
-    # REMOVER ESTE BLOCO INTEIRO (linhas 4-14 do seu snippet)
-    # --- INJEÇÃO DO FORMULÁRIO DE NEWSLETTER AQUI ---
-    # with st.container():
-    #     with st.form(key="footer_newsletter_form_detalhes", clear_on_submit=True):
-    #         st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True) 
-    #         email_input = st.text_input("E-mail:", key="newsletter_email_detalhes", label_visibility="collapsed", placeholder="E-mail")
-    #         submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
-    #         # Adicione a lógica de sucesso/erro aqui
-    
-    # --- INJEÇÃO DO FOOTER FIXO ---
-    with st.container():
-        render_fixed_footer()
-        
     st.stop()
 
 
@@ -626,6 +612,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
