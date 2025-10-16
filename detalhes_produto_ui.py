@@ -1,4 +1,6 @@
 # detalhes_produto_ui.py
+# Arquivo separado para a UI da Tela de Detalhes do Produto
+# VERSÃO CORRIGIDA: Usa 'PAIID' (maiúsculo) e 'PRECO_FINAL'
 
 import streamlit as st
 import pandas as pd
@@ -14,10 +16,8 @@ from streamlit_carousel import carousel # Importação principal para a soluçã
 def mostrar_detalhes_produto(df_catalogo_indexado):
     """
     Renderiza a tela de detalhes de um único produto, puxando dados do CSV (df_catalogo_indexado).
-    Remove o bloco "Vendido e Entregue por" e mantém a estrutura de descrição.
-    
-    NOVA FUNCIONALIDADE: Usa um carrossel para exibir a foto do produto PAI
-    e de todas as suas VARIAÇÕES (filhos).
+    Usa 'PAIID' (maiúsculo) para compatibilidade.
+    Usa 'PRECO' e 'PRECO_FINAL' para preços.
     """
     
     # 1. BUSCA E VALIDA O PRODUTO CLICADO
@@ -35,9 +35,11 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- LÓGICA DE VARIAÇÕES (PRODUTO PAI) ---
     # Copia a linha para evitar 'SettingWithCopyWarning'
     row_clicada = df_catalogo_indexado.loc[produto_id_clicado].copy()
-    id_pai_real = row_clicada.get('PaiID')
     
-    # VERIFICA SE O ITEM CLICADO É UM FILHO (tem um PaiID)
+    # CORREÇÃO: Usa 'PAIID' (maiúsculo)
+    id_pai_real = row_clicada.get('PAIID') 
+    
+    # VERIFICA SE O ITEM CLICADO É UM FILHO (tem um PAIID)
     if pd.notna(id_pai_real):
         try:
             # Se for filho, busca o PAI VERDADEIRO para exibir as infos
@@ -59,8 +61,9 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # Se o item clicado for FILHO, busca os filhos do PAI dele (irmãos)
     id_pai_para_buscar_filhos = id_principal_para_info 
     
+    # CORREÇÃO: Usa 'PAIID' (maiúsculo)
     df_variacoes = df_catalogo_indexado[
-        df_catalogo_indexado['PaiID'] == id_pai_para_buscar_filhos
+        df_catalogo_indexado['PAIID'] == id_pai_para_buscar_filhos
     ].copy()
     
     # Tenta avaliar a grade do PAI
@@ -86,28 +89,39 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("""
     <style>
         /* Ajusta o padding/margin da imagem e info */
-        .stButton>button { width: 100%; background-color: #880E4F; color: white; }
-        .stButton>button:hover { background-color: #6a0b3d; color: white; }
+        .stButton>button { width: 100%; color: white; }
+        .stButton>button[kind="primary"] { background-color: #880E4F; } /* Botão Voltar */
+        .stButton>button[kind="secondary"] { background-color: #D32F2F; } /* Botão Add Carrinho */
+        .stButton>button[kind="secondary"]:hover { background-color: #000000; }
+        
         h1 { font-size: 1.8rem; }
         h3 { font-size: 1.3rem; }
         .stRadio [role="radiogroup"] { justify-content: flex-start; }
         .stRadio [role="radio"] { margin-right: 15px; }
     </style>
     """, unsafe_allow_html=True)
+    
+    # --- NOVO: Botão Voltar (do seu arquivo) ---
+    if st.button("⬅️ Voltar ao Catálogo", type="primary"):
+        st.session_state.produto_detalhe_id = None
+        st.rerun()
+    
+    st.markdown("---") 
 
 
     # --- 3. LAYOUT DA TELA (COLUNAS) ---
     col_img, col_info = st.columns([2, 3]) # 40% img, 60% info
 
     with col_img:
-        # --- INÍCIO DA ALTERAÇÃO: LÓGICA DO CARROSSEL DE IMAGENS ---
+        # --- LÓGICA DO CARROSSEL DE IMAGENS ---
         
         # 1. Prepara a lista de imagens para o carrossel
         image_items = []
         urls_adicionadas = set() # Para evitar fotos duplicadas
         
         # Adiciona a imagem principal (do PAI ou produto principal)
-        foto_principal_url = row_para_info['FotoURL']
+        foto_principal_url = row_para_info.get('FotoURL', row_para_info.get('LINKIMAGEM')) # Fallback para LINKIMAGEM
+        
         if pd.notna(foto_principal_url) and foto_principal_url not in urls_adicionadas:
             image_items.append(
                 {
@@ -121,7 +135,8 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         # Adiciona as imagens das VARIAÇÕES (FILHOS), se houver
         if not df_variacoes.empty:
             for idx, row_var in df_variacoes.iterrows():
-                foto_var_url = row_var['FotoURL']
+                foto_var_url = row_var.get('FotoURL', row_var.get('LINKIMAGEM')) # Fallback
+                
                 # Adiciona apenas se a URL for válida e ainda não estiver no carrossel
                 if pd.notna(foto_var_url) and foto_var_url not in urls_adicionadas:
                     
@@ -156,7 +171,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             # Fallback se nenhuma imagem for encontrada
             st.image("https://via.placeholder.com/400x400.png?text=Sem+Imagem", caption="Imagem não disponível", use_column_width=True)
             
-        # --- FIM DA ALTERAÇÃO ---
+        # --- FIM DO CARROSSEL ---
 
     with col_info:
         # --- 4. INFORMAÇÕES DO PRODUTO (Nome, Preço, etc.) ---
@@ -172,6 +187,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         # Concatena o PAI e os FILHOS para criar os seletores
         all_products_for_grade = pd.concat([row_para_info.to_frame().T, df_variacoes])
         all_products_for_grade = all_products_for_grade[~all_products_for_grade.index.duplicated(keep='first')]
+        
         # Filtra apenas os que têm 'DetalhesGrade' válidos
         products_with_grade = []
         for idx, row in all_products_for_grade.iterrows():
@@ -251,34 +267,48 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         # --- FIM DA SELEÇÃO DE VARIAÇÃO ---
 
-        # Agora, 'id_produto_selecionado' e 'row_produto_selecionado' 
-        # contêm o item exato (seja pai ou filho) a ser exibido o preço e adicionado ao carrinho
-
         if row_produto_selecionado is None:
              st.error("Não foi possível selecionar o produto. Tente novamente.")
              return
 
-        # --- PREÇO ---
+        # --- PREÇO (CORRIGIDO) ---
         # Usa o preço do 'row_produto_selecionado'
-        preco_original = row_produto_selecionado['PRECO_CARTAO']
-        preco_promocional = row_produto_selecionado.get('PRECO_PROMOCIONAL') # Usa .get() por segurança
+        
+        # CORREÇÃO: Usa 'PRECO' como original (baseado no seu arquivo)
+        preco_original = row_produto_selecionado['PRECO'] 
+        
+        # CORREÇÃO: Usa 'PRECO_FINAL' como preço de venda (baseado no seu arquivo)
+        preco_final_selecionado = row_produto_selecionado['PRECO_FINAL']
+        
+        is_promotion = pd.notna(row_produto_selecionado.get('PRECO_PROMOCIONAL'))
+        condicao_pagamento = row_produto_selecionado.get('CONDICAOPAGAMENTO', 'Preço à vista')
 
         st.markdown("---")
-        if pd.notna(preco_promocional) and preco_promocional > 0:
-            st.write(f"De: <span style='text-decoration: line-through; color: #888;'>R$ {preco_original:,.2f}</span>", unsafe_allow_html=True)
-            st.markdown(f"<h3 style='color: #880E4F; margin:0;'>Por: R$ {preco_promocional:,.2f}</h3>", unsafe_allow_html=True)
-            st.caption(f"no PIX ou à vista")
-            preco_final_selecionado = preco_promocional
+        
+        # Renderização do Preço
+        if is_promotion and preco_original > preco_final_selecionado:
+            st.markdown(f"""
+            <div style="line-height: 1.2;">
+                <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
+                <h2 style='color: #D32F2F; margin:0;'>R$ {preco_final_selecionado:.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.markdown(f"<h3 style='color: #880E4F; margin:0;'>R$ {row_produto_selecionado['PRECO_VISTA']:,.2f}</h3>", unsafe_allow_html=True)
-            st.caption(f"no PIX ou à vista")
-            preco_final_selecionado = row_produto_selecionado['PRECO_VISTA']
+            st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final_selecionado:.2f}</h2>", unsafe_allow_html=True)
+        
+        st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
+
+        # Lógica de Cashback (se existir)
+        cashback_percent = pd.to_numeric(row_produto_selecionado.get('CASHBACKPERCENT'), errors='coerce')
+        if pd.notna(cashback_percent) and cashback_percent > 0:
+            cashback_valor = (cashback_percent / 100) * preco_final_selecionado
+            st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
 
 
         # --- 5. LÓGICA DE COMPRA (Quantidade e Estoque) ---
         
         # Usa o estoque do 'row_produto_selecionado'
-        estoque_disponivel = row_produto_selecionado['QUANTIDADE']
+        estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('QUANTIDADE', 0), errors='coerce'))
         
         if estoque_disponivel > ESTOQUE_BAIXO_LIMITE:
             st.success(f"**Em estoque** ({estoque_disponivel} unidades)")
@@ -322,10 +352,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.session_state[key_qtd] += 1
             
             # Botão Adicionar ao Carrinho
-            if st.button("Adicionar ao carrinho", key=f"add_{id_produto_selecionado}", type="primary"):
+            if st.button(f"Adicionar R$ {preco_final_selecionado * st.session_state.get(key_qtd, 1):.2f}", 
+                         key=f"add_{id_produto_selecionado}", type="secondary", use_container_width=True):
+                
                 qtd = st.session_state.get(key_qtd, 1)
                 
                 # Passa o 'row_produto_selecionado' completo
+                # Passa o 'preco_final_selecionado' que já calculamos
                 adicionar_qtd_ao_carrinho(row_produto_selecionado, qtd, preco_final_selecionado)
                 
                 st.toast(f"{qtd}x {row_produto_selecionado['NOME']} adicionado(s)!")
@@ -345,13 +378,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         # Usa a descrição do PAI
         st.subheader("Descrição")
         # Substitua pela coluna de descrição do seu CSV (se houver)
-        descricao = row_para_info.get('DESCRICAO', "Descrição detalhada do produto... Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque id nunc nec volutpat. Vivamus nec quamS.")
+        descricao = row_para_info.get('DESCRICAOLONGA', row_para_info.get('DESCRICAOCURTA', 'Sem descrição detalhada'))
         st.write(descricao)
 
     with tab_details:
         st.subheader("Detalhes Técnicos")
         st.text(f"ID do Produto: {id_principal_para_info}")
-        st.text(f"Marca: {row_para_info.get('Marca', 'N/D')}")
+        st.text(f"Marca: {row_para_info.get('Marca', 'N/D')}") # Seu arquivo usa 'MARCA', o meu 'Marca'. Usei 'Marca' por padrão.
         st.text(f"Categoria: {row_para_info.get('CATEGORIA', 'N/D')}")
         st.text(f"Código de Barras: {row_para_info.get('CodigoBarras', 'N/D')}")
         # Adicione mais detalhes técnicos se necessário
@@ -366,16 +399,27 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with col_rel_1:
         st.subheader("Quem viu, viu também")
     with col_rel_2:
-        # Este link pode voltar para a home/categoria
-        # st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) 
         pass
 
     # Filtra o próprio produto e seus filhos da lista de relacionados
     ids_para_excluir = [id_principal_para_info] + list(df_variacoes.index)
     
-    df_amostra = df_catalogo_indexado[
-        ~df_catalogo_indexado.index.isin(ids_para_excluir)
-    ].head(4).reset_index() # Pega 4 aleatórios (ou da mesma categoria)
+    # Tenta filtrar pela mesma categoria
+    categoria_pai = row_para_info.get('CATEGORIA')
+    df_relacionados = df_catalogo_indexado[
+        (~df_catalogo_indexado.index.isin(ids_para_excluir)) &
+        (df_catalogo_indexado['CATEGORIA'] == categoria_pai) &
+        (df_catalogo_indexado['PAIID'].isna()) # Mostra só produtos PAI
+    ]
+
+    if df_relacionados.empty:
+        # Fallback: se não achar na mesma categoria, pega qualquer um
+         df_relacionados = df_catalogo_indexado[
+            (~df_catalogo_indexado.index.isin(ids_para_excluir)) &
+            (df_catalogo_indexado['PAIID'].isna())
+        ]
+        
+    df_amostra = df_relacionados.head(4).reset_index() 
     
     if not df_amostra.empty:
         cols_cards = st.columns(len(df_amostra))
@@ -387,21 +431,19 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 with col:
                     # 1. A imagem é clicável
-                    render_product_image_clickable(row_card['LINKIMAGEM'], prod_id_card) 
+                    render_product_image_clickable(row_card.get('LINKIMAGEM', row_card.get('FotoURL')), prod_id_card) 
                     
                     # 2. Informações
                     st.caption(f"**{row_card['NOME']}**")
-                    # st.markdown("⭐⭐⭐⭐ (342)", unsafe_allow_html=True) 
                     
-                    # Lógica de preço para os cards relacionados
-                    preco_card_orig = row_card['PRECO_CARTAO']
-                    preco_card_promo = row_card.get('PRECO_PROMOCIONAL')
+                    # Lógica de preço para os cards relacionados (usando PRECO_FINAL)
+                    preco_card_orig = row_card['PRECO']
+                    preco_card_final = row_card['PRECO_FINAL']
+                    is_promo_card = pd.notna(row_card.get('PRECO_PROMOCIONAL'))
 
-                    if pd.notna(preco_card_promo) and preco_card_promo > 0:
-                        preco_final_card = preco_card_promo
+                    if is_promo_card and preco_card_orig > preco_card_final:
                         st.write(f"<span style='text-decoration: line-through; color: #888; font-size: 0.9rem;'>R$ {preco_card_orig:,.2f}</span>", unsafe_allow_html=True)
                     else:
-                        preco_final_card = row_card['PRECO_VISTA']
                         st.write("<br>", unsafe_allow_html=True) # Espaçador
 
-                    st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_final_card:,.2f}</h5>", unsafe_allow_html=True)
+                    st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
