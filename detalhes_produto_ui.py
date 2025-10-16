@@ -75,64 +75,67 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with col_img_variacao:
         
         # EXIBIÇÃO DINÂMICA DA IMAGEM DA VARIAÇÃO ATUALMENTE SELECIONADA/CLICADA
-        st.image(produto_selecionado_row.get('LINKIMAGEM'), use_container_width=True)
-
+        # A imagem se atualiza quando o st.radio força um rerun
+        st.image(produto_selecionado_row.get('FotoURL'), use_container_width=True) 
+        # NOTA: O LINKIMAGEM foi substituído por FotoURL conforme o CSV anterior
+        
 
         # Lógica de Seleção de Variação (Dinâmica do CSV)
-if not df_variacoes.empty and len(df_variacoes) > 1:
-    st.markdown("---")
-    
-    # --- NOVO: LÓGICA DE MAPA USANDO DETALHESGRADE COM PARSING SEGURO ---
-    mapa_variacoes = {}
-    for index, row in df_variacoes.iterrows():
-        
-        detalhe_grade_str = str(row.get('DetalhesGrade', '')).strip()
-        detalhes_formatados = ""
-        
-        if detalhe_grade_str and detalhe_grade_str != '{}' and detalhe_grade_str != 'nan':
-            try:
-                # Usa ast.literal_eval para converter a string em dicionário de forma segura
-                detalhes_dict = ast.literal_eval(detalhe_grade_str)
+        if not df_variacoes.empty and len(df_variacoes) > 1:
+            st.markdown("---")
+            
+            # --- NOVO: LÓGICA DE MAPA USANDO DETALHESGRADE COM PARSING SEGURO ---
+            # CORRIGIDO: Este bloco agora está dentro de with col_img_variacao:
+            mapa_variacoes = {}
+            for index, row in df_variacoes.iterrows():
                 
-                # Formata os detalhes para exibição (ex: Cor: Azul, Tamanho/Numeração: 37/38)
-                detalhes_formatados = ", ".join(
-                    f"{k}: {v}" 
-                    for k, v in detalhes_dict.items()
-                )
-            except (ValueError, SyntaxError):
-                # Em caso de erro de parsing, usa a string DetalhesGrade bruta
-                detalhes_formatados = detalhe_grade_str
-        
-        # Cria o rótulo de seleção final
-        if detalhes_formatados:
-             # Exemplo: "Chinelo Havaianas (Cor: Azul, Tamanho: 37/38) - R$ 49.99"
-             label = f"{row['Nome']} ({detalhes_formatados}) - R$ {row['PRECO_FINAL']:.2f}"
+                detalhe_grade_str = str(row.get('DetalhesGrade', '')).strip()
+                detalhes_formatados = ""
+                
+                if detalhe_grade_str and detalhe_grade_str != '{}' and detalhe_grade_str != 'nan':
+                    try:
+                        # Usa ast.literal_eval para converter a string em dicionário de forma segura
+                        detalhes_dict = ast.literal_eval(detalhe_grade_str)
+                        
+                        # Formata os detalhes para exibição (ex: Cor: Azul, Tamanho/Numeração: 37/38)
+                        detalhes_formatados = ", ".join(
+                            f"{k}: {v}" 
+                            for k, v in detalhes_dict.items()
+                        )
+                    except (ValueError, SyntaxError, NameError):
+                        # Caso o ast não esteja importado ou haja erro no JSON, usa a string DetalhesGrade bruta
+                        detalhes_formatados = detalhe_grade_str
+                
+                # Cria o rótulo de seleção final
+                if detalhes_formatados:
+                     # Exemplo: "Chinelo Havaianas (Cor: Azul, Tamanho: 37/38) - R$ 49.99"
+                     label = f"{row['Nome']} ({detalhes_formatados}) - R$ {row['PRECO_FINAL']:.2f}"
+                else:
+                     # Fallback (caso DetalhesGrade seja vazio/inválido)
+                     label = f"{row['Nome']} - R$ {row['PRECO_FINAL']:.2f}"
+
+                mapa_variacoes[label] = index
+            # --- FIM DA LÓGICA DE MAPA COM DETALHESGRADE ---
+
+            try:
+                indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
+            except ValueError:
+                 indice_selecionado = 0
+            
+            # ESTE BLOCO USA mapa_variacoes, DEVE ESTAR DENTRO DO IF
+            opcao_selecionada_nome = st.radio(
+                "Selecione a Variação:", options=list(mapa_variacoes.keys()), index=indice_selecionado, key='seletor_variacao_radio', label_visibility="visible"
+            )
+            
+            id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
+            
+            # Redefine produto_selecionado_row com base na seleção do rádio (CRÍTICO)
+            produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
+            
+        elif len(df_variacoes) == 1:
+            st.info("Este produto é uma variação única.")
         else:
-             # Fallback (caso DetalhesGrade seja vazio/inválido)
-             label = f"{row['Nome']} - R$ {row['PRECO_FINAL']:.2f}"
-
-        mapa_variacoes[label] = index
-    # --- FIM DA LÓGICA DE MAPA COM DETALHESGRADE ---
-
-    try:
-        indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
-    except ValueError:
-         indice_selecionado = 0
-    
-    # ESTE BLOCO USA mapa_variacoes, DEVE ESTAR DENTRO DO IF
-    opcao_selecionada_nome = st.radio(
-        "Selecione a Variação:", options=list(mapa_variacoes.keys()), index=indice_selecionado, key='seletor_variacao_radio', label_visibility="visible"
-    )
-    
-    id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
-    
-    # Redefine produto_selecionado_row com base na seleção do rádio (CRÍTICO)
-    produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
-    
-elif len(df_variacoes) == 1:
-    st.info("Este produto é uma variação única.")
-else:
-    st.info("Este produto não possui variações.")
+            st.info("Este produto não possui variações.")
 
     
     # =================================================================
@@ -248,6 +251,7 @@ else:
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
