@@ -22,19 +22,13 @@ def render_fixed_footer():
     f"""
     <style>
     /* Estilos do Rodapé Principal */
-    .footer-container-full {{ /* <-- Corrigido */
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: {COR_RODAPE};
-        color: {COR_TEXTO};
-        padding-top: 30px;
-        padding-bottom: 50px;
-        z-index: 9990;
-        font-size: 14px;
-    }} /* <-- Corrigido */
-    
+    .footer-container-full {
+    position: relative;   /* <-- era fixed */
+    bottom: auto;
+    left: auto;
+    width: 100%;
+}
+
     /* ADICIONA ESPAÇAMENTO NA PARTE INFERIOR DO CORPO DO SITE */
     .stApp > header, .stApp > div:last-child {{ /* <-- Corrigido */
         margin-bottom: 250px !important; /* Ajuste este valor se o rodapé for muito alto */
@@ -187,6 +181,7 @@ div[data-testid="stForm"] button {{
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
