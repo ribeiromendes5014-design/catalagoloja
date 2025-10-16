@@ -75,11 +75,11 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         ]
         
         if carousel_items:
-            # Renderiza o Carrossel com todas as imagens de variação
-            # REMOVA 'height=350'
+            # Remova o argumento 'height=350' para corrigir o TypeError.
+            # O Streamlit Carousel usará a altura padrão ou a definida pelo container.
             carousel(items=carousel_items, width=1, key="product_carousel")
         else:
-             # Fallback para a imagem principal (que pode ser a do produto pai)
+             # Fallback para a imagem principal
              st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
         
         # --- FIM NOVO BLOCO ---
@@ -224,6 +224,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
