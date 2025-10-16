@@ -540,7 +540,7 @@ st.markdown("</div></div>", unsafe_allow_html=True)
 # --- Filtros e Exibição dos Produtos ---
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 
-# === ADICIONE O FILTRO CRÍTICO AQUI ===
+# === FILTRO CRÍTICO: MANTÉM APENAS PRODUTOS PRINCIPAIS (PAIS) ===
 # Filtra: mantém apenas produtos principais (PAIID é nulo/NaN),
 # excluindo as variações que têm um PAIID preenchido.
 df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
@@ -619,6 +619,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
