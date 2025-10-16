@@ -59,50 +59,29 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # =================================================================
     with col_img_variacao:
         
-        # --- NOVO BLOCO: Lógica para Carrossel de Imagens de Variação ---
-        
-        # 1. Prepara os dados para o carrossel, pegando o link correto
-carousel_items = [
-    {
-        # MUDE DE 'LINKIMAGEM' PARA O NOME CORRETO DA COLUNA (EX: 'FotoURL')
-        "img": row.get('FotoURL'), 
-        "title": f"{row['NOME']} - {row.get('DESCRICAOCURTA', '')}", 
-        "text": f"R$ {row['PRECO_FINAL']:.2f}"
-    }
-    # Itera sobre todas as variações (df_variacoes) e garante que o link não é vazio
-    for _, row in df_variacoes.iterrows() if pd.notna(row.get('FotoURL'))
-]
-        
-        if carousel_items:
-            # Remova o argumento 'height=350' para corrigir o TypeError.
-            # O Streamlit Carousel usará a altura padrão ou a definida pelo container.
-            carousel(items=carousel_items, width=1, key="product_carousel")
-        else:
-             # Fallback para a imagem principal
-             st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
-        
-        # --- FIM NOVO BLOCO ---
+        # *** MUDANÇA CRÍTICA: Exibir a imagem da VARIAÇÃO SELECIONADA ***
+        # A imagem será DINÂMICA com base no valor de produto_selecionado_row
+        st.image(produto_selecionado_row.get('LINKIMAGEM'), use_container_width=True)
+
 
         # Lógica de Seleção de Variação (Dinâmica do CSV)
         if not df_variacoes.empty and len(df_variacoes) > 1:
             st.markdown("---")
             
-            mapa_variacoes = {
-                f"{row['NOME']} ({row.get('DESCRICAOCURTA', '')})" : row.name
-                for _, row in df_variacoes.iterrows()
-            }
-            
-            try:
-                indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
-            except ValueError:
-                 indice_selecionado = 0
+            # ... (código do mapa de variações e try/except) ...
 
+            # O st.radio força o rerender e a atualização de produto_selecionado_row
             opcao_selecionada_nome = st.radio(
                 "Selecione a Variação:", options=list(mapa_variacoes.keys()), index=indice_selecionado, key='seletor_variacao_radio', label_visibility="visible"
             )
             
             id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
+            
+            # OTIMIZAÇÃO: Redefinir produto_selecionado_row com base na seleção do rádio
+            # Isso garante que a imagem exibida acima e os detalhes à direita sejam da variação correta
             produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
+            
+            # ATUALIZAR IMAGEM: Esta imagem acima (st.image) se atualiza automaticamente na próxima execução
             
         elif len(df_variacoes) == 1:
              st.info("Este produto é uma variação única.")
@@ -223,6 +202,7 @@ carousel_items = [
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
