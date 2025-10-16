@@ -17,6 +17,10 @@ COR_RODAPE = "#F28C9D"
 COR_TEXTO = "white"
 COR_LINK = "white"
 
+# --- URLs dos Ícones PNG ---
+INSTAGRAM_ICON_URL = "https://static.vecteezy.com/system/resources/previews/018/930/415/non_2x/instagram-logo-instagram-icon-transparent-free-png.png"
+WHATSAPP_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/2044px-WhatsApp.svg.png"
+
 # --- FUNÇÃO: Salvar CSV no GitHub ---
 def save_csv_github(nome, telefone):
     """
@@ -90,9 +94,6 @@ def render_fixed_footer():
 
     st.markdown(textwrap.dedent(f"""
         <style>
-            /* --- Adiciona Font Awesome (para ícones) --- */
-            @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
-
             .footer-wrapper-final {{
                 background-color: {COR_RODAPE};
                 padding: 40px;
@@ -137,20 +138,35 @@ def render_fixed_footer():
                 font-size: 13px;
                 gap: 15px;
             }}
-            /* --- Estilo para o ícone do Instagram --- */
-            .instagram-icon {{
-                font-size: 3em; /* Tamanho do ícone (3x o tamanho padrão) */
-                color: {COR_LINK}; /* Cor do ícone */
-                margin-top: 10px; /* Um pouco de espaço acima */
-                display: block; /* Garante que ocupe sua própria linha e centralize se for o caso */
+            /* --- Estilo para os contêineres dos ícones --- */
+            .social-icons-container {{
+                display: flex; /* Para alinhar os ícones lado a lado */
+                align-items: center; /* Para centralizar verticalmente */
+                gap: 20px; /* Espaçamento entre os ícones */
+                margin-top: 10px; /* Margem acima dos ícones */
             }}
-            .instagram-icon:hover {{
-                opacity: 0.8; /* Pequeno efeito ao passar o mouse */
+            .social-icon-link {{
+                display: flex; /* Para alinhar a imagem dentro do link */
+                align-items: center;
+                text-decoration: none; /* Remover sublinhado padrão do link */
+                color: {COR_LINK}; /* A cor padrão do link */
             }}
-            /* Ajusta a margem para o link do WhatsApp para ele não ficar muito grudado no ícone */
-            .whatsapp-link {{
-                margin-bottom: 20px; 
+            .social-icon-link img {{
+                width: 40px;  /* Tamanho fixo para ambos os ícones */
+                height: 40px; /* Altura fixa para ambos os ícones */
+                vertical-align: middle; /* Alinha a imagem com o texto, se houver */
+                filter: brightness(0) invert(1); /* Deixa o ícone do WhatsApp branco */
             }}
+            /* Se você quiser o ícone do Instagram original (branco) e do WhatsApp colorido, remova o filter: brightness(0) invert(1); */
+            /* Se a imagem do Instagram já é branca, o filtro não a afetará se ela for monocromática */
+
+            /* Ajuste para o texto ao lado do ícone, se houver */
+            .social-icon-link span {{
+                margin-left: 8px; /* Espaço entre o ícone e o texto */
+                font-weight: bold; /* Deixa o texto do WhatsApp em negrito */
+                font-size: 1.1em;
+            }}
+
         </style>
     """), unsafe_allow_html=True)
     
@@ -161,10 +177,15 @@ def render_fixed_footer():
     with col1:
         st.markdown(f"""
             <h4>ATENDIMENTO</h4>
-            <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank" class="whatsapp-link">WhatsApp</a>
-            <a href="https://www.instagram.com/docebellacosmetico" target="_blank">
-                <i class="fab fa-instagram instagram-icon"></i>
-            </a>
+            <div class="social-icons-container">
+                <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank" class="social-icon-link">
+                    <img src="{WHATSAPP_ICON_URL}" alt="WhatsApp">
+                    <span>WhatsApp</span>
+                </a>
+                <a href="https://www.instagram.com/docebellacosmetico" target="_blank" class="social-icon-link">
+                    <img src="{INSTAGRAM_ICON_URL}" alt="Instagram">
+                    </a>
+            </div>
         """, unsafe_allow_html=True)
 
     with col2:
