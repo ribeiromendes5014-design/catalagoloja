@@ -164,8 +164,6 @@ with col_detalhes_compra:
         adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
         st.rerun()
 
-# Note que a linha st.markdown("---") após a lógica de compra NÃO está mais dentro do 'with col_detalhes_compra:'
-# para replicar a estrutura original do seu código.
 
 st.markdown("---")
     
@@ -202,6 +200,7 @@ st.markdown("---")
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
