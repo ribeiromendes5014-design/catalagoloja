@@ -400,12 +400,15 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 qtd = st.session_state.get(key_qtd, 1)
                 
-                # LINHA CORRIGIDA:
-                # A ordem correta é: (produto_row, quantidade, preco_final)
+                # 1. Adiciona ao carrinho.
                 adicionar_qtd_ao_carrinho(row_produto_selecionado, qtd, preco_final_selecionado)
                 
-                st.toast(f"{qtd}x {row_produto_selecionado['NOME']} adicionado(s)!")
-                time.sleep(0.5)
+                # 2. Pausa para o toast da função aparecer
+                time.sleep(0.5) 
+                
+                
+                st.rerun()
+
         else:
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -481,6 +484,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
 
 
