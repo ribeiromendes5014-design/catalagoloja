@@ -15,72 +15,72 @@ COR_TEXTO = "white"
 COR_LINK = "white"
 
 def render_fixed_footer():
-    """Renderiza o rodapé simplificado com Atendimento e Newsletter."""
+    """Renderiza um rodapé único e integrado, conforme o desenho."""
 
     # --- CSS ATUALIZADO ---
-    # Alvo: um container que vamos criar para garantir o fundo rosa
+    # Agora temos um único container principal: .footer-wrapper
     st.markdown(textwrap.dedent(f"""
         <style>
-            .footer-container {{
+            /* O "MEGA-RODAPÉ" ROSA QUE ENVOLVE TUDO */
+            .footer-wrapper {{
                 background-color: {COR_RODAPE};
-                padding: 30px 40px;
-                margin-top: 50px;
-                border-radius: 8px;
+                padding: 40px; /* Aumenta o espaçamento interno */
+                margin-top: 60px; /* Mais espaço acima do rodapé */
+                border-radius: 12px; /* Bordas mais arredondadas */
             }}
             /* Estilos para textos e links dentro do container rosa */
-            .footer-container h4, .footer-container p, .footer-container label {{
+            .footer-wrapper h4, .footer-wrapper p, .footer-wrapper label {{
                 color: {COR_TEXTO};
                 font-weight: bold;
             }}
-            .footer-container a {{
+            .footer-wrapper a {{
                 color: {COR_LINK};
                 text-decoration: none;
                 display: block;
                 margin-bottom: 8px;
-                font-size: 1.1rem; /* Aumenta um pouco o tamanho dos links */
+                font-size: 1.1rem;
             }}
-            .footer-container a:hover {{
+            .footer-wrapper a:hover {{
                 text-decoration: underline;
             }}
             /* Estilos para o formulário */
-            .footer-container .stButton > button {{
+            .footer-wrapper .stButton > button {{
                 background-color: white;
                 color: {COR_RODAPE};
                 border: 2px solid white;
                 font-weight: bold;
-                width: 100%; /* Botão ocupa a largura toda */
+                width: 100%;
             }}
-            .footer-container .stButton > button:hover {{
+            .footer-wrapper .stButton > button:hover {{
                 background-color: #f0f0f0;
                 color: {COR_RODAPE};
             }}
-            /* Barra cinza inferior */
-            .footer-bottom {{
-                background-color: #333333; /* Um cinza mais escuro */
+            /* A BARRA CINZA INFERIOR, AGORA DENTRO DA ROSA */
+            .footer-bottom-inner {{
+                background-color: #333333;
                 color: #dddddd;
-                padding: 15px 40px;
-                margin-top: 0; /* Remove espaço entre o rosa e o cinza */
+                padding: 15px 20px;
+                margin-top: 40px; /* Espaço entre o form e a barra cinza */
+                border-radius: 8px; /* Bordas arredondadas para a barra interna */
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
                 font-size: 13px;
-                border-radius: 0 0 8px 8px; /* Arredonda cantos inferiores */
+                gap: 15px; /* Espaçamento para quando o texto quebrar a linha */
             }}
         </style>
     """), unsafe_allow_html=True)
 
     # --- LAYOUT ATUALIZADO ---
-    # Usamos um container do Streamlit para agrupar e aplicar o estilo
+    # Usamos um container do Streamlit para agrupar tudo
     with st.container():
-        # Aplicamos a classe CSS ao container que conterá as colunas
-        st.markdown('<div class="footer-container">', unsafe_allow_html=True)
+        # 1. Abrimos a div do "mega-rodapé" rosa
+        st.markdown('<div class="footer-wrapper">', unsafe_allow_html=True)
 
-        # Criamos 2 colunas: uma para Atendimento, outra para o Formulário
-        col1, col2 = st.columns([1, 2])  # A coluna do form é 2x maior
-
+        # 2. Criamos as colunas para Atendimento e Newsletter
+        col1, col2 = st.columns([1, 2])
         with col1:
-            # Conteúdo da primeira coluna (APENAS o que você quer manter)
             st.markdown(textwrap.dedent(f"""
                 <h4>ATENDIMENTO</h4>
                 <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
@@ -88,31 +88,29 @@ def render_fixed_footer():
             """), unsafe_allow_html=True)
 
         with col2:
-            # Conteúdo da segunda coluna (O formulário)
             st.markdown("<h4>Newsletter</h4>", unsafe_allow_html=True)
             st.markdown("<p style='font-weight: normal; margin-bottom: 1rem;'>Receba novidades e promoções!</p>", unsafe_allow_html=True)
             
-            with st.form(key="footer_form", clear_on_submit=True):
+            with st.form(key="footer_form_final", clear_on_submit=True):
                 nome = st.text_input("Nome", key="footer_nome", label_visibility="collapsed", placeholder="Seu Nome")
                 telefone = st.text_input("Telefone", key="footer_telefone", label_visibility="collapsed", placeholder="DDD + Número")
                 
                 submitted = st.form_submit_button("Enviar")
                 if submitted and nome and telefone:
-                    # Futuramente, adicione aqui a lógica para salvar os dados
                     st.success("Obrigado por se inscrever! 🎉")
 
-        # Fecha a div do container rosa
-        st.markdown('</div>', unsafe_allow_html=True)
+        # 3. Renderizamos a barra cinza DENTRO da div rosa
+        st.markdown(textwrap.dedent("""
+            <div class="footer-bottom-inner">
+                <div>
+                    Meios de pagamento
+                    <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" style="height: 18px; vertical-align: middle; margin-left: 5px;">
+                </div>
+                <div>
+                    Copyright Doce&Bella - 2025.
+                </div>
+            </div>
+        """), unsafe_allow_html=True)
 
-    # A barra cinza inferior é renderizada fora do container principal
-    st.markdown(textwrap.dedent("""
-        <div class="footer-bottom">
-            <div>
-                Meios de pagamento
-                <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" style="height: 18px; vertical-align: middle; margin-left: 5px;">
-            </div>
-            <div>
-                Copyright Doce&Bella - 2025.
-            </div>
-        </div>
-    """), unsafe_allow_html=True)
+        # 4. Fechamos a div do "mega-rodapé" rosa
+        st.markdown('</div>', unsafe_allow_html=True)
