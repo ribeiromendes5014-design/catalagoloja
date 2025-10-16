@@ -59,8 +59,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # =================================================================
     with col_img_variacao:
         
-        # *** MUDANÇA CRÍTICA: Exibir a imagem da VARIAÇÃO SELECIONADA ***
-        # A imagem será DINÂMICA com base no valor de produto_selecionado_row
+        # EXIBIÇÃO DINÂMICA DA IMAGEM DA VARIAÇÃO ATUALMENTE SELECIONADA/CLICADA
         st.image(produto_selecionado_row.get('LINKIMAGEM'), use_container_width=True)
 
 
@@ -68,20 +67,26 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         if not df_variacoes.empty and len(df_variacoes) > 1:
             st.markdown("---")
             
-            # ... (código do mapa de variações e try/except) ...
-
-            # O st.radio força o rerender e a atualização de produto_selecionado_row
+            # ESTE BLOCO DEFINE mapa_variacoes, DEVE ESTAR DENTRO DO IF
+            mapa_variacoes = {
+                f"{row['NOME']} ({row.get('DESCRICAOCURTA', '')})" : row.name
+                for _, row in df_variacoes.iterrows()
+            }
+            
+            try:
+                indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
+            except ValueError:
+                 indice_selecionado = 0
+            
+            # ESTE BLOCO USA mapa_variacoes, DEVE ESTAR DENTRO DO IF
             opcao_selecionada_nome = st.radio(
                 "Selecione a Variação:", options=list(mapa_variacoes.keys()), index=indice_selecionado, key='seletor_variacao_radio', label_visibility="visible"
             )
             
             id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
             
-            # OTIMIZAÇÃO: Redefinir produto_selecionado_row com base na seleção do rádio
-            # Isso garante que a imagem exibida acima e os detalhes à direita sejam da variação correta
+            # Redefine produto_selecionado_row com base na seleção do rádio
             produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
-            
-            # ATUALIZAR IMAGEM: Esta imagem acima (st.image) se atualiza automaticamente na próxima execução
             
         elif len(df_variacoes) == 1:
              st.info("Este produto é uma variação única.")
@@ -202,6 +207,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
