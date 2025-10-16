@@ -4,6 +4,7 @@
 import streamlit as st
 import pandas as pd
 import time
+import ast
 
 # Importações CRÍTICAS para a lógica de compra e estado (Do seu projeto)
 from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable
@@ -81,20 +82,33 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 if not df_variacoes.empty and len(df_variacoes) > 1:
     st.markdown("---")
     
-    # --- SUBSTITUIÇÃO: LÓGICA DE MAPA USANDO DETALHESGRADE ---
+    # --- NOVO: LÓGICA DE MAPA USANDO DETALHESGRADE COM PARSING SEGURO ---
     mapa_variacoes = {}
     for index, row in df_variacoes.iterrows():
         
-        # Tenta usar DetalhesGrade.
-        detalhe_grade = str(row.get('DetalhesGrade', '')).strip()
+        detalhe_grade_str = str(row.get('DetalhesGrade', '')).strip()
+        detalhes_formatados = ""
         
-        # Se DetalhesGrade existe e não é a string vazia de um objeto Python/NaN
-        if detalhe_grade and detalhe_grade != '{}' and detalhe_grade != 'nan':
-             # Usamos os DetalhesGrade + Preço como o rótulo principal
-             # Exemplo: "Chinelo (Cor: Vermelho, Tamanho: 37) - R$ 49.99"
-             label = f"{row['Nome']} ({detalhe_grade}) - R$ {row['PRECO_FINAL']:.2f}"
+        if detalhe_grade_str and detalhe_grade_str != '{}' and detalhe_grade_str != 'nan':
+            try:
+                # Usa ast.literal_eval para converter a string em dicionário de forma segura
+                detalhes_dict = ast.literal_eval(detalhe_grade_str)
+                
+                # Formata os detalhes para exibição (ex: Cor: Azul, Tamanho/Numeração: 37/38)
+                detalhes_formatados = ", ".join(
+                    f"{k}: {v}" 
+                    for k, v in detalhes_dict.items()
+                )
+            except (ValueError, SyntaxError):
+                # Em caso de erro de parsing, usa a string DetalhesGrade bruta
+                detalhes_formatados = detalhe_grade_str
+        
+        # Cria o rótulo de seleção final
+        if detalhes_formatados:
+             # Exemplo: "Chinelo Havaianas (Cor: Azul, Tamanho: 37/38) - R$ 49.99"
+             label = f"{row['Nome']} ({detalhes_formatados}) - R$ {row['PRECO_FINAL']:.2f}"
         else:
-             # Fallback usando o nome e preço, para que o rádio não quebre
+             # Fallback (caso DetalhesGrade seja vazio/inválido)
              label = f"{row['Nome']} - R$ {row['PRECO_FINAL']:.2f}"
 
         mapa_variacoes[label] = index
@@ -112,7 +126,7 @@ if not df_variacoes.empty and len(df_variacoes) > 1:
     
     id_variacao_selecionada = mapa_variacoes[opcao_selecionada_nome]
     
-    # Redefine produto_selecionado_row com base na seleção do rádio
+    # Redefine produto_selecionado_row com base na seleção do rádio (CRÍTICO)
     produto_selecionado_row = df_catalogo_indexado.loc[id_variacao_selecionada]
     
 elif len(df_variacoes) == 1:
@@ -234,6 +248,7 @@ else:
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
