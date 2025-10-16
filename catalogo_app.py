@@ -621,20 +621,21 @@ else:
 
 
 # ==============================================
-# FORMULÁRIO DE NEWSLETTER ESTILIZADO (Corrigido)
+# FORMULÁRIO DE NEWSLETTER ESTILIZADO (Corrigido para se misturar ao rodapé)
 # ==============================================
 COR_RODAPE = "#F28C9D" # Copia a cor do rodapé de footer_ui.py
 COR_TEXTO = "white"
-COR_LINK = "white" # Para os textos dentro do formulário
+COR_LINK = "white"
 
-# Aplica CSS para o container do formulário se misturar com o rodapé
+# Aplica CSS para o container do form se misturar com o rodapé
 st.markdown(f"""
 <style>
 /* Força a cor de fundo do container do form para a cor do rodapé */
-div[data-testid="stForm"] {{
+div[data-testid="stForm"]#global_newsletter_form > div {{
     background-color: {COR_RODAPE} !important; 
-    border-radius: 0; /* Remove bordas arredondadas do container principal */
-    padding: 20px 40px; /* Garante que o padding combine com o footer-grid */
+    border-radius: 0; 
+    padding: 20px 40px; 
+    margin-bottom: 0 !important;
 }}
 div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{
     color: {COR_TEXTO} !important;
@@ -642,7 +643,7 @@ div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{
 </style>
 """, unsafe_allow_html=True)
 
-# Mantém o formulário Streamlit com o novo estilo
+
 with st.form(key="global_newsletter_form", clear_on_submit=True):
     st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True)
     st.markdown(f'<p style="color:{COR_TEXTO};">Receba novidades e promoções!</p>', unsafe_allow_html=True)
@@ -657,18 +658,14 @@ with st.form(key="global_newsletter_form", clear_on_submit=True):
         st.success("Obrigado por se inscrever! 🎉")
 
 # Remove o espaçamento (ou o diminui muito)
-st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True)
+# st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True) 
 
 # ==============================================
-# ESPAÇAMENTO ENTRE CONTEÚDO E RODAPÉ
-# ==============================================
-st.markdown("<div style='height: 120px;'></div>", unsafe_allow_html=True)
-
-# ==============================================
-# RENDERIZA O FOOTER FORA DE QUALQUER FORM OU CONTAINER
+# RENDERIZA O FOOTER
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
