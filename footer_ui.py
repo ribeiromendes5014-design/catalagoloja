@@ -128,7 +128,7 @@ def render_fixed_footer():
     unsafe_allow_html=True
     )
 
-    html_footer = f"""
+        html_footer = f"""
     <div class="footer-container-full">
         <div class="footer-grid">
             <div class="footer-column">
@@ -152,14 +152,27 @@ def render_fixed_footer():
         </div>
 
         <div class="footer-bottom">
-            <div>Meios de pagamento <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" style="height: 18px; vertical-align: middle; margin-left: 5px;"></div>
             <div>
-                criado por <span><img src="https://i.ibb.co/6R2b0S4/nuvemshop-logo.png" alt="Nuvemshop" style="height: 16px; vertical-align: middle;"></span> | Copyright WE MAKE - 2025. Todos os direitos reservados.
+                Meios de pagamento 
+                <img src="https://i.ibb.co/h7n1Xf7/pagamentos.png" alt="Pagamentos" 
+                     style="height: 18px; vertical-align: middle; margin-left: 5px;">
+            </div>
+            <div>
+                criado por 
+                <span>
+                    <img src="https://i.ibb.co/6R2b0S4/nuvemshop-logo.png" alt="Nuvemshop" 
+                         style="height: 16px; vertical-align: middle;">
+                </span> 
+                | Copyright WE MAKE - 2025. Todos os direitos reservados.
             </div>
         </div>
     </div>
     """
+
+    # ✅ ESSA LINHA É ESSENCIAL
     st.markdown(html_footer, unsafe_allow_html=True)
+
+
 
 
 
