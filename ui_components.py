@@ -30,14 +30,29 @@ def adicionar_qtd_ao_carrinho(produto_row, quantidade, preco_final):
         st.error("Erro interno: produto_row veio incorreto (int/float).")
         return
 
-    produto_id = produto_row.get('ID')
+    # --- INÍCIO DA CORREÇÃO ---
+    # 1. Corrige a busca do ID
+    if isinstance(produto_row, pd.Series):
+        produto_id = produto_row.name
+    else:
+        produto_id = produto_row.get('ID') # Fallback para caso não seja uma Series
+
+    # 2. Garante que o ID não seja nulo (MUITO IMPORTANTE)
+    if pd.isna(produto_id):
+        st.error("Erro interno: ID do produto não pôde ser determinado.")
+        return
+    # --- FIM DA CORREÇÃO ---
+
     produto_nome = produto_row.get('NOME', 'Produto sem nome')
     produto_preco = produto_row.get('PRECO_FINAL', preco_final)
-    produto_imagem = produto_row.get('LINKIMAGEM', '')
+    
+    # 3. Corrige a busca da Imagem (para ser consistente com 'FOTOURL' dos detalhes)
+    produto_imagem = produto_row.get('FOTOURL', produto_row.get('LINKIMAGEM', ''))
 
     df_catalogo = st.session_state.df_catalogo_indexado
 
     try:
+        # Esta linha agora vai funcionar, pois 'produto_id' está correto
         quantidade_max_raw = df_catalogo.loc[produto_id, 'QUANTIDADE']
         quantidade_max = int(pd.to_numeric(quantidade_max_raw, errors='coerce'))
     except (KeyError, ValueError):
@@ -58,6 +73,8 @@ def adicionar_qtd_ao_carrinho(produto_row, quantidade, preco_final):
         if quantidade > quantidade_max:
             st.warning(f"⚠️ Quantidade solicitada ({quantidade}) excede o estoque ({quantidade_max}) para '{produto_nome}'.")
             return
+        
+        # Esta parte agora vai funcionar, pois 'produto_id' está correto
         st.session_state.carrinho[produto_id] = {
             'nome': produto_nome,
             'preco': produto_preco,
@@ -242,6 +259,7 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
 
 
 
