@@ -85,7 +85,9 @@ def render_fixed_footer():
         unsafe_allow_html=True
     )
 
-    # ⚠️ NÃO ALTERE A INDENTAÇÃO ABAIXO ⚠️
+    # footer_ui.py (Dentro da variável html_footer)
+
+# ⚠️ NÃO ALTERE A INDENTAÇÃO ABAIXO ⚠️
     html_footer = f"""
     <div class="footer-container-full">
         <div class="footer-grid">
@@ -104,9 +106,7 @@ def render_fixed_footer():
             </div>
 
             <div class="footer-column">
-                <h4>Newsletter</h4>
-                <p style="margin: 0;">Receba novidades e promoções!</p>
-            </div>
+                </div>
         </div>
 
         <div class="footer-bottom">
@@ -128,6 +128,7 @@ def render_fixed_footer():
     """
 
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
