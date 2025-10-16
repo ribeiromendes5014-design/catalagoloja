@@ -1,6 +1,6 @@
 # detalhes_produto_ui.py
 # Arquivo separado para a UI da Tela de Detalhes do Produto
-# VERSÃO CORRIGIDA: Usa 'PAIID' (maiúsculo) e 'PRECO_FINAL'
+# VERSÃO CORRIGIDA 2: Remove 'use_container_width' do carousel()
 
 import streamlit as st
 import pandas as pd
@@ -162,10 +162,12 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
         # 2. Renderiza o Carrossel (se houver mais de 1 img) ou Imagem Única
         if len(image_items) > 1:
-            # Usa o streamlit_carousel (já importado no topo do arquivo)
-            carousel(items=image_items, controls=True, indicators=True, interval=None, use_container_width=True)
+            # === CORREÇÃO AQUI ===
+            # Removido 'use_container_width=True' pois não é suportado pelo carousel()
+            carousel(items=image_items, controls=True, indicators=True, interval=None)
+            
         elif image_items: # Garante que a lista não está vazia
-            # Renderiza a imagem única (comportamento antigo)
+            # Renderiza a imagem única (st.image SUPORTA use_container_width)
             st.image(image_items[0]['img'], caption=image_items[0]['text'], use_column_width=True)
         else:
             # Fallback se nenhuma imagem for encontrada
@@ -384,7 +386,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with tab_details:
         st.subheader("Detalhes Técnicos")
         st.text(f"ID do Produto: {id_principal_para_info}")
-        st.text(f"Marca: {row_para_info.get('Marca', 'N/D')}") # Seu arquivo usa 'MARCA', o meu 'Marca'. Usei 'Marca' por padrão.
+        st.text(f"Marca: {row_para_info.get('Marca', row_para_info.get('MARCA', 'N/D'))}") # Tenta 'Marca' e 'MARCA'
         st.text(f"Categoria: {row_para_info.get('CATEGORIA', 'N/D')}")
         st.text(f"Código de Barras: {row_para_info.get('CodigoBarras', 'N/D')}")
         # Adicione mais detalhes técnicos se necessário
