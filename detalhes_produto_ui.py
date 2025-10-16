@@ -82,13 +82,10 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     col_img, col_info = st.columns([2, 3]) # 40% img, 60% info
 
     # --- 3.2. CRIE OS PLACEHOLDERS ---
-    # Estes são "espaços vazios" que vamos preencher DEPOIS
     image_placeholder = col_img.empty()
-    price_placeholder = col_info.empty() # Movido para cá
+    price_placeholder = col_info.empty() 
 
     # --- 3.3. PREENCHA A COLUNA DE INFORMAÇÕES (col_info) PRIMEIRO ---
-    # Isso faz com que os st.radio sejam renderizados e possamos saber
-    # qual variação o usuário selecionou.
     with col_info:
         # --- 4. INFORMAÇÕES DO PRODUTO (Nome, Preço, etc.) ---
         
@@ -96,7 +93,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.caption(f"Marca: {row_para_info.get('MARCA', 'N/D')} | Categoria: {row_para_info.get('CATEGORIA', 'N/D')}")
         
         # --- Lógica de Preço (Função de renderização) ---
-        # Definimos a função que preencherá o price_placeholder
         def render_price(row_selecionada):
             po = row_selecionada['PRECO']
             pf = row_selecionada['PRECO_FINAL']
@@ -104,7 +100,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             is_promo = pd.notna(pp) and pp > 0
             cp = row_selecionada.get('CONDICAOPAGAMENTO', 'Preço à vista')
             
-            with price_placeholder.container(): # Usa o placeholder
+            with price_placeholder.container(): 
                 if is_promo and po > pf:
                     st.markdown(f"""
                     <div style="line-height: 1.2;">
@@ -124,7 +120,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         
         # --- 5. SELEÇÃO DE VARIAÇÃO (GRADE) ---
-        # (Esta lógica é a mesma de antes)
         
         row_produto_selecionado = None
         id_produto_selecionado = None
@@ -171,20 +166,44 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             except:
                 detalhes_clicados = {}
             
+            # --- ################################################## ---
+            # --- INÍCIO DO BLOCO CORRIGIDO ---
+            # --- ################################################## ---
             for tipo_grade, lista_opcoes in opcoes_disponiveis.items():
-                default_value = detalhes_clicados.get(tipo_grade)
-                try:
-                    idx_default = lista_opcoes.index(default_value)
-                except ValueError:
-                    idx_default = 0 
+                widget_key = f"grade_{tipo_grade}_{id_principal_para_info}"
                 
+                # Determina o índice a ser exibido.
+                # Prioriza o valor JÁ EXISTENTE no session_state (se o usuário já clicou).
+                # Se não existir, usa o default_value (do produto que foi clicado no catálogo).
+                
+                selected_index = 0 # Padrão é o primeiro item
+                
+                if widget_key in st.session_state:
+                    # O usuário já interagiu com este widget, usa o valor dele
+                    try:
+                        selected_index = lista_opcoes.index(st.session_state[widget_key])
+                    except ValueError:
+                        selected_index = 0 # Fallback se o valor salvo for inválido
+                else:
+                    # É a primeira vez, usa o 'default_value' do 'row_clicada'
+                    default_value = detalhes_clicados.get(tipo_grade)
+                    try:
+                        selected_index = lista_opcoes.index(default_value)
+                    except ValueError:
+                        selected_index = 0 # Fallback se o default for inválido
+
+                # Renderiza o st.radio com o índice correto
                 selecao_usuario[tipo_grade] = st.radio(
                     f"**{tipo_grade}**:",
                     options=lista_opcoes,
-                    index=idx_default,
+                    index=selected_index, # <-- Usa o índice corrigido
                     horizontal=True,
-                    key=f"grade_{tipo_grade}_{id_principal_para_info}"
+                    key=widget_key # <-- Usa a key definida
                 )
+            # --- ################################################## ---
+            # --- FIM DO BLOCO CORRIGIDO ---
+            # --- ################################################## ---
+                
             
             for idx, row_g in df_grade.iterrows():
                 detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
@@ -220,14 +239,12 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
              return
 
         # --- 6. RENDERIZA O PREÇO (AGORA QUE TEMOS A ROW) ---
-        # Removemos o "preço inicial", pois agora o preço é sempre o selecionado
         render_price(row_produto_selecionado)
         
         preco_final_selecionado = row_produto_selecionado['PRECO_FINAL']
 
 
         # --- 7. LÓGICA DE COMPRA (Quantidade e Estoque) ---
-        # (Esta lógica é a mesma de antes, linhas 405-443)
         estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('QUANTIDADE', 0), errors='coerce'))
         
         st.markdown("---") 
@@ -284,8 +301,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
 
     # --- 8. PREENCHA O PLACEHOLDER DA IMAGEM ---
-    # Agora que 'row_produto_selecionado' está definido, podemos construir
-    # o carrossel com a imagem da variação selecionada primeiro.
+    # (Sem mudanças nesta seção)
     with image_placeholder.container():
         image_items = []
         urls_adicionadas = set() 
