@@ -116,13 +116,14 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 # Cria o rótulo de seleção final
                 if detalhes_formatados:
                      # Exemplo: "Chinelo Havaianas (Cor: Azul, Tamanho: 37/38) - R$ 49.99"
-                     label = f"{row['Nome']} ({detalhes_formatados}) - R$ {row['PRECO_FINAL']:.2f}"
+                     # CORREÇÃO APLICADA AQUI: Use row.get('Nome', 'Produto')
+                     label = f"{row.get('Nome', 'Produto')} ({detalhes_formatados}) - R$ {row.get('PRECO_FINAL', 0.0):.2f}"
                 else:
                      # Fallback (caso DetalhesGrade seja vazio/inválido)
-                     label = f"{row['Nome']} - R$ {row['PRECO_FINAL']:.2f}"
+                     # CORREÇÃO APLICADA AQUI: Use row.get('Nome', 'Produto')
+                     label = f"{row.get('Nome', 'Produto')} - R$ {row.get('PRECO_FINAL', 0.0):.2f}"
 
                 mapa_variacoes[label] = index
-            # --- FIM DA LÓGICA DE MAPA COM DETALHESGRADE ---
 
             try:
                 indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
@@ -258,6 +259,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
