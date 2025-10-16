@@ -29,11 +29,6 @@ def render_fixed_footer():
     width: 100%;
 }
 
-    /* ADICIONA ESPAÇAMENTO NA PARTE INFERIOR DO CORPO DO SITE */
-    .stApp > header, .stApp > div:last-child {{ /* <-- Corrigido */
-        margin-bottom: 250px !important; /* Ajuste este valor se o rodapé for muito alto */
-    }} /* <-- Corrigido */
-
     .footer-grid {{ /* <-- Corrigido */
         display: grid;
         grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas iguais */
@@ -181,6 +176,7 @@ div[data-testid="stForm"] button {{
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
