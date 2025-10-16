@@ -17,7 +17,7 @@ COR_RODAPE = "#F28C9D"
 COR_TEXTO = "white"
 COR_LINK = "white"
 
-# --- NOVA FUNÇÃO: Salvar CSV no GitHub ---
+# --- FUNÇÃO: Salvar CSV no GitHub ---
 def save_csv_github(nome, telefone):
     """
     Busca o CSV do GitHub, adiciona uma nova linha e faz o commit da nova versão.
@@ -83,31 +83,73 @@ def save_csv_github(nome, telefone):
 
 
 def render_fixed_footer():
-    # ... (O seu CSS e HTML permanecem exatamente os mesmos) ...
+    """
+    Renderiza o rodapé e gerencia o formulário de inscrição,
+    agora salvando os dados no GitHub.
+    """
+
     st.markdown(textwrap.dedent(f"""
         <style>
+            /* --- Adiciona Font Awesome (para ícones) --- */
+            @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
             .footer-wrapper-final {{
-                background-color: {COR_RODAPE}; padding: 40px; margin-top: 60px;
-                border-radius: 12px; color: {COR_TEXTO};
+                background-color: {COR_RODAPE};
+                padding: 40px;
+                margin-top: 60px;
+                border-radius: 12px;
+                color: {COR_TEXTO};
             }}
             .footer-wrapper-final h4, .footer-wrapper-final p, .footer-wrapper-final label {{
-                color: {COR_TEXTO} !important; font-weight: bold;
+                color: {COR_TEXTO} !important;
+                font-weight: bold;
             }}
             .footer-wrapper-final a {{
-                color: {COR_LINK}; text-decoration: none; display: block;
-                margin-bottom: 8px; font-size: 1.1rem;
+                color: {COR_LINK};
+                text-decoration: none;
+                display: block; /* Garante que cada link ocupe sua própria linha */
+                margin-bottom: 8px;
+                font-size: 1.1rem;
             }}
             .footer-wrapper-final a:hover {{ text-decoration: underline; }}
-            .footer-wrapper-final .stForm {{ border: none; padding: 0; background: transparent; }}
+            .footer-wrapper-final .stForm {{
+                border: none;
+                padding: 0;
+                background: transparent;
+            }}
             .footer-wrapper-final .stButton > button {{
-                background-color: white; color: {COR_RODAPE}; border: 2px solid white;
-                font-weight: bold; width: 100%;
+                background-color: white;
+                color: {COR_RODAPE};
+                border: 2px solid white;
+                font-weight: bold;
+                width: 100%;
             }}
             .footer-bottom-bar {{
-                background-color: #333333; color: #dddddd; padding: 15px 20px;
-                margin-top: 40px; border-radius: 8px; display: flex;
-                justify-content: space-between; align-items: center; flex-wrap: wrap;
-                font-size: 13px; gap: 15px;
+                background-color: #333333;
+                color: #dddddd;
+                padding: 15px 20px;
+                margin-top: 40px;
+                border-radius: 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                font-size: 13px;
+                gap: 15px;
+            }}
+            /* --- Estilo para o ícone do Instagram --- */
+            .instagram-icon {{
+                font-size: 3em; /* Tamanho do ícone (3x o tamanho padrão) */
+                color: {COR_LINK}; /* Cor do ícone */
+                margin-top: 10px; /* Um pouco de espaço acima */
+                display: block; /* Garante que ocupe sua própria linha e centralize se for o caso */
+            }}
+            .instagram-icon:hover {{
+                opacity: 0.8; /* Pequeno efeito ao passar o mouse */
+            }}
+            /* Ajusta a margem para o link do WhatsApp para ele não ficar muito grudado no ícone */
+            .whatsapp-link {{
+                margin-bottom: 20px; 
             }}
         </style>
     """), unsafe_allow_html=True)
@@ -119,8 +161,10 @@ def render_fixed_footer():
     with col1:
         st.markdown(f"""
             <h4>ATENDIMENTO</h4>
-            <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
-            <a href="https://www.instagram.com/docebellacosmetico" target="_blank">Instagram</a>
+            <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank" class="whatsapp-link">WhatsApp</a>
+            <a href="https://www.instagram.com/docebellacosmetico" target="_blank">
+                <i class="fab fa-instagram instagram-icon"></i>
+            </a>
         """, unsafe_allow_html=True)
 
     with col2:
@@ -140,7 +184,7 @@ def render_fixed_footer():
                     else:
                         st.error("Ocorreu um erro ao salvar sua inscrição.")
                         # Para depuração, você pode querer ver o erro real:
-                        st.error(message)
+                        # st.error(message)
                 else:
                     st.warning("Por favor, preencha seu nome e telefone.")
 
@@ -154,5 +198,3 @@ def render_fixed_footer():
     """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
-
-
