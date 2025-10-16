@@ -61,18 +61,17 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         # --- NOVO BLOCO: Lógica para Carrossel de Imagens de Variação ---
         
-        # 1. Prepara os dados para o carrossel, pegando o LINKIMAGEM de todas as variações
-        carousel_items = [
-            {
-                # O nome da coluna com o link da imagem no seu CSV
-                "img": row.get('LINKIMAGEM'), 
-                # Título opcional, para fins de depuração ou legenda
-                "title": f"{row['NOME']} - {row.get('DESCRICAOCURTA', '')}", 
-                "text": f"R$ {row['PRECO_FINAL']:.2f}"
-            }
-            # Itera sobre todas as variações (df_variacoes) e garante que o link não é vazio
-            for _, row in df_variacoes.iterrows() if pd.notna(row.get('LINKIMAGEM'))
-        ]
+        # 1. Prepara os dados para o carrossel, pegando o link correto
+carousel_items = [
+    {
+        # MUDE DE 'LINKIMAGEM' PARA O NOME CORRETO DA COLUNA (EX: 'FotoURL')
+        "img": row.get('FotoURL'), 
+        "title": f"{row['NOME']} - {row.get('DESCRICAOCURTA', '')}", 
+        "text": f"R$ {row['PRECO_FINAL']:.2f}"
+    }
+    # Itera sobre todas as variações (df_variacoes) e garante que o link não é vazio
+    for _, row in df_variacoes.iterrows() if pd.notna(row.get('FotoURL'))
+]
         
         if carousel_items:
             # Remova o argumento 'height=350' para corrigir o TypeError.
@@ -224,6 +223,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
