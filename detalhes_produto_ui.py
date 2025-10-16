@@ -305,14 +305,15 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 )
             
             # 3. Filtra o produto final com base na seleção
-            for idx, row_g in df_grade.iterrows():
-                detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
-                detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
-                
-                if detalhes_g_str == selecao_usuario:
-                    id_produto_selecionado = idx
-                    row_produto_selecionado = row_g
-                    break 
+            for idx, row_g in df_grade.iterrows():
+                detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
+                detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
+                
+                if detalhes_g_str == selecao_usuario:
+                    # CORRETO: Usa o ID e a Linha da variação encontrada
+                    id_produto_selecionado = idx 
+                    row_produto_selecionado = row_g
+                    break 
             
             if id_produto_selecionado is None:
                 id_produto_selecionado = row_clicada.name
@@ -463,3 +464,4 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
