@@ -620,46 +620,6 @@ else:
     # ----------------------------------------------------
 
 
-# ==============================================
-# FORMULÁRIO DE NEWSLETTER
-# ==============================================
-COR_RODAPE = "#F28C9D" # Adiciona a cor do rodapé para estilizar o formulário Streamlit
-COR_LINK = "white"
-
-# PASSO CRÍTICO: Aplica o CSS de Fundo Rosa ao Container do Formulário
-st.markdown(f"""
-<style>
-/* Força a cor de fundo do container do form para a cor do rodapé */
-div[data-testid="stForm"]#global_newsletter_form > div {{
-    background-color: {COR_RODAPE} !important; 
-    border-radius: 0; 
-    padding: 20px 40px; 
-    margin-bottom: 0 !important; /* Remove qualquer margem que possa criar a quebra visual */
-}}
-div[data-testid="stForm"] h4, div[data-testid="stForm"] p {{
-    color: {COR_LINK} !important;
-}}
-</style>
-""", unsafe_allow_html=True)
-
-
-with st.form(key="global_newsletter_form", clear_on_submit=True):
-    # ATENÇÃO: Adicione a mensagem da Newsletter de volta aqui, pois ela foi removida do HTML do footer.
-    st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True)
-    st.markdown(f'<p style="color:{COR_LINK}; margin-bottom: 10px;">Receba novidades e promoções!</p>', unsafe_allow_html=True)
-    
-    email_input = st.text_input(
-        "E-mail:",
-        key="global_newsletter_email",
-        label_visibility="collapsed",
-        placeholder="E-mail"
-    )
-    submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
-    if submit_newsletter and email_input:
-        st.success("Obrigado por se inscrever! 🎉")
-
-# Remove o espaçamento (ou o diminui muito)
-# st.markdown("<div style='height: 5px;'></div>", unsafe_allow_html=True) 
 
 # ==============================================
 # RENDERIZA O FOOTER
