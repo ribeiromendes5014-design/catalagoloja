@@ -12,6 +12,7 @@ import ast # Importa AST para processar a 'DetalhesGrade'
 from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable
 from data_handler import ESTOQUE_BAIXO_LIMITE 
 from streamlit_carousel import carousel # Importação principal para a solução
+from carrinho_ui import render_carrinho_popover
 
 
 def mostrar_detalhes_produto(df_catalogo_indexado):
@@ -480,6 +481,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
 
 
