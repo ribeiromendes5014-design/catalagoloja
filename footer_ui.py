@@ -93,7 +93,7 @@ def render_fixed_footer():
         st.markdown(f"""
             <h4>ATENDIMENTO</h4>
             <a href="https://wa.me/{NUMERO_WHATSAPP}" target="_blank">WhatsApp</a>
-            <a href="https://www.instagram.com/doce_bella" target="_blank">Instagram</a>
+            <a href="https://www.instagram.com/docebellacosmetico" target="_blank">Instagram</a>
         """, unsafe_allow_html=True)
 
     with col2:
@@ -124,3 +124,4 @@ def render_fixed_footer():
 
     # 4. Fecha a div principal. Este é o passo crucial.
     st.markdown('</div>', unsafe_allow_html=True)
+
