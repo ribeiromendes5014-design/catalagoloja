@@ -58,8 +58,31 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     # --- COLUNA ESQUERDA: IMAGEM E OPÇÕES (VARIAÇÃO) ---
     # =================================================================
     with col_img_variacao:
-        # Imagem Principal (Dinâmica do CSV)
-        st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
+        
+        # --- NOVO BLOCO: Lógica para Carrossel de Imagens de Variação ---
+        
+        # 1. Prepara os dados para o carrossel, pegando o LINKIMAGEM de todas as variações
+        carousel_items = [
+            {
+                # O nome da coluna com o link da imagem no seu CSV
+                "img": row.get('LINKIMAGEM'), 
+                # Título opcional, para fins de depuração ou legenda
+                "title": f"{row['NOME']} - {row.get('DESCRICAOCURTA', '')}", 
+                "text": f"R$ {row['PRECO_FINAL']:.2f}"
+            }
+            # Itera sobre todas as variações (df_variacoes) e garante que o link não é vazio
+            for _, row in df_variacoes.iterrows() if pd.notna(row.get('LINKIMAGEM'))
+        ]
+        
+        if carousel_items:
+            # Renderiza o Carrossel com todas as imagens de variação
+            # A altura de 350px é um bom ponto de partida
+            carousel(items=carousel_items, width=1, height=350, key="product_carousel")
+        else:
+             # Fallback para a imagem principal (que pode ser a do produto pai)
+             st.image(row_principal.get('LINKIMAGEM'), use_container_width=True)
+        
+        # --- FIM NOVO BLOCO ---
 
         # Lógica de Seleção de Variação (Dinâmica do CSV)
         if not df_variacoes.empty and len(df_variacoes) > 1:
@@ -201,6 +224,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
