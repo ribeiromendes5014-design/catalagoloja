@@ -89,88 +89,87 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
 
     
     # =================================================================
-# --- COLUNA DIREITA: DETALHES, PREÇO E AÇÃO DE COMPRA ---
-# =================================================================
-with col_detalhes_compra:
-    
-    # --- Detalhes de Preço (DA VARIAÇÃO SELECIONADA) ---
-    preco_original = produto_selecionado_row['PRECO']
-    preco_final_variacao = produto_selecionado_row['PRECO_FINAL']
-    is_promotion = pd.notna(produto_selecionado_row.get('PRECO_PROMOCIONAL'))
-    condicao_pagamento = produto_selecionado_row.get('CONDICAOPAGAMENTO', 'Preço à vista')
-    cashback_percent = pd.to_numeric(produto_selecionado_row.get('CASHBACKPERCENT'), errors='coerce')
-    
-    # Renderização do Preço
-    if is_promotion:
-        st.markdown(f"""
-        <div style="line-height: 1.2;">
-            <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
-            <h2 style='color: #D32F2F; margin:0;'>R$ {preco_final_variacao:.2f}</h2>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final_variacao:.2f}</h2>", unsafe_allow_html=True)
-    
-    st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
-
-    if pd.notna(cashback_percent) and cashback_percent > 0:
-        cashback_valor = (cashback_percent / 100) * preco_final_variacao
-        st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
-
-    st.markdown("---")
-    
-    # --- REMOVIDO: Opções do Vendedor (Circulado em Vermelho/Laranja) ---
-    # Removido o bloco "with st.expander("Vendido e Entregue por:", expanded=True):"
-
-    # --- Descrição em Expander (Dinâmico do CSV) ---
-    # O st.expander é crucial para o estilo da "caixa preta" no Streamlit.
-    with st.expander("Descrição Detalhada e Especificações", expanded=True):
-        st.markdown(f"**Marca:** {row_principal.get('MARCA', 'N/A')}")
-        st.markdown(f"**Descrição:** {row_principal.get('DESCRICAOLONGA', row_principal.get('DESCRICAOCURTA', 'Sem descrição detalhada'))}")
-
-    st.markdown("---")
-    
-    # --- ÁREA DE COMPRA (Quantidae e Botão Adicionar - Dinâmico) ---
-    # ESTE BLOCO AGORA ESTÁ INDENTADO CORRETAMENTE DENTRO DO 'with col_detalhes_compra:'
-    
-    estoque_atual_variacao = int(pd.to_numeric(produto_selecionado_row.get('QUANTIDADE', 999999), errors='coerce'))
-
-    col_qtd, col_add = st.columns([1, 2])
-
-    # === CORREÇÃO: Define valor inicial e mínimo com base no estoque (Para evitar StreamlitValueAboveMaxError) ===
-    if estoque_atual_variacao > 0:
-        initial_value = 1
-        min_val = 1
-    else:
-        initial_value = 0
-        min_val = 0
-    # ===========================================================================================================
-
-    qtd_a_adicionar = col_qtd.number_input(
-        'Qtd',
-        min_value=min_val,          # Usa 0 se esgotado, 1 se tem estoque
-        max_value=estoque_atual_variacao,
-        value=initial_value,        # Usa 0 se esgotado, 1 se tem estoque
-        step=1,
-        key='qtd_detalhes',
-        label_visibility="visible"
-    )
-
-    if estoque_atual_variacao <= 0:
-        col_add.error("🚫 ESGOTADO")
-    elif col_add.button(f"🛒 Adicionar R$ {preco_final_variacao * qtd_a_adicionar:.2f}", 
-                        key='btn_add_detalhes', use_container_width=True, type="primary"):
+    # --- COLUNA DIREITA: DETALHES, PREÇO E AÇÃO DE COMPRA ---
+    # =================================================================
+    with col_detalhes_compra:
         
-        adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
-        st.rerun()
-    # FIM do with col_detalhes_compra:
+        # --- Detalhes de Preço (DA VARIAÇÃO SELECIONADA) ---
+        preco_original = produto_selecionado_row['PRECO']
+        preco_final_variacao = produto_selecionado_row['PRECO_FINAL']
+        is_promotion = pd.notna(produto_selecionado_row.get('PRECO_PROMOCIONAL'))
+        condicao_pagamento = produto_selecionado_row.get('CONDICAOPAGAMENTO', 'Preço à vista')
+        cashback_percent = pd.to_numeric(produto_selecionado_row.get('CASHBACKPERCENT'), errors='coerce')
+        
+        # Renderização do Preço
+        if is_promotion:
+            st.markdown(f"""
+            <div style="line-height: 1.2;">
+                <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
+                <h2 style='color: #D32F2F; margin:0;'>R$ {preco_final_variacao:.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final_variacao:.2f}</h2>", unsafe_allow_html=True)
+        
+        st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
 
-    st.markdown("---") # <-- ESTE DEVE TER APENAS 4 ESPAÇOS DE INDENTAÇÃO
+        if pd.notna(cashback_percent) and cashback_percent > 0:
+            cashback_valor = (cashback_percent / 100) * preco_final_variacao
+            st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
+
+        st.markdown("---")
+        
+        # --- REMOVIDO: Opções do Vendedor (Circulado em Vermelho/Laranja) ---
+        # Removido o bloco "with st.expander("Vendido e Entregue por:", expanded=True):"
+
+        # --- Descrição em Expander (Dinâmico do CSV) ---
+        # O st.expander é crucial para o estilo da "caixa preta" no Streamlit.
+        with st.expander("Descrição Detalhada e Especificações", expanded=True):
+            st.markdown(f"**Marca:** {row_principal.get('MARCA', 'N/A')}")
+            st.markdown(f"**Descrição:** {row_principal.get('DESCRICAOLONGA', row_principal.get('DESCRICAOCURTA', 'Sem descrição detalhada'))}")
+
+        st.markdown("---")
+        
+        # --- ÁREA DE COMPRA (Quantidae e Botão Adicionar - Dinâmico) ---
+        
+        estoque_atual_variacao = int(pd.to_numeric(produto_selecionado_row.get('QUANTIDADE', 999999), errors='coerce'))
+
+        col_qtd, col_add = st.columns([1, 2])
+
+        # === CORREÇÃO: Define valor inicial e mínimo com base no estoque (Para evitar StreamlitValueAboveMaxError) ===
+        if estoque_atual_variacao > 0:
+            initial_value = 1
+            min_val = 1
+        else:
+            initial_value = 0
+            min_val = 0
+        # ===========================================================================================================
+
+        qtd_a_adicionar = col_qtd.number_input(
+            'Qtd',
+            min_value=min_val,          # Usa 0 se esgotado, 1 se tem estoque
+            max_value=estoque_atual_variacao,
+            value=initial_value,        # Usa 0 se esgotado, 1 se tem estoque
+            step=1,
+            key='qtd_detalhes',
+            label_visibility="visible"
+        )
+
+        if estoque_atual_variacao <= 0:
+            col_add.error("🚫 ESGOTADO")
+        elif col_add.button(f"🛒 Adicionar R$ {preco_final_variacao * qtd_a_adicionar:.2f}", 
+                            key='btn_add_detalhes', use_container_width=True, type="primary"):
+            
+            adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
+            st.rerun()
+        # FIM do with col_detalhes_compra:
+
+    st.markdown("---")
     
     # =================================================================
     # --- 4. Seção "Produtos Relacionados" (VOLTA ÀS COLUNAS NATIVAS) ---
     # =================================================================
-    st.header("PRODUTOS RELACIONADOS") # <-- ESTE DEVE TER APENAS 4 ESPAÇOS DE INDENTAÇÃO
+    st.header("PRODUTOS RELACIONADOS")
     st.markdown("<span style='font-weight: bold;'>Ver tudo ></span>", unsafe_allow_html=True) 
 
     # ESTE BLOCO ESTÁ CORRETAMENTE DENTRO DA FUNÇÃO AGORA
@@ -200,6 +199,9 @@ with col_detalhes_compra:
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
