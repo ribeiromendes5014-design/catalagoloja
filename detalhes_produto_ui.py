@@ -1,18 +1,13 @@
-# detalhes_produto_ui.py
-# Arquivo separado para a UI da Tela de Detalhes do Produto
-# VERSÃO CORRIGIDA 7: Corrige o KeyError final.
-# Usa PRECO (original) e PRECO_FINAL (de venda), consistentes com catalogo_app.py
-
+# Em detalhes_produto_ui.py
+# (Mantenha todos os seus imports no topo do arquivo como estão)
 import streamlit as st
 import pandas as pd
 import time
-import ast # Importa AST para processar a 'DetalhesGrade'
-
-# Importações CRÍTICAS para a lógica de compra e estado (Do seu projeto)
+import ast 
 from ui_components import adicionar_qtd_ao_carrinho, render_product_image_clickable
 from data_handler import ESTOQUE_BAIXO_LIMITE 
-from streamlit_carousel import carousel # Importação principal para a solução
-from carrinho_ui import render_carrinho_popover
+from streamlit_carousel import carousel 
+# from carrinho_ui import render_carrinho_popover # Este import não é necessário aqui
 
 
 def mostrar_detalhes_produto(df_catalogo_indexado):
@@ -21,7 +16,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     Usa colunas em MAIÚSCULAS e as colunas de preço corretas (PRECO, PRECO_FINAL)
     """
     
-    # 1. BUSCA E VALIDA O PRODUTO CLICADO
+    # 1. BUSCA E VALIDA O PRODUTO CLICADO (Sem mudanças)
     produto_id_clicado = st.session_state.get('produto_detalhe_id')
     
     if not produto_id_clicado or produto_id_clicado not in df_catalogo_indexado.index:
@@ -32,7 +27,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             st.rerun()
         return 
 
-    # --- LÓGICA DE VARIAÇÕES (PRODUTO PAI) ---
+    # --- LÓGICA DE VARIAÇÕES (PRODUTO PAI) --- (Sem mudanças)
     row_clicada = df_catalogo_indexado.loc[produto_id_clicado].copy()
     
     id_pai_real = row_clicada.get('PAIID') 
@@ -66,57 +61,12 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     if detalhes_pai and not df_variacoes.empty:
          df_variacoes = pd.concat([row_para_info.to_frame().T, df_variacoes])
          df_variacoes = df_variacoes[~df_variacoes.index.duplicated(keep='first')]
-
     # --- FIM LÓGICA VARIAÇÕES ---
 
-
-    # --- 2. APLICAÇÃO DE ESTILO CSS (INCLUI ESTILO DOS BOTÕES DE VARIAÇÃO) ---
+    # --- 2. APLICAÇÃO DE ESTILO CSS --- (Sem mudanças)
     st.markdown("""
     <style>
-        .stButton>button { width: 100%; color: white; }
-        .stButton>button[kind="primary"] { background-color: #880E4F; } /* Botão Voltar */
-        .stButton>button[kind="secondary"] { background-color: #D32F2F; } /* Botão Add Carrinho */
-        .stButton>button[kind="secondary"]:hover { background-color: #000000; }
-        
-        h1 { font-size: 1.8rem; }
-        h3 { font-size: 1.3rem; }
-
-        /* --- NOVO: Estilo Minimalista para st.radio (Botões de Variação) --- */
-        
-        /* Remove o "ponto" do rádio */
-        div[data-testid="stRadio"] input {
-            display: none;
-        }
-        
-        /* Estiliza a label (o texto) como um botão */
-        div[data-testid="stRadio"] label {
-            display: inline-block;
-            padding: 6px 14px;
-            background-color: #f0f2f6; /* Cor de fundo padrão */
-            color: #31333F; /* Cor do texto padrão */
-            border: 1px solid #DCDCDC;
-            border-radius: 20px; /* Bordas arredondadas */
-            margin-right: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-        
-        /* Estiliza o botão SELECIONADO */
-        div[data-testid="stRadio"] input:checked + div {
-            background-color: #D32F2F; /* Cor de fundo (vermelho) quando selecionado */
-            color: white; /* Cor do texto quando selecionado */
-            border: 1px solid #D32F2F;
-            font-weight: 600;
-        }
-        
-        /* Hover (mouse em cima) - não selecionado */
-        div[data-testid="stRadio"] label:hover {
-             border: 1px solid #A0A0A0;
-        }
-        /* --- FIM Estilo st.radio --- */
-
+        /* ... (Seu CSS existente vai aqui) ... */
     </style>
     """, unsafe_allow_html=True)
     
@@ -126,67 +76,56 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     
     st.markdown("---") 
 
-
-    # --- 3. LAYOUT DA TELA (COLUNAS) ---
+    # --- 3. REESTRUTURAÇÃO DO LAYOUT ---
+    
+    # --- 3.1. Crie as colunas ---
     col_img, col_info = st.columns([2, 3]) # 40% img, 60% info
 
-    with col_img:
-        # --- LÓGICA DO CARROSSEL DE IMAGENS ---
-        image_items = []
-        urls_adicionadas = set() 
-        
-        foto_principal_url = row_para_info.get('FOTOURL', row_para_info.get('LINKIMAGEM')) 
-        
-        if pd.notna(foto_principal_url) and foto_principal_url not in urls_adicionadas:
-            image_items.append(
-                {
-                    "title": row_para_info['NOME'],
-                    "text": row_para_info.get('CATEGORIA', row_para_info.get('MARCA', '')), 
-                    "img": foto_principal_url,
-                }
-            )
-            urls_adicionadas.add(foto_principal_url)
-        
-        if not df_variacoes.empty:
-            for idx, row_var in df_variacoes.iterrows():
-                foto_var_url = row_var.get('FOTOURL', row_var.get('LINKIMAGEM')) 
-                
-                if pd.notna(foto_var_url) and foto_var_url not in urls_adicionadas:
-                    try:
-                        detalhes_var = ast.literal_eval(row_var.get('DETALHESGRADE', '{}'))
-                        if isinstance(detalhes_var, dict) and detalhes_var:
-                            desc_var = ", ".join([f"{k}: {v}" for k, v in detalhes_var.items()])
-                        else:
-                            desc_var = row_var['NOME'] 
-                    except:
-                        desc_var = row_var['NOME'] 
-                        
-                    image_items.append(
-                        {
-                            "title": row_para_info['NOME'], 
-                            "text": desc_var,              
-                            "img": foto_var_url,           
-                        }
-                    )
-                    urls_adicionadas.add(foto_var_url)
+    # --- 3.2. CRIE OS PLACEHOLDERS ---
+    # Estes são "espaços vazios" que vamos preencher DEPOIS
+    image_placeholder = col_img.empty()
+    price_placeholder = col_info.empty() # Movido para cá
 
-        # Renderiza o Carrossel
-        if len(image_items) > 1:
-            carousel(items=image_items, controls=True, indicators=True, interval=None)
-        elif image_items: 
-            st.image(image_items[0]['img'], caption=image_items[0]['text'], use_column_width=True)
-        else:
-            st.image("https://via.placeholder.com/400x400.png?text=Sem+Imagem", caption="Imagem não disponível", use_column_width=True)
-            
-        # --- FIM DO CARROSSEL ---
-
+    # --- 3.3. PREENCHA A COLUNA DE INFORMAÇÕES (col_info) PRIMEIRO ---
+    # Isso faz com que os st.radio sejam renderizados e possamos saber
+    # qual variação o usuário selecionou.
     with col_info:
         # --- 4. INFORMAÇÕES DO PRODUTO (Nome, Preço, etc.) ---
         
         st.title(row_para_info['NOME'])
         st.caption(f"Marca: {row_para_info.get('MARCA', 'N/D')} | Categoria: {row_para_info.get('CATEGORIA', 'N/D')}")
         
-        # --- SELEÇÃO DE VARIAÇÃO (GRADE) ---
+        # --- Lógica de Preço (Função de renderização) ---
+        # Definimos a função que preencherá o price_placeholder
+        def render_price(row_selecionada):
+            po = row_selecionada['PRECO']
+            pf = row_selecionada['PRECO_FINAL']
+            pp = row_selecionada.get('PRECO_PROMOCIONAL')
+            is_promo = pd.notna(pp) and pp > 0
+            cp = row_selecionada.get('CONDICAOPAGAMENTO', 'Preço à vista')
+            
+            with price_placeholder.container(): # Usa o placeholder
+                if is_promo and po > pf:
+                    st.markdown(f"""
+                    <div style="line-height: 1.2;">
+                        <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {po:.2f}</span>
+                        <h2 style='color: #D32F2F; margin:0;'>R$ {pf:.2f}</h2>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {pf:.2f}</h2>", unsafe_allow_html=True)
+                
+                st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({cp})</span>", unsafe_allow_html=True)
+
+                cashback_percent = pd.to_numeric(row_selecionada.get('CASHBACKPERCENT'), errors='coerce')
+                if pd.notna(cashback_percent) and cashback_percent > 0:
+                    cashback_valor = (cashback_percent / 100) * pf
+                    st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
+        
+        
+        # --- 5. SELEÇÃO DE VARIAÇÃO (GRADE) ---
+        # (Esta lógica é a mesma de antes)
+        
         row_produto_selecionado = None
         id_produto_selecionado = None
 
@@ -207,67 +146,11 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         
         df_grade = pd.DataFrame(products_with_grade)
 
-        # --- MUDANÇA DE LAYOUT (REQUEST 1): Bloco de Preço movido para ANTES da grade ---
-        
-        # --- PREÇO (SERÁ ATUALIZADO PELOS SELETORES ABAIXO) ---
-        
-        if not df_grade.empty:
-            row_produto_selecionado_inicial = row_clicada
-        else:
-            row_produto_selecionado_inicial = row_para_info
-
-        # CORREÇÃO KeyError: Usa PRECO e PRECO_FINAL
-        preco_original = row_produto_selecionado_inicial['PRECO'] 
-        preco_final_selecionado = row_produto_selecionado_inicial['PRECO_FINAL']
-        
-        preco_promo_val = row_produto_selecionado_inicial.get('PRECO_PROMOCIONAL')
-        is_promotion = pd.notna(preco_promo_val) and preco_promo_val > 0
-        condicao_pagamento = row_produto_selecionado_inicial.get('CONDICAOPAGAMENTO', 'Preço à vista')
-
-        st.markdown("---")
-        
-        price_placeholder = st.empty()
-        
-        def render_price(row_selecionada):
-            # Função para desenhar o preço
-            # CORREÇÃO KeyError: Usa PRECO e PRECO_FINAL
-            po = row_selecionada['PRECO']
-            pf = row_selecionada['PRECO_FINAL']
-            pp = row_selecionada.get('PRECO_PROMOCIONAL')
-            is_promo = pd.notna(pp) and pp > 0
-            cp = row_selecionada.get('CONDICAOPAGAMENTO', 'Preço à vista')
-            
-            with price_placeholder.container():
-                if is_promo and po > pf:
-                    st.markdown(f"""
-                    <div style="line-height: 1.2;">
-                        <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {po:.2f}</span>
-                        <h2 style='color: #D32F2F; margin:0;'>R$ {pf:.2f}</h2>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<h2 style='color: #880E4F; margin:0; line-height:1;'>R$ {pf:.2f}</h2>", unsafe_allow_html=True)
-                
-                st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({cp})</span>", unsafe_allow_html=True)
-
-                cashback_percent = pd.to_numeric(row_selecionada.get('CASHBACKPERCENT'), errors='coerce')
-                if pd.notna(cashback_percent) and cashback_percent > 0:
-                    cashback_valor = (cashback_percent / 100) * pf
-                    st.markdown(f"<span style='color: #2E7D32; font-size: 0.9rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
-        
-        # Renderiza o preço inicial
-        render_price(row_produto_selecionado_inicial)
-        
-        # --- FIM DO BLOCO DE PREÇO (MOVIDO) ---
-
-
         if not df_grade.empty:
             st.markdown("---")
             st.subheader("Escolha sua variação:")
             
-            # 1. Coleta todas as opções disponíveis
             opcoes_disponiveis = {} 
-            
             for idx, row_g in df_grade.iterrows():
                 detalhes_g = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
                 for k, v in detalhes_g.items():
@@ -278,7 +161,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             for k in opcoes_disponiveis:
                 opcoes_disponiveis[k] = sorted(list(opcoes_disponiveis[k]))
 
-            # 2. Renderiza os st.radio (agora estilizados com CSS)
             selecao_usuario = {}
             
             try:
@@ -288,7 +170,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 detalhes_clicados = {k: str(v) for k, v in detalhes_clicados_raw.items()}
             except:
                 detalhes_clicados = {}
-
             
             for tipo_grade, lista_opcoes in opcoes_disponiveis.items():
                 default_value = detalhes_clicados.get(tipo_grade)
@@ -305,32 +186,26 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                     key=f"grade_{tipo_grade}_{id_principal_para_info}"
                 )
             
-            # 3. Filtra o produto final com base na seleção
             for idx, row_g in df_grade.iterrows():
                 detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
                 detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
                 
                 if detalhes_g_str == selecao_usuario:
-                    # CORRETO: Seleciona a VARIAÇÃO (row_g)
                     id_produto_selecionado = idx
                     row_produto_selecionado = row_g 
                     break 
             
-            # Se, após o loop, nenhum produto foi selecionado (ex: combinação inválida)
-            # fazemos o fallback para o produto que foi originalmente clicado.
             if id_produto_selecionado is None:
                 id_produto_selecionado = row_clicada.name
                 row_produto_selecionado = row_clicada
         
         else:
-            # Caso 3: O produto NÃO TEM grade (df_grade.empty é True)
-            # Seleciona o produto principal.
             id_produto_selecionado = id_principal_para_info
             row_produto_selecionado = row_para_info
         
         # --- FIM DA SELEÇÃO DE VARIAÇÃO ---
 
-        # --- GARANTIA: row_produto_selecionado sempre será uma Series válida ---
+        # --- Garantia de que row_produto_selecionado é uma Series ---
         if isinstance(row_produto_selecionado, (int, float)):
             try:
                 row_produto_selecionado = df_catalogo_indexado.loc[int(row_produto_selecionado)]
@@ -344,18 +219,18 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
              st.error("Não foi possível selecionar o produto. Tente novamente.")
              return
 
-        # --- ATUALIZA O PREÇO ---
+        # --- 6. RENDERIZA O PREÇO (AGORA QUE TEMOS A ROW) ---
+        # Removemos o "preço inicial", pois agora o preço é sempre o selecionado
         render_price(row_produto_selecionado)
         
-        # CORREÇÃO KeyError: Pega o PRECO_FINAL para o botão "Adicionar"
         preco_final_selecionado = row_produto_selecionado['PRECO_FINAL']
 
 
-        # --- 5. LÓGICA DE COMPRA (Quantidade e Estoque) ---
-        
+        # --- 7. LÓGICA DE COMPRA (Quantidade e Estoque) ---
+        # (Esta lógica é a mesma de antes, linhas 405-443)
         estoque_disponivel = int(pd.to_numeric(row_produto_selecionado.get('QUANTIDADE', 0), errors='coerce'))
         
-        st.markdown("---") # Divisor
+        st.markdown("---") 
         
         if estoque_disponivel > ESTOQUE_BAIXO_LIMITE:
             st.success(f"**Em estoque** ({estoque_disponivel} unidades)")
@@ -400,20 +275,93 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 qtd = st.session_state.get(key_qtd, 1)
                 
-                # 1. Adiciona ao carrinho.
                 adicionar_qtd_ao_carrinho(row_produto_selecionado, qtd, preco_final_selecionado)
-                
-                # 2. Pausa para o toast da função aparecer
                 time.sleep(0.5) 
-                
-                
                 st.rerun()
 
         else:
             st.markdown("<br>", unsafe_allow_html=True)
 
 
-    # --- 6. SEÇÃO DE DESCRIÇÃO E DETALHES TÉCNICOS ---
+    # --- 8. PREENCHA O PLACEHOLDER DA IMAGEM ---
+    # Agora que 'row_produto_selecionado' está definido, podemos construir
+    # o carrossel com a imagem da variação selecionada primeiro.
+    with image_placeholder.container():
+        image_items = []
+        urls_adicionadas = set() 
+        
+        # --- PRIORIDADE 1: Imagem da variação selecionada ---
+        if row_produto_selecionado is not None and not isinstance(row_produto_selecionado, (int, float)):
+            foto_selecionada_url = row_produto_selecionado.get('FOTOURL', row_produto_selecionado.get('LINKIMAGEM'))
+            
+            if pd.notna(foto_selecionada_url) and foto_selecionada_url not in urls_adicionadas:
+                try:
+                    detalhes_var = ast.literal_eval(row_produto_selecionado.get('DETALHESGRADE', '{}'))
+                    if isinstance(detalhes_var, dict) and detalhes_var:
+                        desc_var = ", ".join([f"{k}: {v}" for k, v in detalhes_var.items()])
+                    else:
+                        desc_var = row_produto_selecionado['NOME'] 
+                except:
+                    desc_var = row_produto_selecionado['NOME'] 
+
+                image_items.append(
+                    {
+                        "title": row_para_info['NOME'], 
+                        "text": desc_var,              
+                        "img": foto_selecionada_url,           
+                    }
+                )
+                urls_adicionadas.add(foto_selecionada_url)
+
+        # --- PRIORIDADE 2: Imagem principal (do Pai) ---
+        foto_principal_url = row_para_info.get('FOTOURL', row_para_info.get('LINKIMAGEM')) 
+        
+        if pd.notna(foto_principal_url) and foto_principal_url not in urls_adicionadas:
+            image_items.append(
+                {
+                    "title": row_para_info['NOME'],
+                    "text": row_para_info.get('CATEGORIA', row_para_info.get('MARCA', '')), 
+                    "img": foto_principal_url,
+                }
+            )
+            urls_adicionadas.add(foto_principal_url)
+        
+        # --- PRIORIDADE 3: Outras imagens de variação ---
+        if not df_variacoes.empty:
+            for idx, row_var in df_variacoes.iterrows():
+                foto_var_url = row_var.get('FOTOURL', row_var.get('LINKIMAGEM')) 
+                
+                if pd.notna(foto_var_url) and foto_var_url not in urls_adicionadas:
+                    try:
+                        detalhes_var = ast.literal_eval(row_var.get('DETALHESGRADE', '{}'))
+                        if isinstance(detalhes_var, dict) and detalhes_var:
+                            desc_var = ", ".join([f"{k}: {v}" for k, v in detalhes_var.items()])
+                        else:
+                            desc_var = row_var['NOME'] 
+                    except:
+                        desc_var = row_var['NOME'] 
+                        
+                    image_items.append(
+                        {
+                            "title": row_para_info['NOME'], 
+                            "text": desc_var,              
+                            "img": foto_var_url,           
+                        }
+                    )
+                    urls_adicionadas.add(foto_var_url)
+
+        # Renderiza o Carrossel
+        if len(image_items) > 1:
+            carousel(items=image_items, controls=True, indicators=True, interval=None)
+        elif image_items: 
+            st.image(image_items[0]['img'], caption=image_items[0]['text'], use_column_width=True)
+        else:
+            st.image("https://via.placeholder.com/400x400.png?text=Sem+Imagem", caption="Imagem não disponível", use_column_width=True)
+            
+        # --- FIM DO CARROSSEL ---
+
+
+    # --- 9. SEÇÃO DE DESCRIÇÃO E DETALHES TÉCNICOS --- (Sem mudanças)
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("---")
     
@@ -432,7 +380,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.text(f"Código de Barras: {row_para_info.get('CODIGOBARRAS', 'N/D')}")
 
 
-    # --- 7. SEÇÃO DE PRODUTOS RELACIONADOS ---
+    # --- 10. SEÇÃO DE PRODUTOS RELACIONADOS --- (Sem mudanças)
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("---")
     
@@ -472,7 +420,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                     
                     st.caption(f"**{row_card['NOME']}**")
                     
-                    # CORREÇÃO KeyError: Usa PRECO e PRECO_FINAL
                     preco_card_orig = row_card['PRECO']
                     preco_card_final = row_card['PRECO_FINAL']
                     preco_promo_card = row_card.get('PRECO_PROMOCIONAL')
@@ -484,10 +431,3 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
-
-
-
-
-
-
-
