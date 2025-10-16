@@ -75,6 +75,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with col_img_variacao:
         
         # EXIBIÇÃO DINÂMICA DA IMAGEM DA VARIAÇÃO ATUALMENTE SELECIONADA/CLICADA
+        # 1. Tenta pegar a foto da variação selecionada (filho)
         image_url = produto_selecionado_row.get('FotoURL')
         
         # === CORREÇÃO CRÍTICA: Verifica se a URL existe ANTES de chamar st.image ===
@@ -83,8 +84,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         else:
             # Opção 1: Deixa o espaço em branco (Melhor para UX)
             st.empty()
-            # Opção 2: Mostra um placeholder simples (Descomente se quiser)
-            # st.markdown("<div>Sem imagem disponível</div>", unsafe_allow_html=True)
         # ===========================================================================
 
         # Lógica de Seleção de Variação (Dinâmica do CSV)
@@ -92,7 +91,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             st.markdown("---")
             
             # --- NOVO: LÓGICA DE MAPA USANDO DETALHESGRADE COM PARSING SEGURO ---
-            # CORRIGIDO: Este bloco agora está dentro de with col_img_variacao:
             mapa_variacoes = {}
             for index, row in df_variacoes.iterrows():
                 
@@ -101,16 +99,14 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                 
                 if detalhe_grade_str and detalhe_grade_str != '{}' and detalhe_grade_str != 'nan':
                     try:
-                        # Usa ast.literal_eval para converter a string em dicionário de forma segura
-                        detalhes_dict = ast.literal_eval(detalhe_grade_str)
+                        # Certifique-se de que 'import ast' esteja no topo do arquivo
+                        detalhes_dict = ast.literal_eval(detalhe_grade_str) 
                         
-                        # Formata os detalhes para exibição (ex: Cor: Azul, Tamanho/Numeração: 37/38)
                         detalhes_formatados = ", ".join(
                             f"{k}: {v}" 
                             for k, v in detalhes_dict.items()
                         )
                     except (ValueError, SyntaxError, NameError):
-                        # Caso o ast não esteja importado ou haja erro no JSON, usa a string DetalhesGrade bruta
                         detalhes_formatados = detalhe_grade_str
                 
                 # Cria o rótulo de seleção final
@@ -118,10 +114,11 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                      # Exemplo: "Chinelo Havaianas (Cor: Azul, Tamanho: 37/38) - R$ 49.99"
                      label = f"{row.get('Nome', 'Produto')} ({detalhes_formatados}) - R$ {row.get('PRECO_FINAL', 0.0):.2f}"
                 else:
-                     # Fallback (caso DetalhesGrade seja vazio/inválido)
+                     # Fallback 
                      label = f"{row.get('Nome', 'Produto')} - R$ {row.get('PRECO_FINAL', 0.0):.2f}"
 
                 mapa_variacoes[label] = index
+            # --- FIM DA LÓGICA DE MAPA COM DETALHESGRADE ---
 
             try:
                 indice_selecionado = list(mapa_variacoes.values()).index(produto_id_clicado)
@@ -142,8 +139,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             st.info("Este produto é uma variação única.")
         else:
             st.info("Este produto não possui variações.")
-
-    
+            
     # =================================================================
     # --- COLUNA DIREITA: DETALHES, PREÇO E AÇÃO DE COMPRA ---
     # =================================================================
@@ -257,6 +253,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
