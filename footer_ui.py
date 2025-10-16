@@ -70,26 +70,25 @@ def render_fixed_footer():
 
 /* 1. POSICIONAMENTO ABSOLUTO DO CONTAINER DO FORMULÁRIO */
 /* Seleciona o container geral do form */
-div[data-testid="stForm"] {{
-    position: absolute;
-    
-    /* CORREÇÃO CRÍTICA: Ajusta a posição Y para o rodapé fixo.
-       (70px era muito pouco, move para baixo, ajuste este valor se necessário) */
-    top: 600px;
-    
-    right: 40px;
-    
+div[data-testid="stForm"] {{ 
+    position: absolute; 
+    top: 600px; /* <--- Mantenha ou ajuste este valor conforme a necessidade visual */
+    right: 40px; 
     width: 300px;
     z-index: 9999;
     padding: 0;
     margin: 0;
-    background-color: transparent;
+    /* CORREÇÃO 1: Garante que o fundo do container do formulário seja transparente */
+    background: none !important; 
 }}
 
 /* 2. ESTILO DOS INPUTS E BOTÕES */
-/* Torna os campos internos e o botão alinhados horizontalmente (Newsletter style) */
+
+/* Seleciona o contêiner interno que envolve o input e o botão */
 div[data-testid="stForm"] > div > div:not([role="button"]) {{
-    display: flex;
+    /* CORREÇÃO 2: Força o layout horizontal (Input e Botão) */
+    display: flex; 
+    flex-direction: row !important;
     gap: 5px;
     align-items: center;
 }}
@@ -101,22 +100,24 @@ div[data-testid="stForm"] h4, div[data-testid="stForm"] label {{
 
 /* Estiliza o campo E-mail */
 div[data-testid="stForm"] input {{
-    background-color: #F8B4C0 !important;
-    color: #333 !important;
+    background-color: #F8B4C0 !important; /* Fundo rosa claro */
+    color: #333 !important; /* Texto escuro legível */
     border: none;
-    flex-grow: 1;
+    flex-grow: 1; 
     padding: 8px;
     min-width: 150px;
 }}
 
 /* Estilo específico para o botão ENVIAR */
 div[data-testid="stForm"] button {{
-    background-color: #E91E63 !important;
+    background-color: #E91E63 !important; /* Rosa Escuro/Vermelho */
     color: white !important;
     font-weight: bold;
-    flex-grow: 0;
+    flex-grow: 0; 
     padding: 8px 15px;
     min-width: 80px;
+    /* CORREÇÃO 3: Garante que o botão use a cor certa */
+    border: none !important; 
 }}
 
 /* Rodapé Secundário (Bottom Bar) */
@@ -186,6 +187,7 @@ div[data-testid="stForm"] button {{
     """
     
     st.markdown(html_footer, unsafe_allow_html=True)
+
 
 
 
