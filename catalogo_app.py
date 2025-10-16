@@ -621,19 +621,22 @@ else:
 
 
 # 1. DEFINE A COR (Para o formulário usar a variável COR_LINK)
-COR_LINK = "white" # Definido no escopo global para o markdown do form
+COR_LINK = "white"  # Definido no escopo global para o markdown do form
 
 # 2. RENDERIZA O FORMULÁRIO STREAMLIT (Ele será movido pelo CSS)
 with st.form(key="global_newsletter_form", clear_on_submit=True):
-    # O CSS no footer_ui.py o moverá para a Coluna 3
-    st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True) 
+    st.markdown(f'<h4 style="color:{COR_LINK};">Newsletter</h4>', unsafe_allow_html=True)
     email_input = st.text_input("E-mail:", key="global_newsletter_email", label_visibility="collapsed", placeholder="E-mail")
     submit_newsletter = st.form_submit_button(label="Enviar", type="secondary")
     # Adicione a lógica de submissão aqui
 
-# 3. RENDERIZA O FOOTER FIXO (Este bloco que você me mostrou)
-with st.container():
-    render_fixed_footer() # <-- ESTE BLOCO CHAMA O HTML FIXO E CSS DE POSICIONAMENTO
+# 3. ADICIONA UM ESPAÇAMENTO ENTRE O CONTEÚDO E O FOOTER
+st.markdown("<div style='height: 120px;'></div>", unsafe_allow_html=True)
+
+# 4. RENDERIZA O FOOTER (fora de qualquer form/container ativo)
+render_fixed_footer()
+
+
 
 
 
