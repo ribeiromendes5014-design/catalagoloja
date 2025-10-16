@@ -75,11 +75,13 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     with col_img_variacao:
         
         # EXIBIÇÃO DINÂMICA DA IMAGEM DA VARIAÇÃO ATUALMENTE SELECIONADA/CLICADA
-        # A imagem se atualiza quando o st.radio força um rerun
-        st.image(produto_selecionado_row.get('FotoURL'), use_container_width=True) 
+        # CRÍTICO: Adiciona uma string vazia como fallback caso 'FotoURL' seja None/NaN.
+        image_url = produto_selecionado_row.get('FotoURL')
+        
+        # AQUI ESTÁ A CORREÇÃO: Passa "" se for None/NaN.
+        st.image(image_url if image_url else "", use_container_width=True) 
         # NOTA: O LINKIMAGEM foi substituído por FotoURL conforme o CSV anterior
         
-
         # Lógica de Seleção de Variação (Dinâmica do CSV)
         if not df_variacoes.empty and len(df_variacoes) > 1:
             st.markdown("---")
@@ -251,6 +253,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     st.markdown("<br><br>", unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
