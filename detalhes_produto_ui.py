@@ -131,28 +131,37 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.markdown("---")
         
         # --- ÁREA DE COMPRA (Quantidae e Botão Adicionar - Dinâmico) ---
-        
-        estoque_atual_variacao = int(pd.to_numeric(produto_selecionado_row.get('QUANTIDADE', 999999), errors='coerce'))
-        
-        col_qtd, col_add = st.columns([1, 2])
-        
-        qtd_a_adicionar = col_qtd.number_input(
-            'Qtd',
-            min_value=1,
-            max_value=estoque_atual_variacao,
-            value=1,
-            step=1,
-            key='qtd_detalhes',
-            label_visibility="visible"
-        )
-        
-        if estoque_atual_variacao <= 0:
-             col_add.error("🚫 ESGOTADO")
-        elif col_add.button(f"🛒 Adicionar R$ {preco_final_variacao * qtd_a_adicionar:.2f}", 
-                            key='btn_add_detalhes', use_container_width=True, type="primary"):
-            
-            adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
-            st.rerun()
+
+estoque_atual_variacao = int(pd.to_numeric(produto_selecionado_row.get('QUANTIDADE', 999999), errors='coerce'))
+
+col_qtd, col_add = st.columns([1, 2])
+
+# === CORREÇÃO: Define valor inicial e mínimo com base no estoque ===
+if estoque_atual_variacao > 0:
+    initial_value = 1
+    min_val = 1
+else:
+    initial_value = 0
+    min_val = 0
+# ==================================================================
+
+qtd_a_adicionar = col_qtd.number_input(
+    'Qtd',
+    min_value=min_val,          # Usa 0 se esgotado, 1 se tem estoque
+    max_value=estoque_atual_variacao,
+    value=initial_value,        # Usa 0 se esgotado, 1 se tem estoque
+    step=1,
+    key='qtd_detalhes',
+    label_visibility="visible"
+)
+
+if estoque_atual_variacao <= 0:
+    col_add.error("🚫 ESGOTADO")
+elif col_add.button(f"🛒 Adicionar R$ {preco_final_variacao * qtd_a_adicionar:.2f}", 
+                    key='btn_add_detalhes', use_container_width=True, type="primary"):
+    
+    adicionar_qtd_ao_carrinho(id_variacao_selecionada, produto_selecionado_row, qtd_a_adicionar)
+    st.rerun()
 
     
     st.markdown("---")
@@ -190,6 +199,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         st.info("Simulação de produtos relacionados indisponível.")
 
     st.markdown("<br><br>", unsafe_allow_html=True)
+
 
 
 
