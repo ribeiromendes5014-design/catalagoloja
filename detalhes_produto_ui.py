@@ -205,20 +205,33 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             # --- ################################################## ---
                 
             
-            for idx, row_g in df_grade.iterrows():
-                detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
-                detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
+            # --- INÍCIO DO BLOCO CORRIGIDO ---
+            if id_produto_selecionado is None:
+                # Fallback: A combinação exata não existe (ex: Cor Vermelha, Tamanho M)
+                # Vamos tentar encontrar o *primeiro* produto que combine com a *primeira* seleção (Cor).
                 
-                if detalhes_g_str == selecao_usuario:
-                    id_produto_selecionado = idx
-                    row_produto_selecionado = row_g 
-                    break 
+                if selecao_usuario: # Só tenta se houver seletores de grade
+                    # Pega o primeiro item da seleção do usuário (ex: 'Cor')
+                    primeiro_tipo_grade = list(selecao_usuario.keys())[0]
+                    primeiro_valor_selecionado = selecao_usuario[primeiro_tipo_grade]
+                    
+                    for idx, row_g in df_grade.iterrows():
+                        detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
+                        detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
+                        
+                        # Se este produto tiver a Cor "Azul Escuro", use-o como fallback
+                        if detalhes_g_str.get(primeiro_tipo_grade) == primeiro_valor_selecionado:
+                            id_produto_selecionado = idx
+                            row_produto_selecionado = row_g 
+                            break # Encontramos o primeiro produto "Azul Escuro" (ex: "Azul Escuro, G")
             
+            # Se AINDA não encontrou (nem combinação exata, nem parcial), aí sim usa o clicado
             if id_produto_selecionado is None:
                 id_produto_selecionado = row_clicada.name
                 row_produto_selecionado = row_clicada
         
         else:
+            # Caso 3: O produto NÃO TEM grade (df_grade.empty é True)
             id_produto_selecionado = id_principal_para_info
             row_produto_selecionado = row_para_info
         
@@ -447,3 +460,4 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
