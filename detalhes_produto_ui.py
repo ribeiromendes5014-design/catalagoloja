@@ -15,6 +15,23 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     Renderiza a tela de detalhes de um único produto, puxando dados do CSV (df_catalogo_indexado).
     Usa colunas em MAIÚSCULAS e as colunas de preço corretas (PRECO, PRECO_FINAL)
     """
+# --- INÍCIO DA CORREÇÃO ---
+    # Força a página a rolar para o topo (posição 0, 0)
+    st.markdown(
+        """
+        <script>
+            // Encontra o frame principal do Streamlit e rola para o topo
+            const main = window.parent.document.querySelector('[data-testid="stAppViewBlockContainer"]');
+            if (main) {
+                main.scrollTo(0, 0);
+            } else {
+                // Fallback para rolar a janela inteira
+                window.parent.scrollTo(0, 0);
+            }
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
     
     # 1. BUSCA E VALIDA O PRODUTO CLICADO (Sem mudanças)
     produto_id_clicado = st.session_state.get('produto_detalhe_id')
@@ -496,4 +513,5 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
