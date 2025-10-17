@@ -93,13 +93,27 @@ div[data-testid="stRadio"] {
     /* padding-top removido para alinhamento vertical das colunas */
 }
 
-/* AGRESSIVO: Oculta o "ponto" do radio button */
-div[data-testid="stRadio"] input[type="radio"] {
+/* === ESTILO DO NOVO FILTRO DE CATEGORIA (RADIO) === */
+
+/* ... (mantenha o "div[data-testid="stRadio"]" vazio) ... */
+
+/* AGRESSIVO: Oculta o "ponto" do radio button e seu container */
+div[data-testid="stRadio"] input[type="radio"],
+div[data-testid="stRadio"] span[data-baseweb="radio"] {
     display: none !important;
     visibility: hidden !important;
     appearance: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    overflow: hidden !important;
 }
 
+/* Garante que o texto (label) ainda seja clicável */
+div[data-testid="stRadio"] label {
+    cursor: pointer;
+    padding-left: 0 !important; /* Remove o espaço deixado pelo rádio */
+}
 /* Estiliza o label (o texto) do radio para parecer um link/botão */
 div[role="radiogroup"] label {
     display: inline-block;
@@ -784,6 +798,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
