@@ -95,6 +95,13 @@ div[data-testid="stRadio"] span[data-baseweb="radio"] {
     overflow: hidden !important;
 }
 
+/* Garante que nenhum contorno redondo das bolinhas apareça em hipótese alguma */
+div[role="radiogroup"] div[role="radio"] {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 /* Garante que o texto (label) ainda seja clicável */
 div[data-testid="stRadio"] label {
     cursor: pointer;
@@ -706,6 +713,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
