@@ -44,6 +44,8 @@ if 'cupom_mensagem' not in st.session_state:
     st.session_state.cupom_mensagem = ""
 if 'processando_pedido' not in st.session_state:
     st.session_state.processando_pedido = False
+if 'search_active' not in st.session_state:
+    st.session_state.search_active = False
 
 # OTIMIZAÇÃO: Cache do catálogo principal no estado da sessão para evitar re-leitura constante
 if 'df_catalogo_indexado' not in st.session_state:
@@ -724,6 +726,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
