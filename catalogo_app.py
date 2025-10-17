@@ -694,18 +694,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # --- FIM NOVO CABEÇALHO ---
 
-# URL do banner de Black Friday
-URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
-
-# --- Banner Black Friday full width (sem margens brancas) ---
-st.markdown(
-    f"""
-    <div class="fullwidth-banner">
-        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 
 # Recria o df_catalogo para a lista (a versão para filtros já foi usada no cabeçalho)
@@ -720,6 +708,19 @@ termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 
 # PEGA O VALOR DO NOVO RADIO (do cabeçalho)
 categoria_selecionada = st.session_state.get('filtro_categoria_radio', 'TODAS AS CATEGORIAS')
+
+# URL do banner de Black Friday
+URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
+
+# --- Banner Black Friday full width (sem margens brancas) ---
+st.markdown(
+    f"""
+    <div class="fullwidth-banner">
+        <img src="{URL_BLACK_FRIDAY}" alt="Black Friday - Doce&Bella">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 df_filtrado = df_catalogo.copy()
 if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
@@ -783,6 +784,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
