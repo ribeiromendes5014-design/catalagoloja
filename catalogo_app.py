@@ -10,7 +10,7 @@ import requests
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 
-# --- 2. IMPORTAÇÕES DE MÓDulos LOCAIS ---
+# --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
 # Importa a função do novo módulo
 from carrinho_ui import render_carrinho_popover
 
@@ -159,14 +159,15 @@ div.block-container {
     color: #262626;
 }
 
-/* Classe para o box de conteúdo */
-.content-box {
-    background-color: #FFFFFF; /* CORRIGIDO: Fundo branco sólido */
+/* Classe para a área de conteúdo principal */
+.main-content-area {
+    background-color: #FFFFFF !important; /* Força o fundo branco sólido */
     border-radius: 10px;
     padding: 2rem;
     margin-top: 1rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Adiciona uma sombra sutil */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
+
 
 div[data-testid="stAppViewBlockContainer"] {
     padding-top: 0 !important;
@@ -256,7 +257,7 @@ h1 { font-size: 2.5rem; }
         padding: 0 0.5rem !important;
         margin-top: 0.5rem !important;
     }
-    .content-box {
+    .main-content-area {
         padding: 0.5rem !important;
     }
     h1 {
@@ -620,8 +621,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Adiciona o content-box para o conteúdo abaixo ---
-st.markdown('<div class="content-box">', unsafe_allow_html=True)
+# --- Adiciona a área de conteúdo para o conteúdo abaixo ---
+st.markdown('<div class="main-content-area">', unsafe_allow_html=True)
 
 # Definimos as colunas para ordem e grade
 col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 2])
@@ -681,7 +682,7 @@ else:
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
 
-# Fecha o .content-box
+# Fecha a .main-content-area
 st.markdown('</div>', unsafe_allow_html=True) 
 
 # Renderiza o footer
