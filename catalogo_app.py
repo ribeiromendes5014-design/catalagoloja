@@ -565,14 +565,25 @@ if st.session_state.produto_detalhe_id:
     st.stop()
 
 # --- Filtros e Exibição dos Produtos ---
-df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
+df_catalogo_completo = st.session_state.df_catalogo_indexado.reset_index()
 
 # === FILTRO CRÍTICO: MANTÉM APENAS PRODUTOS PRINCIPAIS (PAIS) ===
-df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
+# Faça o filtro UMA VEZ e guarde em uma nova variável
+df_produtos_principais = df_catalogo_completo[df_catalogo_completo['PAIID'].isna()].copy()
 
-categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
+# Use o DataFrame já filtrado para tudo
+categorias = df_produtos_principais['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_produtos_principais.columns else ["TODAS AS CATEGORIAS"]
 categorias.sort()
 categorias.insert(0, "TODAS AS CATEGORIAS")
+
+# ... (código do cabeçalho) ...
+
+# Quando for filtrar por busca/categoria, use o df já pré-filtrado
+df_filtrado = df_produtos_principais.copy()
+if termo:
+    # ... sua lógica de filtro ...
+elif categoria_selecionada != "TODAS AS CATEGORIAS":
+    # ... sua lógica de filtro ...
 
 # --- NOVO CABEÇALHO ---
 st.markdown("""
@@ -696,6 +707,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
