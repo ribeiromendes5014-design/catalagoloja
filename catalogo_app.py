@@ -93,9 +93,11 @@ div[data-testid="stRadio"] {
     /* padding-top removido para alinhamento vertical das colunas */
 }
 
-/* Oculta o "ponto" do radio button */
-div[role="radiogroup"] input[type="radio"] {
-    display: none;
+/* AGRESSIVO: Oculta o "ponto" do radio button */
+div[data-testid="stRadio"] input[type="radio"] {
+    display: none !important;
+    visibility: hidden !important;
+    appearance: none !important;
 }
 
 /* Estiliza o label (o texto) do radio para parecer um link/botão */
@@ -745,6 +747,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
