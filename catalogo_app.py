@@ -576,15 +576,6 @@ categorias = df_produtos_principais['CATEGORIA'].dropna().astype(str).unique().t
 categorias.sort()
 categorias.insert(0, "TODAS AS CATEGORIAS")
 
-# ... (código do cabeçalho) ...
-
-# Quando for filtrar por busca/categoria, use o df já pré-filtrado
-df_filtrado = df_produtos_principais.copy()
-if termo:
-    # ... sua lógica de filtro ...
-elif categoria_selecionada != "TODAS AS CATEGORIAS":
-    # ... sua lógica de filtro ...
-
 # --- NOVO CABEÇALHO ---
 st.markdown("""
 <div class="header-container">
@@ -623,9 +614,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # --- FIM NOVO CABEÇALHO ---
 
-# Recria o df_catalogo para a lista
-df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
-df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
+# !!! IMPORTANTE: REMOVA O CÓDIGO ANTIGO DAQUI !!!
+# As linhas abaixo devem ser DELETADAS do seu arquivo:
+#
+# # Recria o df_catalogo para a lista
+# df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
+# df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
+#
 
 # URL do banner
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
@@ -652,7 +647,11 @@ termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 # Pega o valor do radio de categorias (do cabeçalho)
 categoria_selecionada = st.session_state.get('filtro_categoria_radio', 'TODAS AS CATEGORIAS')
 
-df_filtrado = df_catalogo.copy()
+# !!! MUDANÇA IMPORTANTE AQUI !!!
+# Use a variável otimizada 'df_produtos_principais'
+df_filtrado = df_produtos_principais.copy()
+
+# Agora o filtro é aplicado sobre o DataFrame correto
 if termo:
     # Se há um termo de busca, ele tem prioridade sobre a categoria
     df_filtrado = df_filtrado[df_filtrado.apply(lambda row: termo in str(row['NOME']).lower() or termo in str(row['DESCRICAOLONGA']).lower(), axis=1)]
@@ -707,6 +706,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
