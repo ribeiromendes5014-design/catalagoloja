@@ -87,7 +87,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
     </style>
     """, unsafe_allow_html=True)
     
-    if st.button("⬅️ Voltar ao Catálogo", type="primary"):
+    if st.button("⬅️ Voltar", type="primary"):
         st.session_state.produto_detalhe_id = None
         st.rerun()
     
@@ -513,6 +513,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
 
 
