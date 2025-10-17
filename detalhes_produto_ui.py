@@ -287,15 +287,34 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         if max_qty > 0:
             key_qtd = f"qtd_{id_produto_selecionado}"
             
+            # --- INÍCIO DA CORREÇÃO ---
+            
+            # 1. Garante que o estado existe
+            if key_qtd not in st.session_state:
+                st.session_state[key_qtd] = 1
+
+            # 2. Define as funções de callback (elas rodam ANTES de desenhar os widgets)
+            def incrementar_qtd():
+                if st.session_state[key_qtd] < max_qty:
+                    st.session_state[key_qtd] += 1
+
+            def decrementar_qtd():
+                if st.session_state[key_qtd] > 1:
+                    st.session_state[key_qtd] -= 1
+
+            # 3. Cria o layout
             col_qtd_1, col_qtd_2, col_qtd_3 = st.columns([1, 2, 1])
+            
             with col_qtd_1:
-                if st.button("➖", key=f"down_{key_qtd}", use_container_width=True):
-                    if st.session_state.get(key_qtd, 1) > 1:
-                        st.session_state[key_qtd] -= 1
+                # 4. Chama o callback no 'on_click'
+                st.button("➖", key=f"down_{key_qtd}", use_container_width=True,
+                          on_click=decrementar_qtd)
+            
             with col_qtd_2:
-                if key_qtd not in st.session_state:
-                    st.session_state[key_qtd] = 1
+                # 5. Apenas exibe o number_input. Ele vai ler o valor 
+                #    que os callbacks modificaram no session_state.
                 
+                # Garante que o valor não ultrapasse o max_qty se ele mudar
                 if st.session_state[key_qtd] > max_qty:
                     st.session_state[key_qtd] = max_qty
 
@@ -307,11 +326,16 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                     key=key_qtd,
                     label_visibility="collapsed"
                 )
-            with col_qtd_3:
-                if st.button("➕", key=f"up_{key_qtd}", use_container_width=True):
-                    if st.session_state.get(key_qtd, 1) < max_qty:
-                        st.session_state[key_qtd] += 1
             
+            with col_qtd_3:
+                # 6. Chama o callback no 'on_click'
+                st.button("➕", key=f"up_{key_qtd}", use_container_width=True,
+                          on_click=incrementar_qtd)
+            
+            # --- FIM DA CORREÇÃO ---
+
+            # O seu botão de adicionar ao carrinho continua igual,
+            # ele apenas LÊ o valor do session_state, o que está correto.
             if st.button(f"Adicionar R$ {preco_final_selecionado * st.session_state.get(key_qtd, 1):.2f}", 
                          key=f"add_{id_produto_selecionado}", type="secondary", use_container_width=True):
                 
@@ -472,3 +496,4 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
