@@ -159,7 +159,9 @@ div[data-testid="stPopover"] > div:first-child > button {
 }
 
 div.block-container {
-    padding: 0 1rem; /* Apenas um padding lateral básico */
+    background-color: rgba(255,255,255,0.95); /* <-- A LINHA MÁGICA */
+    border-radius: 10px;
+    padding: 2rem;
     margin-top: 1rem;
     color: #262626;
 }
@@ -693,5 +695,6 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
