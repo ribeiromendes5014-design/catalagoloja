@@ -1,5 +1,3 @@
-# catalogo_app.py
-
 import streamlit as st
 import pandas as pd
 import json
@@ -14,7 +12,7 @@ st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sid
 
 # --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
 # Importa a função do novo módulo
-from carrinho_ui import render_carrinho_popover 
+from carrinho_ui import render_carrinho_popover
 
 # Importa as funções e constantes dos novos módulos
 from data_handler import (
@@ -31,7 +29,7 @@ from footer_ui import render_fixed_footer
 COR_LINK = "white"  # Use branco como fallback se não quiser um amarelo específico
 # --- FIM DAS VARIÁVEIS DE COR ---
 
-# --- Inicialização do Carrinho de Compras e Estado --- <--- DEVE COMEÇAR AQUI, SEM LINHAS INÚTEIS
+# --- Inicialização do Carrinho de Compras e Estado ---
 if 'carrinho' not in st.session_state:
     st.session_state.carrinho = {}
 if 'pedido_confirmado' not in st.session_state:
@@ -44,8 +42,6 @@ if 'cupom_mensagem' not in st.session_state:
     st.session_state.cupom_mensagem = ""
 if 'processando_pedido' not in st.session_state:
     st.session_state.processando_pedido = False
-if 'search_active' not in st.session_state:
-    st.session_state.search_active = False
 
 # OTIMIZAÇÃO: Cache do catálogo principal no estado da sessão para evitar re-leitura constante
 if 'df_catalogo_indexado' not in st.session_state:
@@ -87,16 +83,6 @@ MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
 }
 
 /* === ESTILO DO NOVO FILTRO DE CATEGORIA (RADIO) === */
-
-/* Alinha o rádio no centro vertical da coluna */
-div[data-testid="stRadio"] {
-    /* padding-top removido para alinhamento vertical das colunas */
-}
-
-/* === ESTILO DO NOVO FILTRO DE CATEGORIA (RADIO) === */
-
-/* ... (mantenha o "div[data-testid="stRadio"]" vazio) ... */
-
 /* AGRESSIVO: Oculta o "ponto" do radio button e seu container */
 div[data-testid="stRadio"] input[type="radio"],
 div[data-testid="stRadio"] span[data-baseweb="radio"] {
@@ -116,222 +102,183 @@ div[data-testid="stRadio"] label {
 }
 /* Estiliza o label (o texto) do radio para parecer um link/botão */
 div[role="radiogroup"] label {
-    display: inline-block;
-    padding: 5px 8px;
-    margin-right: 5px;
-    background-color: transparent;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-    color: #333; /* Cor do texto padrão */
-    font-weight: 500;
+    display: inline-block;
+    padding: 5px 8px;
+    margin-right: 5px;
+    background-color: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    color: #333; /* Cor do texto padrão */
+    font-weight: 500;
 }
 
 /* Estilo do label QUANDO SELECIONADO (usa o :has() para checar o input) */
 div[role="radiogroup"] div:has(input[type="radio"]:checked) > label {
-    background-color: #D32F2F; /* Cor principal (vermelho) */
-    color: white;
-    font-weight: bold;
+    background-color: #D32F2F; /* Cor principal (vermelho) */
+    color: white;
+    font-weight: bold;
 }
 
 /* Hover (mouse em cima) - não selecionado */
 div[role="radiogroup"] div:not(:has(input[type="radio"]:checked)) > label:hover {
-    background-color: #f0f0f0;
-    color: black;
+    background-color: #f0f0f0;
+    color: black;
 }
 
 /* Estilo quando o rádio está desabilitado (durante a busca) */
 div[role="radiogroup"] div:has(input[type="radio"]:disabled) > label {
-    color: #999;
-    cursor: not-allowed;
-    background-color: transparent;
+    color: #999;
+    cursor: not-allowed;
+    background-color: transparent;
 }
 
 /* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
 div[data-testid="stPopover"] > div:first-child > button {
-    position: fixed !important;
-    bottom: 110px;
-    right: 40px;
-    width: 60px !important;
-    height: 60px !important;
-    opacity: 0 !important;
-    z-index: 1001 !important;
-    pointer-events: auto !important;
+    position: fixed !important;
+    bottom: 110px;
+    right: 40px;
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 0 !important;
+    z-index: 1001 !important;
+    pointer-events: auto !important;
 }
 
 .stApp {
-    background-image: url(""" + BACKGROUND_IMAGE_URL + """) !important;
-    background-size: cover;
-    background-attachment: fixed;
+    background-image: url(""" + BACKGROUND_IMAGE_URL + """) !important;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
-/* --- ALTERAÇÃO B (Início) --- */
 div.block-container {
-    /* Remove o fundo branco/padding do container principal */
     padding: 0 1rem; /* Apenas um padding lateral básico */
     margin-top: 1rem;
     color: #262626;
 }
 
-/* NOVO: Classe para o box de conteúdo */
+/* Classe para o box de conteúdo */
 .content-box {
     background-color: rgba(255,255,255,0.95);
     border-radius: 10px;
     padding: 2rem;
     margin-top: 1rem;
 }
-/* --- ALTERAÇÃO B (Fim) --- */
-
 
 div[data-testid="stAppViewBlockContainer"] {
-    padding-top: 0 !important;
+    padding-top: 0 !important;
 }
 
-/* FORÇA O TEXTO, O ÍCONE E A SETA DO EXPANDER PARA BRANCO/VISÍVEL SEMPRE */
-
-/* 1. Estiliza o botão/cabeçalho do expander (fundo e texto) */
-div[data-testid="stExpander"] button {
-    /* Força o texto principal do botão para BRANCO */
-    color: white !important; 
-    /* Garante que o ícone e a seta não sejam transparentes */
-    opacity: 1 !important; 
-    visibility: visible !important; 
-}
-
-/* 2. Garante que a seta/chevron (o ícone) seja branco */
-div[data-testid="stExpander"] .streamlit-expander-chevron {
-    color: white !important;
-    opacity: 1 !important;
-}
-
-/* 3. Garante o fundo escuro do expander */
+/* Garante o fundo escuro do expander */
 div[data-testid="stExpander"] > div:first-child {
-    background-color: #262626 !important;
-    border: 1px solid #444444 !important;
-    border-radius: 5px;
+    background-color: #262626 !important;
+    border: 1px solid #444444 !important;
+    border-radius: 5px;
 }
 
 .fullwidth-banner {
-    position: relative;
-    width: 100vw;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    overflow: hidden;
-    z-index: 9999;
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
 }
 
 .fullwidth-banner img {
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    margin: 0;
-    padding: 0;
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    margin: 0;
+    padding: 0;
 }
 
-/* --- ALTERAÇÃO C (Início) --- */
-/* === ESTILO DO NOVO HEADER (Antigo Pink Bar) === */
-.pink-bar-container {
-    background-color: #FFFFFF; /* MUDADO DE PRETO PARA BRANCO */
-    padding: 10px 0; 
-    width: 100vw; 
-    position: relative; 
-    left: 50%; right: 50%; 
-    margin-left: -50vw; 
-    margin-right: -50vw; 
-    /* Sombra removida */
+/* === ESTILO DO NOVO HEADER === */
+.header-container {
+    background-color: #FFFFFF;
+    padding: 10px 0;
+    width: 100vw;
+    position: relative;
+    left: 50%; right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
     border-bottom: 1px solid #e0e0e0; /* Adiciona uma linha sutil */
 }
-/* O pink-bar-content agora vai centralizar o conteúdo do header */
-.pink-bar-content { 
-    width: 100%; 
+.header-content {
+    width: 100%;
     max-width: 1200px; /* Largura máxima do conteúdo */
-    margin: 0 auto; 
+    margin: 0 auto;
     padding: 0 1rem; /* Padding lateral */
-    /* 'display: flex' removido para não conflitar com st.columns */
 }
-/* --- ALTERAÇÃO C (Fim) --- */
 
 
 .cart-badge-button {
-    background-color: #D32F2F; 
-    color: white; 
-    border-radius: 12px; 
-    padding: 8px 15px;
-    font-size: 16px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    border: none; 
-    transition: background-color 0.3s;
-    display: inline-flex; 
-    align-items: center; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-    min-width: 150px; 
-    justify-content: center; 
+    background-color: #D32F2F;
+    color: white;
+    border-radius: 12px;
+    padding: 8px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    min-width: 150px;
+    justify-content: center;
 }
 .cart-badge-button:hover { background-color: #FF4500; }
 .cart-count {
-    background-color: white; 
-    color: #D32F2F; 
-    border-radius: 50%; 
-    padding: 2px 7px; 
-    margin-left: 8px; 
-    font-size: 14px; 
-    line-height: 1; 
+    background-color: white;
+    color: #D32F2F;
+    border-radius: 50%;
+    padding: 2px 7px;
+    margin-left: 8px;
+    font-size: 14px;
+    line-height: 1;
 }
 
 /* Regras Padrão (para PC/Telas Grandes) */
-h1 { font-size: 2.5rem; } 
+h1 { font-size: 2.5rem; }
 
 /* ======================================= */
 /* MEDIA QUERY: TELA PEQUENA (CELULAR) */
 /* ======================================= */
 @media only screen and (max-width: 600px) {
-    /* --- ALTERAÇÃO B (Correção mobile) --- */
-    div.block-container {
-        /* Mantém apenas o padding lateral e o margin-top */
-        padding: 0 0.5rem !important; 
-        margin-top: 0.5rem !important;
-    }
-    /* NOVO: Adiciona a versão mobile para o .content-box */
+    div.block-container {
+        padding: 0 0.5rem !important;
+        margin-top: 0.5rem !important;
+    }
     .content-box {
         padding: 0.5rem !important;
     }
-    /* --- FIM ALTERAÇÃO B --- */
-
-    h1 {
-        font-size: 1.8rem;
-    }
-    .product-image-container {
-        height: 180px;
-    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    .product-image-container {
+        height: 180px;
+    }
 }
 
-/* ================================================================= */
-/* REGRAS GERAIS PARA AJUSTE DE TELA (MEDIA QUERY) */
-/* ================================================================= */
 @media only screen and (max-width: 650px) {
     div.block-container {
         padding: 1rem 0.5rem !important;
     }
 
-    /* === REGRAS DE OTIMIZAÇÃO DE GRADE (NOVO) === */
-    /* Força as colunas individuais a serem flexíveis e encolherem */
     div[data-testid="stColumns"] > div {
         flex-basis: 0 !important;
         min-width: 0 !important;
         flex-shrink: 1 !important;
     }
     
-    /* Garante que o conteúdo interno (imagem/preço) também possa encolher */
     .product-image-container, .price-action-flex {
         min-width: 0 !important;
     }
-    /* =========================================== */
 
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.5rem; }
@@ -349,38 +296,19 @@ h1 { font-size: 2.5rem; } 
     }
 }
 
-div[data-testid="stButton"] > button { 
-    background-color: #D32F2F; 
-    color: white; 
-    border-radius: 10px; 
-    border: 1px solid #000000; 
-    font-weight: bold; 
+div[data-testid="stButton"] > button {
+    background-color: #D32F2F;
+    color: white;
+    border-radius: 10px;
+    border: 1px solid #000000;
+    font-weight: bold;
 }
-div[data-testid="stButton"] > button:hover { 
-    background-color: #000000; 
-    color: white; 
-    border: 1px solid #FF4500; 
+div[data-testid="stButton"] > button:hover {
+    background-color: #000000;
+    color: white;
+    border: 1px solid #FF4500;
 }
-/* === ESTILO DOS BOTÕES-ÍCONE (Lupa e X) === */
-/* Usamos type="secondary" no Python para aplicar este estilo */
-div[data-testid="stButton"] button[kind="secondary"] {
-    background-color: transparent !important;
-    border: none !important;
-    color: #333 !important; /* Cor do ícone */
-    font-size: 1.5rem; /* Tamanho do ícone */
-    padding: 0 !important;
-    margin-top: 0.5rem; /* Ajuste fino do alinhamento vertical */
-    box-shadow: none !important;
-}
-div[data-testid="stButton"] button[kind="secondary"]:hover {
-    color: #D32F2F !important; /* Cor ao passar o mouse */
-    border: none !important;
-}
-div[data-testid="stButton"] button[kind="secondary"]:focus {
-    color: #D32F2F !important;
-    box-shadow: none !important;
-    border: none !important;
-}
+
 /* === Estilos de Produtos e Estoque === */
 .product-image-container { height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }
 .product-image-container img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }
@@ -389,14 +317,14 @@ div[data-testid="stButton"] button[kind="secondary"]:focus {
 
 .price-action-flex {
     display: flex;
-    justify-content: space-between; 
-    align-items: flex-end; 
+    justify-content: space-between;
+    align-items: flex-end;
     margin-top: 1rem;
-    gap: 10px; 
+    gap: 10px;
 }
 .action-buttons-container {
     flex-shrink: 0;
-    width: 45%; 
+    width: 45%;
 }
 .action-buttons-container div[data-testid="stNumberInput"] {
     width: 100%;
@@ -425,7 +353,7 @@ div[data-testid="stButton"] button[kind="secondary"]:focus {
 /* Botão Flutuante do Carrinho */
 .cart-float {
     position: fixed;
-    bottom: 110px; 
+    bottom: 110px;
     right: 40px;
     background-color: #D32F2F;
     color: white;
@@ -523,7 +451,6 @@ if num_itens > 0:
             if (popoverButton) {{
                 return popoverButton;
             }}
-            // Tenta encontrar botão por outras abordagens (compatibilidade)
             const alt = Array.from(document.querySelectorAll("button")).find(b => b.innerText.includes("Conteúdo do Carrinho"));
             if (alt) return alt;
             return null;
@@ -537,7 +464,6 @@ if num_itens > 0:
                         popBtn.click();
                     }} else {{
                         console.warn("Botão do popover não encontrado. Verifique o seletor.");
-                        // Não usar alert() - substitua por uma mensagem Streamlit se possível, mas aqui no JS é mais difícil.
                     }}
                 }} catch (err) {{
                     console.error("Erro ao tentar abrir o popover do carrinho:", err);
@@ -597,8 +523,6 @@ if st.session_state.pedido_confirmado:
         unsafe_allow_html=True
     )
     
-    # --- SIMPLIFICAÇÃO: RESUMO ABAIXO FOI REMOVIDO OU SUBSTITUÍDO ---
-
     st.subheader(f"Resumo do Pedido (ID: {id_pedido_display})")
     
     # Conteúdo simples do resumo
@@ -624,100 +548,67 @@ if st.session_state.pedido_confirmado:
     st.stop() # Finaliza o script para mostrar apenas a tela de confirmação
 
 
-# catalogo_app.py (Bloco 4.2. TELA DE DETALHES DO PRODUTO)
-
+# TELA DE DETALHES DO PRODUTO
 if st.session_state.produto_detalhe_id:
-    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
+    mostrar_detalhes_produto(st.session_state.df_catalogo_indexado)
     st.stop()
 
 # --- Filtros e Exibição dos Produtos ---
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 
 # === FILTRO CRÍTICO: MANTÉM APENAS PRODUTOS PRINCIPAIS (PAIS) ===
-# Filtra: mantém apenas produtos principais (PAIID é nulo/NaN),
-# excluindo as variações que têm um PAIID preenchido.
 df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
-# =======================================
 
 categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
 categorias.sort()
 categorias.insert(0, "TODAS AS CATEGORIAS")
 
-# --- NOVO CABEÇALHO (INSPIRAÇÃO) ---
-    
-# Adiciona o container full-width (antiga pink-bar) com fundo branco
+# --- NOVO CABEÇALHO ---
 st.markdown("""
-<div class="pink-bar-container">
-    <div class="pink-bar-content">
+<div class="header-container">
+    <div class="header-content">
 """, unsafe_allow_html=True)
 
-termo = st.session_state.get('termo_pesquisa_barra', '').lower()
+# Layout do cabeçalho com logo, busca e filtros de categoria
+col_logo, col_search, col_cats = st.columns([2, 3, 7], vertical_alignment="center")
 
-# Pega o estado da busca
-search_is_active = st.session_state.get('search_active', False)
+with col_logo:
+    st.image(LOGO_DOCEBELLA_URL, width=170)
 
-if search_is_active:
-    # Layout com BARRA DE BUSCA ATIVA
-    col_logo, col_search_bar, col_close_icon = st.columns([2, 5, 1], vertical_alignment="center")
-    
-    with col_logo:
-        st.image(LOGO_DOCEBELLA_URL, width=170)
-    
-    with col_search_bar:
-        st.text_input(
-            "Buscar...", 
-            key='termo_pesquisa_barra', 
-            label_visibility="collapsed", 
-            placeholder="Buscar produtos..."
-        )
-        
-    with col_close_icon:
-        # Botão "X" para fechar (usa o estilo "secondary" do CSS)
-        if st.button("X", key="hide_search_btn", type="secondary", help="Fechar busca"):
-            st.session_state.search_active = False
-            st.session_state.termo_pesquisa_barra = "" # Limpa a busca
-            st.rerun()
-            
-else:
-    # Layout com CATEGORIAS (padrão)
-    col_logo, col_cats, col_search_icon = st.columns([2, 5, 1], vertical_alignment="center")
+with col_search:
+    st.text_input(
+        "Buscar...",
+        key='termo_pesquisa_barra',
+        label_visibility="collapsed",
+        placeholder="🔍 Buscar produtos..."
+    )
 
-    with col_logo:
-        st.image(LOGO_DOCEBELLA_URL, width=170) 
+with col_cats:
+    termo = st.session_state.get('termo_pesquisa_barra', '').lower()
+    # Desabilita as categorias se houver um termo de busca
+    st.radio(
+        "Categorias",
+        options=categorias,
+        key='filtro_categoria_radio',
+        horizontal=True,
+        label_visibility="collapsed",
+        disabled=bool(termo)
+    )
 
-    with col_cats:
-        st.radio(
-            "Categorias",
-            options=categorias,
-            key='filtro_categoria_radio', 
-            horizontal=True,
-            label_visibility="collapsed",
-            disabled=bool(termo) 
-        )
-        
-    with col_search_icon:
-        # Botão "Lupa" para abrir (usa o estilo "secondary" do CSS)
-        if st.button("🔍", key="show_search_btn", type="secondary", help="Abrir busca"):
-            st.session_state.search_active = True
-            st.rerun()
-
-# Fecha os divs do container full-width
 st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
 # --- FIM NOVO CABEÇALHO ---
 
-
-
-# Recria o df_catalogo para a lista (a versão para filtros já foi usada no cabeçalho)
+# Recria o df_catalogo para a lista
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
 
-# URL do banner de Black Friday
+# URL do banner
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
 
-# --- Banner Black Friday full width (sem margens brancas) ---
+# --- Banner full width ---
 st.markdown(
     f"""
     <div class="fullwidth-banner">
@@ -727,47 +618,42 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- NOVO: Adiciona o content-box para o conteúdo abaixo ---
+# --- Adiciona o content-box para o conteúdo abaixo ---
 st.markdown('<div class="content-box">', unsafe_allow_html=True)
 
-# --- INÍCIO DO BLOCO COLADO ---
-# Definimos as colunas SÓ para ordem e grade agora
-col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 2]) 
+# Definimos as colunas para ordem e grade
+col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 2])
 
 # Pega o termo da barra de busca (definido no cabeçalho)
 termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 
-# PEGA O VALOR DO NOVO RADIO (do cabeçalho)
+# Pega o valor do radio de categorias (do cabeçalho)
 categoria_selecionada = st.session_state.get('filtro_categoria_radio', 'TODAS AS CATEGORIAS')
 
-
 df_filtrado = df_catalogo.copy()
-if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
-    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'].astype(str) == categoria_selecionada]
-elif termo:
+if termo:
+    # Se há um termo de busca, ele tem prioridade sobre a categoria
     df_filtrado = df_filtrado[df_filtrado.apply(lambda row: termo in str(row['NOME']).lower() or termo in str(row['DESCRICAOLONGA']).lower(), axis=1)]
+elif categoria_selecionada != "TODAS AS CATEGORIAS":
+    # Filtra por categoria apenas se não houver busca
+    df_filtrado = df_filtrado[df_filtrado['CATEGORIA'].astype(str) == categoria_selecionada]
 
 if df_filtrado.empty:
     st.info(f"Nenhum produto encontrado com os critérios selecionados.")
 else:
     st.subheader("✨ Nossos Produtos")
     
-    # ----------------------------------------------------
-    # --- NOVO: Adiciona a opção de Grade na coluna criada ---
-    opcoes_grade = [4, 3, 2] # Opções de colunas
-    
-    # IMPORTANTE: Coloque o selectbox na nova coluna col_grade_opcoes
+    # Opções de Grade (produtos por linha)
+    opcoes_grade = [4, 3, 2]
     colunas_por_linha = col_grade_opcoes.selectbox(
         "Produtos por linha:",
-        opcoes_grade, 
-        index=0, # 4 será o padrão
+        opcoes_grade,
+        index=0,
         key='grade_produtos'
     )
-    # ----------------------------------------------------
     
+    # Opções de Ordenação
     opcoes_ordem = ['Lançamento', 'Promoção', 'Menor Preço', 'Maior Preço', 'Nome do Produto (A-Z)']
-    
-    # IMPORTANTE: Mantenha o selectbox na coluna original col_select_ordem
     ordem_selecionada = col_select_ordem.selectbox("Ordenar por:", opcoes_ordem, key='ordem_produtos')
     
     df_filtrado['EM_PROMOCAO'] = df_filtrado['PRECO_PROMOCIONAL'].notna()
@@ -783,59 +669,19 @@ else:
         by_cols, ascending_order = sort_map[ordem_selecionada]
         df_filtrado = df_filtrado.sort_values(by=by_cols, ascending=ascending_order)
 
-    # ----------------------------------------------------
-    # --- NOVO: Usa a variável colunas_por_linha (Ex: 4, 3 ou 2) ---
+    # Exibe os produtos na grade definida
     cols = st.columns(colunas_por_linha)
     
     for i, row in df_filtrado.reset_index(drop=True).iterrows():
         product_id = row['ID']
         unique_key = f'prod_{product_id}_{i}'
         
-        # NOVO: Usa colunas_por_linha no operador módulo
         with cols[i % colunas_por_linha]:
             render_product_card(product_id, row, key_prefix=unique_key, df_catalogo_indexado=st.session_state.df_catalogo_indexado)
-    # ----------------------------------------------------
 
+# Fecha o .content-box
+st.markdown('</div>', unsafe_allow_html=True) 
 
-
-# ==============================================
-# RENDERIZA O FOOTER
-# ==============================================
-st.markdown('</div>', unsafe_allow_html=True) # Fecha o .content-box
+# Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
