@@ -100,6 +100,7 @@ div[data-testid="stRadio"] label {
     cursor: pointer;
     padding-left: 0 !important; /* Remove o espaço deixado pelo rádio */
 }
+
 /* Estiliza o label (o texto) do radio para parecer um link/botão */
 div[role="radiogroup"] label {
     display: inline-block;
@@ -129,7 +130,7 @@ div[role="radiogroup"] div:has(input[type="radio"]:checked) > label {
 
 /* Hover (mouse em cima) - não selecionado */
 div[role="radiogroup"] div:not(:has(input[type="radio"]:checked)) > label:hover {
-    background-color: transparent; /* Remove o fundo cinza */
+    background-color: transparent; /* Remove o fundo ao passar o mouse */
     color: #D32F2F;             /* Deixa o texto vermelho ao passar o mouse */
 }
 
@@ -695,6 +696,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
