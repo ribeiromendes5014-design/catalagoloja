@@ -248,13 +248,16 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
             if descricao_curta:
                 st.caption(descricao_curta)
 
-        # Lado Direito: Botões de Ação (Permanece igual)
+        # Lado Direito: Botão minimalista
         st.markdown('<div class="action-buttons-container">', unsafe_allow_html=True)
         with st.container():
             
-            # COLOCAMOS UM BOTÃO SIMPLES DE "VER DETALHES" COMO SEGUNDA OPÇÃO, 
-            # CASO O CLIQUE NA IMAGEM FALHE EM ALGUM NAVEGADOR
-            if st.button("👁️ Ver Detalhes", key=f'btn_details_card_{key_prefix}', use_container_width=True):
+            # Botão minimalista (ícone) para ver detalhes.
+            # Usamos type="secondary" para o CSS poder customizá-lo.
+            if st.button("👁️", 
+                         key=f'btn_details_card_{key_prefix}', 
+                         type="secondary", 
+                         help="Ver detalhes do produto"):
                  st.session_state.produto_detalhe_id = prod_id
                  st.rerun()
 
@@ -285,6 +288,7 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
             st.markdown(f"<span style='color: #2E7D32; font-size: 0.8rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True) # Fecha o container do preço
+
 
 
 
