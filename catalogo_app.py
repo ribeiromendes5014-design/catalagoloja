@@ -10,7 +10,7 @@ import requests
 st.set_page_config(page_title="Catálogo Doce&Bella", layout="wide", initial_sidebar_state="collapsed")
 
 
-# --- 2. IMPORTAÇÕES DE MÓDULOS LOCAIS ---
+# --- 2. IMPORTAÇÕES DE MÓDulos LOCAIS ---
 # Importa a função do novo módulo
 from carrinho_ui import render_carrinho_popover
 
@@ -161,10 +161,11 @@ div.block-container {
 
 /* Classe para o box de conteúdo */
 .content-box {
-    background-color: rgba(255,255,255,0.95);
+    background-color: #FFFFFF; /* CORRIGIDO: Fundo branco sólido */
     border-radius: 10px;
     padding: 2rem;
     margin-top: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Adiciona uma sombra sutil */
 }
 
 div[data-testid="stAppViewBlockContainer"] {
@@ -207,6 +208,7 @@ div[data-testid="stExpander"] > div:first-child {
     margin-left: -50vw;
     margin-right: -50vw;
     border-bottom: 1px solid #e0e0e0; /* Adiciona uma linha sutil */
+    z-index: 10;
 }
 .header-content {
     width: 100%;
@@ -685,3 +687,4 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
