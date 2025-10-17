@@ -630,21 +630,46 @@ categorias.sort()
 categorias.insert(0, "TODAS AS CATEGORIAS")
 
 # --- NOVO CABEÇALHO (INSPIRAÇÃO) ---
+    
+# Adiciona o container full-width (antiga pink-bar) com fundo branco
+st.markdown("""
+<div class="pink-bar-container">
+    <div class="pink-bar-content">
+""", unsafe_allow_html=True)
+
 termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 
-with st.container():
-    col_logo, col_search, col_cats = st.columns([1, 2, 4], vertical_alignment="center")
+# Pega o estado da busca
+search_is_active = st.session_state.get('search_active', False)
+
+if search_is_active:
+    # Layout com BARRA DE BUSCA ATIVA
+    col_logo, col_search_bar, col_close_icon = st.columns([2, 5, 1], vertical_alignment="center")
     
     with col_logo:
-        st.image(LOGO_DOCEBELLA_URL, width=170) 
+        st.image(LOGO_DOCEBELLA_URL, width=170)
     
-    with col_search:
+    with col_search_bar:
         st.text_input(
             "Buscar...", 
             key='termo_pesquisa_barra', 
             label_visibility="collapsed", 
             placeholder="Buscar produtos..."
         )
+        
+    with col_close_icon:
+        # Botão "X" para fechar (usa o estilo "secondary" do CSS)
+        if st.button("X", key="hide_search_btn", type="secondary", help="Fechar busca"):
+            st.session_state.search_active = False
+            st.session_state.termo_pesquisa_barra = "" # Limpa a busca
+            st.rerun()
+            
+else:
+    # Layout com CATEGORIAS (padrão)
+    col_logo, col_cats, col_search_icon = st.columns([2, 5, 1], vertical_alignment="center")
+
+    with col_logo:
+        st.image(LOGO_DOCEBELLA_URL, width=170) 
 
     with col_cats:
         st.radio(
@@ -653,9 +678,20 @@ with st.container():
             key='filtro_categoria_radio', 
             horizontal=True,
             label_visibility="collapsed",
-            # Desabilita o radio se a busca estiver ativa
             disabled=bool(termo) 
         )
+        
+    with col_search_icon:
+        # Botão "Lupa" para abrir (usa o estilo "secondary" do CSS)
+        if st.button("🔍", key="show_search_btn", type="secondary", help="Abrir busca"):
+            st.session_state.search_active = True
+            st.rerun()
+
+# Fecha os divs do container full-width
+st.markdown("""
+    </div>
+</div>
+""", unsafe_allow_html=True)
 # --- FIM NOVO CABEÇALHO ---
 
 # URL do banner de Black Friday
@@ -747,6 +783,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
