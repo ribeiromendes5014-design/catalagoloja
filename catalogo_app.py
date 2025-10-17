@@ -226,7 +226,7 @@ div[data-testid="stExpander"] > div:first-child {
 
 .fullwidth-banner img {
     display: block;
-  S   width: 100%;
+    width: 100%;
     height: auto;
     object-fit: cover;
     margin: 0;
@@ -714,15 +714,6 @@ st.markdown("""
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
 df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
 
-# Definimos as colunas SÓ para ordem e grade agora
-col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 2]) 
-
-# Pega o termo da barra de busca (definido no cabeçalho)
-termo = st.session_state.get('termo_pesquisa_barra', '').lower()
-
-# PEGA O VALOR DO NOVO RADIO (do cabeçalho)
-categoria_selecionada = st.session_state.get('filtro_categoria_radio', 'TODAS AS CATEGORIAS')
-
 # URL do banner de Black Friday
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
 
@@ -735,6 +726,20 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# --- NOVO: Adiciona o content-box para o conteúdo abaixo ---
+st.markdown('<div class="content-box">', unsafe_allow_html=True)
+
+# --- INÍCIO DO BLOCO COLADO ---
+# Definimos as colunas SÓ para ordem e grade agora
+col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 2]) 
+
+# Pega o termo da barra de busca (definido no cabeçalho)
+termo = st.session_state.get('termo_pesquisa_barra', '').lower()
+
+# PEGA O VALOR DO NOVO RADIO (do cabeçalho)
+categoria_selecionada = st.session_state.get('filtro_categoria_radio', 'TODAS AS CATEGORIAS')
+
 
 df_filtrado = df_catalogo.copy()
 if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
@@ -796,8 +801,10 @@ else:
 # ==============================================
 # RENDERIZA O FOOTER
 # ==============================================
+st.markdown('</div>', unsafe_allow_html=True) # Fecha o .content-box
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
