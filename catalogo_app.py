@@ -345,7 +345,26 @@ div[data-testid="stButton"] > button:hover {
     color: white; 
     border: 1px solid #FF4500; 
 }
-
+/* === ESTILO DOS BOTÕES-ÍCONE (Lupa e X) === */
+/* Usamos type="secondary" no Python para aplicar este estilo */
+div[data-testid="stButton"] button[kind="secondary"] {
+    background-color: transparent !important;
+    border: none !important;
+    color: #333 !important; /* Cor do ícone */
+    font-size: 1.5rem; /* Tamanho do ícone */
+    padding: 0 !important;
+    margin-top: 0.5rem; /* Ajuste fino do alinhamento vertical */
+    box-shadow: none !important;
+}
+div[data-testid="stButton"] button[kind="secondary"]:hover {
+    color: #D32F2F !important; /* Cor ao passar o mouse */
+    border: none !important;
+}
+div[data-testid="stButton"] button[kind="secondary"]:focus {
+    color: #D32F2F !important;
+    box-shadow: none !important;
+    border: none !important;
+}
 /* === Estilos de Produtos e Estoque === */
 .product-image-container { height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; }
 .product-image-container img { max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 8px; }
@@ -726,6 +745,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
