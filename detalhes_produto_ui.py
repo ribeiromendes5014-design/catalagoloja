@@ -80,13 +80,87 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
          df_variacoes = df_variacoes[~df_variacoes.index.duplicated(keep='first')]
     # --- FIM LÓGICA VARIAÇÕES ---
 
-    # --- 2. APLICAÇÃO DE ESTILO CSS --- (Sem mudanças)
+    # --- 2. APLICAÇÃO DE ESTILO CSS --- (CORRIGIDO)
     st.markdown("""
     <style>
-        /* ... (Seu CSS existente vai aqui) ... */
+        /* Regra geral - REMOVE a largura de 100% */
+        .stButton>button {
+            color: white;
+            border: none;
+        }
+
+        /* --- NOVO: Botão Voltar (Primary) - Minimalista e transparente --- */
+        .stButton>button[kind="primary"] {
+            background-color: transparent !important; /* Fundo transparente */
+            color: #4F4F4F !important; /* Cor do texto cinza escuro */
+            width: auto !important; /* Largura automática */
+            padding: 0 !important; /* Remove preenchimento */
+            font-weight: 500 !important; /* Fonte normal */
+            text-align: left !important;
+            box-shadow: none !important;
+        }
+        .stButton>button[kind="primary"]:hover {
+            background-color: transparent !important;
+            color: #D32F2F !important; /* Texto fica vermelho ao passar o mouse */
+        }
+        /* Remove a borda azul ao clicar */
+        .stButton>button[kind="primary"]:focus {
+            box-shadow: none !important;
+        }
+        
+        /* Botão Add Carrinho (Secondary) - Mantém 100% e cor vermelha */
+        .stButton>button[kind="secondary"] { 
+            background-color: #D32F2F !important; 
+            width: 100% !important; 
+            color: white !important;
+        }
+        .stButton>button[kind="secondary"]:hover { 
+            background-color: #000000 !important; 
+        }
+
+        h1 { font-size: 1.8rem; }
+        h3 { font-size: 1.3rem; }
+
+        /* --- Estilo Minimalista para st.radio (Botões de Variação) --- */
+        
+        /* Remove o "ponto" do rádio */
+        div[data-testid="stRadio"] input {
+            display: none;
+        }
+        
+        /* Estiliza a label (o texto) como um botão */
+        div[data-testid="stRadio"] label {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #f0f2f6; /* Cor de fundo padrão */
+            color: #31333F; /* Cor do texto padrão */
+            border: 1px solid #DCDCDC;
+            border-radius: 20px; /* Bordas arredondadas */
+            margin-right: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        /* Estiliza o botão SELECIONADO */
+        div[data-testid="stRadio"] input:checked + div {
+            background-color: #D32F2F; /* Cor de fundo (vermelho) quando selecionado */
+            color: white; /* Cor do texto quando selecionado */
+            border: 1px solid #D32F2F;
+            font-weight: 600;
+        }
+        
+        /* Hover (mouse em cima) - não selecionado */
+        div[data-testid="stRadio"] label:hover {
+             border: 1px solid #A0A0A0;
+        }
+        /* --- FIM Estilo st.radio --- */
+
     </style>
     """, unsafe_allow_html=True)
     
+    # O seu botão "Voltar" (que você já corrigiu)
     if st.button("⬅️ Voltar", type="primary"):
         st.session_state.produto_detalhe_id = None
         st.rerun()
@@ -513,6 +587,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
 
 
