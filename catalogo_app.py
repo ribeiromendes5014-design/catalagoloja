@@ -122,15 +122,15 @@ div[data-testid="stContainer"][style*="border"] {
 
 /* Estilo do label QUANDO SELECIONADO (usa o :has() para checar o input) */
 div[role="radiogroup"] div:has(input[type="radio"]:checked) > label {
-    background-color: #D32F2F; /* Cor principal (vermelho) */
-    color: white;
-    font-weight: bold;
+    background-color: transparent; /* Garante que o fundo não tenha cor */
+    color: #D32F2F;             /* Muda a cor do texto para vermelho */
+    font-weight: bold;           /* Mantém o texto em negrito */
 }
 
 /* Hover (mouse em cima) - não selecionado */
 div[role="radiogroup"] div:not(:has(input[type="radio"]:checked)) > label:hover {
-    background-color: #f0f0f0;
-    color: black;
+    background-color: transparent; /* Remove o fundo cinza */
+    color: #D32F2F;             /* Deixa o texto vermelho ao passar o mouse */
 }
 
 /* Estilo quando o rádio está desabilitado (durante a busca) */
@@ -695,6 +695,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
