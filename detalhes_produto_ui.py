@@ -436,7 +436,7 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
         if len(image_items) > 1:
             carousel(items=image_items, controls=True, indicators=True, interval=None)
         elif image_items: 
-            st.image(image_items[0]['img'], caption=image_items[0]['text'], use_column_width=True)
+            st.image(image_items[0]['img'], caption=image_items[0]['text'], use_container_width=True)
         else:
             st.image("https://via.placeholder.com/400x400.png?text=Sem+Imagem", caption="Imagem não disponível", use_column_width=True)
             
@@ -513,5 +513,6 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
+
 
 
