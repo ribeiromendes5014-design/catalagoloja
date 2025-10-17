@@ -239,42 +239,18 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown(f"**{produto_nome}**")
-        if descricao_curta:
-            st.caption(descricao_curta)
-
-        # REMOVEMOS O st.expander("Ver detalhes") AQUI
-
-        # --- SEÇÃO CORRIGIDA: Preço e Ação agora estão juntos ---
+        # --- SEÇÃO CORRIGIDA: Nome e Ação agora estão juntos ---
         st.markdown('<div class="price-action-flex">', unsafe_allow_html=True)
         
-        # Lado Esquerdo: Preços e Cashback
+        # --- SWAP 1: Lado Esquerdo agora é o NOME ---
         with st.container():
-            condicao_pagamento = row.get('CONDICAOPAGAMENTO', 'Preço à vista')
-            cashback_percent = pd.to_numeric(row.get('CASHBACKPERCENT'), errors='coerce')
-            
-            # Formata o preço e as condições
-            if is_promotion:
-                st.markdown(f"""
-                <div style="line-height: 1.2;">
-                    <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
-                    <h4 style='color: #D32F2F; margin:0;'>R$ {preco_final:.2f}</h4>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"<h4 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final:.2f}</h4>", unsafe_allow_html=True)
-            
-            st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
+            st.markdown(f"**{produto_nome}**")
+            if descricao_curta:
+                st.caption(descricao_curta)
 
-            if pd.notna(cashback_percent) and cashback_percent > 0:
-                cashback_valor = (cashback_percent / 100) * preco_final
-                st.markdown(f"<span style='color: #2E7D32; font-size: 0.8rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
-
-        # Lado Direito: Botões de Ação
+        # Lado Direito: Botões de Ação (Permanece igual)
         st.markdown('<div class="action-buttons-container">', unsafe_allow_html=True)
         with st.container():
-            # REMOVEMOS O INPUT DE QUANTIDADE E O BOTÃO "ADICIONAR" AQUI,
-            # POIS A COMPRA DEVE SER FEITA NA TELA DE DETALHES
             
             # COLOCAMOS UM BOTÃO SIMPLES DE "VER DETALHES" COMO SEGUNDA OPÇÃO, 
             # CASO O CLIQUE NA IMAGEM FALHE EM ALGUM NAVEGADOR
@@ -284,6 +260,32 @@ def render_product_card(prod_id, row, key_prefix, df_catalogo_indexado):
 
         st.markdown('</div>', unsafe_allow_html=True) # Fecha action-buttons-container
         st.markdown('</div>', unsafe_allow_html=True) # Fecha price-action-flex
+
+        # --- SWAP 2: Bloco de Preço agora vem DEPOIS ---
+        st.markdown('<div style="margin-top: 0.5rem;">', unsafe_allow_html=True) # Adiciona um espaço
+        
+        condicao_pagamento = row.get('CONDICAOPAGAMENTO', 'Preço à vista')
+        cashback_percent = pd.to_numeric(row.get('CASHBACKPERCENT'), errors='coerce')
+        
+        # Formata o preço e as condições
+        if is_promotion:
+            st.markdown(f"""
+            <div style="line-height: 1.2;">
+                <span style='text-decoration: line-through; color: #757575; font-size: 0.9rem;'>R$ {preco_original:.2f}</span>
+                <h4 style='color: #D32F2F; margin:0;'>R$ {preco_final:.2f}</h4>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"<h4 style='color: #880E4F; margin:0; line-height:1;'>R$ {preco_final:.2f}</h4>", unsafe_allow_html=True)
+        
+        st.markdown(f"<span style='color: #757575; font-size: 0.85rem; font-weight: normal;'>({condicao_pagamento})</span>", unsafe_allow_html=True)
+
+        if pd.notna(cashback_percent) and cashback_percent > 0:
+            cashback_valor = (cashback_percent / 100) * preco_final
+            st.markdown(f"<span style='color: #2E7D32; font-size: 0.8rem; font-weight: bold;'>Cashback: R$ {cashback_valor:.2f}</span>", unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True) # Fecha o container do preço
+
 
 
 
