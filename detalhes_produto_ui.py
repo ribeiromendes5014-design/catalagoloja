@@ -145,6 +145,21 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
             st.markdown("---")
             st.subheader("Escolha sua variação:")
             
+            # --- ################################################## ---
+            # --- INÍCIO DO BLOCO DE LÓGICA CORRIGIDO ---
+            # --- Esta é a nova lógica de "Seletores em Cascata" ---
+            # --- ################################################## ---
+            
+            # 1. Pega os detalhes do produto que foi clicado (ex: Branco, 37)
+            try:
+                detalhes_clicados_raw = ast.literal_eval(str(row_clicada.get('DETALHESGRADE', '{}')).strip())
+                if not isinstance(detalhes_clicados_raw, dict):
+                    detalhes_clicados_raw = {}
+                detalhes_clicados = {k: str(v) for k, v in detalhes_clicados_raw.items()}
+            except:
+                detalhes_clicados = {}
+
+            # 2. Descobre quais são os tipos de grade (ex: ['Cor', 'Numeração'])
             opcoes_disponiveis = {} 
             for idx, row_g in df_grade.iterrows():
                 detalhes_g = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
@@ -153,85 +168,82 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         opcoes_disponiveis[k] = set()
                     opcoes_disponiveis[k].add(str(v))
             
-            for k in opcoes_disponiveis:
-                opcoes_disponiveis[k] = sorted(list(opcoes_disponiveis[k]))
-
+            grade_attributes = sorted(list(opcoes_disponiveis.keys()))
             selecao_usuario = {}
+            df_grade_filtrada = df_grade.copy() # Começa com todos os produtos
             
-            try:
-                detalhes_clicados_raw = ast.literal_eval(str(row_clicada.get('DETALHESGRADE', '{}')).strip())
-                if not isinstance(detalhes_clicados_raw, dict):
-                    detalhes_clicados_raw = {}
-                detalhes_clicados = {k: str(v) for k, v in detalhes_clicados_raw.items()}
-            except:
-                detalhes_clicados = {}
-            
-            # --- ################################################## ---
-            # --- INÍCIO DO BLOCO CORRIGIDO ---
-            # --- ################################################## ---
-            for tipo_grade, lista_opcoes in opcoes_disponiveis.items():
+            # 3. Faz um loop por tipo de grade (ex: primeiro 'Cor', depois 'Numeração')
+            for i, tipo_grade in enumerate(grade_attributes):
+                
+                # 4. Encontra as opções válidas para *este* seletor
+                #    baseado no que já foi selecionado *antes*.
+                opcoes_validas = set()
+                for idx, row_g in df_grade_filtrada.iterrows():
+                    detalhes_g = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
+                    if tipo_grade in detalhes_g:
+                        opcoes_validas.add(str(detalhes_g[tipo_grade]))
+                
+                lista_opcoes = sorted(list(opcoes_validas))
+                
+                if not lista_opcoes:
+                    # Se não houver opções, pula este seletor
+                    continue
+
+                # 5. Determina o 'index' (opção selecionada)
                 widget_key = f"grade_{tipo_grade}_{id_principal_para_info}"
-                
-                # Determina o índice a ser exibido.
-                # Prioriza o valor JÁ EXISTENTE no session_state (se o usuário já clicou).
-                # Se não existir, usa o default_value (do produto que foi clicado no catálogo).
-                
-                selected_index = 0 # Padrão é o primeiro item
+                selected_index = 0
                 
                 if widget_key in st.session_state:
-                    # O usuário já interagiu com este widget, usa o valor dele
-                    try:
-                        selected_index = lista_opcoes.index(st.session_state[widget_key])
-                    except ValueError:
-                        selected_index = 0 # Fallback se o valor salvo for inválido
-                else:
-                    # É a primeira vez, usa o 'default_value' do 'row_clicada'
+                    # O usuário já selecionou algo. Verifica se ainda é uma opção válida.
+                    current_val = st.session_state[widget_key]
+                    if current_val in lista_opcoes:
+                        selected_index = lista_opcoes.index(current_val)
+                    # Se não for válida (ex: '37' não existe para 'Rosa'), 
+                    # o selected_index fica 0, selecionando a primeira opção válida ('35').
+                
+                elif i == 0: # É o primeiro seletor (ex: 'Cor')
+                    # Usa o valor do produto que foi clicado no catálogo
                     default_value = detalhes_clicados.get(tipo_grade)
                     try:
                         selected_index = lista_opcoes.index(default_value)
                     except ValueError:
-                        selected_index = 0 # Fallback se o default for inválido
-
-                # Renderiza o st.radio com o índice correto
-                selecao_usuario[tipo_grade] = st.radio(
+                        selected_index = 0
+                
+                # 6. Renderiza o st.radio
+                valor_selecionado = st.radio(
                     f"**{tipo_grade}**:",
                     options=lista_opcoes,
-                    index=selected_index, # <-- Usa o índice corrigido
+                    index=selected_index, 
                     horizontal=True,
-                    key=widget_key # <-- Usa a key definida
+                    key=widget_key
                 )
-            # --- ################################################## ---
-            # --- FIM DO BLOCO CORRIGIDO ---
-            # --- ################################################## ---
                 
-            
-            # --- INÍCIO DO BLOCO CORRIGIDO ---
-            if id_produto_selecionado is None:
-                # Fallback: A combinação exata não existe (ex: Cor Vermelha, Tamanho M)
-                # Vamos tentar encontrar o *primeiro* produto que combine com a *primeira* seleção (Cor).
+                # 7. Salva a seleção e filtra o df para o *próximo* loop
+                selecao_usuario[tipo_grade] = valor_selecionado
                 
-                if selecao_usuario: # Só tenta se houver seletores de grade
-                    # Pega o primeiro item da seleção do usuário (ex: 'Cor')
-                    primeiro_tipo_grade = list(selecao_usuario.keys())[0]
-                    primeiro_valor_selecionado = selecao_usuario[primeiro_tipo_grade]
-                    
-                    for idx, row_g in df_grade.iterrows():
-                        detalhes_g_raw = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
-                        detalhes_g_str = {k: str(v) for k, v in detalhes_g_raw.items()}
-                        
-                        # Se este produto tiver a Cor "Azul Escuro", use-o como fallback
-                        if detalhes_g_str.get(primeiro_tipo_grade) == primeiro_valor_selecionado:
-                            id_produto_selecionado = idx
-                            row_produto_selecionado = row_g 
-                            break # Encontramos o primeiro produto "Azul Escuro" (ex: "Azul Escuro, G")
-            
-            # Se AINDA não encontrou (nem combinação exata, nem parcial), aí sim usa o clicado
-            if id_produto_selecionado is None:
-                id_produto_selecionado = row_clicada.name
+                indices_para_manter = []
+                for idx, row_g in df_grade_filtrada.iterrows():
+                    detalhes_g = ast.literal_eval(str(row_g.get('DETALHESGRADE', '{}')).strip())
+                    if str(detalhes_g.get(tipo_grade)) == valor_selecionado:
+                        indices_para_manter.append(idx)
+                
+                df_grade_filtrada = df_grade.loc[indices_para_manter]
+
+            # 8. Ao final do loop, df_grade_filtrada conterá o produto exato
+            if not df_grade_filtrada.empty:
+                row_produto_selecionado = df_grade_filtrada.iloc[0]
+                id_produto_selecionado = row_produto_selecionado.name
+            else:
+                # Fallback final (não deve ser atingido)
                 row_produto_selecionado = row_clicada
+                id_produto_selecionado = row_clicada.name
+            
+            # --- ################################################## ---
+            # --- FIM DO BLOCO DE LÓGICA CORRIGIDO ---
+            # --- ################################################## ---
         
         else:
-            # Caso 3: O produto NÃO TEM grade (df_grade.empty é True)
+            # Caso 3: O produto NÃO TEM grade
             id_produto_selecionado = id_principal_para_info
             row_produto_selecionado = row_para_info
         
@@ -460,4 +472,3 @@ def mostrar_detalhes_produto(df_catalogo_indexado):
                         st.write("<br>", unsafe_allow_html=True) 
 
                     st.write(f"<h5 style='color: #880E4F; margin:0;'>R$ {preco_card_final:,.2f}</h5>", unsafe_allow_html=True)
-
