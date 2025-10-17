@@ -115,6 +115,11 @@ div[role="radiogroup"] label {
     font-weight: 500;
 }
 
+/* FORÇA O FUNDO DOS CARDS DE PRODUTO PARA BRANCO SÓLIDO */
+div[data-testid="stContainer"][style*="border"] {
+    background-color: #FFFFFF !important;
+}
+
 /* Estilo do label QUANDO SELECIONADO (usa o :has() para checar o input) */
 div[role="radiogroup"] div:has(input[type="radio"]:checked) > label {
     background-color: #D32F2F; /* Cor principal (vermelho) */
@@ -688,4 +693,5 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Renderiza o footer
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
