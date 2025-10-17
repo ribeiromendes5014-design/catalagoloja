@@ -84,137 +84,213 @@ MainMenu, footer, [data-testid="stSidebar"] {visibility: hidden;}
     padding: 0 !important;
 }
 
+/* === ESTILO DO NOVO FILTRO DE CATEGORIA (RADIO) === */
+
+/* Alinha o rádio no centro vertical da coluna */
+div[data-testid="stRadio"] {
+    /* padding-top removido para alinhamento vertical das colunas */
+}
+
+/* Oculta o "ponto" do radio button */
+div[role="radiogroup"] input[type="radio"] {
+    display: none;
+}
+
+/* Estiliza o label (o texto) do radio para parecer um link/botão */
+div[role="radiogroup"] label {
+    display: inline-block;
+    padding: 5px 8px;
+    margin-right: 5px;
+    background-color: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    color: #333; /* Cor do texto padrão */
+    font-weight: 500;
+}
+
+/* Estilo do label QUANDO SELECIONADO (usa o :has() para checar o input) */
+div[role="radiogroup"] div:has(input[type="radio"]:checked) > label {
+    background-color: #D32F2F; /* Cor principal (vermelho) */
+    color: white;
+    font-weight: bold;
+}
+
+/* Hover (mouse em cima) - não selecionado */
+div[role="radiogroup"] div:not(:has(input[type="radio"]:checked)) > label:hover {
+    background-color: #f0f0f0;
+    color: black;
+}
+
+/* Estilo quando o rádio está desabilitado (durante a busca) */
+div[role="radiogroup"] div:has(input[type="radio"]:disabled) > label {
+    color: #999;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
 /* --- Mantém o botão invisível mas clicável (para abrir o carrinho) --- */
 div[data-testid="stPopover"] > div:first-child > button {
-    position: fixed !important;
-    bottom: 110px;
-    right: 40px;
-    width: 60px !important;
-    height: 60px !important;
-    opacity: 0 !important;
-    z-index: 1001 !important;
-    pointer-events: auto !important;
+    position: fixed !important;
+    bottom: 110px;
+    right: 40px;
+    width: 60px !important;
+    height: 60px !important;
+    opacity: 0 !important;
+    z-index: 1001 !important;
+    pointer-events: auto !important;
 }
 
 .stApp {
-    background-image: url(""" + BACKGROUND_IMAGE_URL + """) !important;
-    background-size: cover;
-    background-attachment: fixed;
+    background-image: url(""" + BACKGROUND_IMAGE_URL + """) !important;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
+/* --- ALTERAÇÃO B (Início) --- */
 div.block-container {
-    background-color: rgba(255,255,255,0.95);
-    border-radius: 10px;
-    padding: 2rem;
+    /* Remove o fundo branco/padding do container principal */
+    padding: 0 1rem; /* Apenas um padding lateral básico */
     margin-top: 1rem;
     color: #262626;
 }
 
+/* NOVO: Classe para o box de conteúdo */
+.content-box {
+    background-color: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 1rem;
+}
+/* --- ALTERAÇÃO B (Fim) --- */
+
+
 div[data-testid="stAppViewBlockContainer"] {
-    padding-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 /* FORÇA O TEXTO, O ÍCONE E A SETA DO EXPANDER PARA BRANCO/VISÍVEL SEMPRE */
 
 /* 1. Estiliza o botão/cabeçalho do expander (fundo e texto) */
 div[data-testid="stExpander"] button {
-    /* Força o texto principal do botão para BRANCO */
-    color: white !important; 
-    /* Garante que o ícone e a seta não sejam transparentes */
-    opacity: 1 !important; 
-    visibility: visible !important; 
+    /* Força o texto principal do botão para BRANCO */
+    color: white !important; 
+    /* Garante que o ícone e a seta não sejam transparentes */
+    opacity: 1 !important; 
+    visibility: visible !important; 
 }
 
 /* 2. Garante que a seta/chevron (o ícone) seja branco */
 div[data-testid="stExpander"] .streamlit-expander-chevron {
-    color: white !important;
-    opacity: 1 !important;
+    color: white !important;
+    opacity: 1 !important;
 }
 
 /* 3. Garante o fundo escuro do expander */
 div[data-testid="stExpander"] > div:first-child {
-    background-color: #262626 !important;
-    border: 1px solid #444444 !important;
-    border-radius: 5px;
+    background-color: #262626 !important;
+    border: 1px solid #444444 !important;
+    border-radius: 5px;
 }
 
 .fullwidth-banner {
-    position: relative;
-    width: 100vw;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    overflow: hidden;
-    z-index: 9999;
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+    z-index: 9999;
 }
 
 .fullwidth-banner img {
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    margin: 0;
-    padding: 0;
+    display: block;
+  S   width: 100%;
+    height: auto;
+    object-fit: cover;
+    margin: 0;
+    padding: 0;
 }
 
-/* === BLACK FRIDAY CORES INÍCIO === */
+/* --- ALTERAÇÃO C (Início) --- */
+/* === ESTILO DO NOVO HEADER (Antigo Pink Bar) === */
 .pink-bar-container {
-    background-color: #000000; 
-    padding: 10px 0; 
-    width: 100vw; 
-    position: relative; 
-    left: 50%; right: 50%; 
-    margin-left: -50vw; 
-    margin-right: -50vw; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.4); 
+    background-color: #FFFFFF; /* MUDADO DE PRETO PARA BRANCO */
+    padding: 10px 0; 
+    width: 100vw; 
+    position: relative; 
+    left: 50%; right: 50%; 
+    margin-left: -50vw; 
+    margin-right: -50vw; 
+    /* Sombra removida */
+    border-bottom: 1px solid #e0e0e0; /* Adiciona uma linha sutil */
 }
-.pink-bar-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; }
+/* O pink-bar-content agora vai centralizar o conteúdo do header */
+.pink-bar-content { 
+    width: 100%; 
+    max-width: 1200px; /* Largura máxima do conteúdo */
+    margin: 0 auto; 
+    padding: 0 1rem; /* Padding lateral */
+    /* 'display: flex' removido para não conflitar com st.columns */
+}
+/* --- ALTERAÇÃO C (Fim) --- */
+
 
 .cart-badge-button {
-    background-color: #D32F2F; 
-    color: white; 
-    border-radius: 12px; 
-    padding: 8px 15px;
-    font-size: 16px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    border: none; 
-    transition: background-color 0.3s;
-    display: inline-flex; 
-    align-items: center; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-    min-width: 150px; 
-    justify-content: center; 
+    background-color: #D32F2F; 
+    color: white; 
+    border-radius: 12px; 
+    padding: 8px 15px;
+    font-size: 16px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border: none; 
+    transition: background-color 0.3s;
+    display: inline-flex; 
+    align-items: center; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    min-width: 150px; 
+    justify-content: center; 
 }
 .cart-badge-button:hover { background-color: #FF4500; }
 .cart-count {
-    background-color: white; 
-    color: #D32F2F; 
-    border-radius: 50%; 
-    padding: 2px 7px; 
-    margin-left: 8px; 
-    font-size: 14px; 
-    line-height: 1; 
+    background-color: white; 
+    color: #D32F2F; 
+    border-radius: 50%; 
+    padding: 2px 7px; 
+    margin-left: 8px; 
+    font-size: 14px; 
+    line-height: 1; 
 }
 
 /* Regras Padrão (para PC/Telas Grandes) */
-h1 { font-size: 2.5rem; } 
+h1 { font-size: 2.5rem; } 
 
 /* ======================================= */
 /* MEDIA QUERY: TELA PEQUENA (CELULAR) */
 /* ======================================= */
 @media only screen and (max-width: 600px) {
-    div.block-container {
+    /* --- ALTERAÇÃO B (Correção mobile) --- */
+    div.block-container {
+        /* Mantém apenas o padding lateral e o margin-top */
+        padding: 0 0.5rem !important; 
+        margin-top: 0.5rem !important;
+    }
+    /* NOVO: Adiciona a versão mobile para o .content-box */
+    .content-box {
         padding: 0.5rem !important;
-        margin-top: 0.5rem !important;
     }
-    h1 {
-        font-size: 1.8rem;
-    }
-    .product-image-container {
-        height: 180px;
-    }
+    /* --- FIM ALTERAÇÃO B --- */
+
+    h1 {
+        font-size: 1.8rem;
+    }
+    .product-image-container {
+        height: 180px;
+    }
 }
 
 /* ================================================================= */
@@ -517,6 +593,47 @@ if st.session_state.produto_detalhe_id:
     mostrar_detalhes_produto(st.session_state.df_catalogo_indexado) 
     st.stop()
 
+# --- Filtros e Exibição dos Produtos ---
+df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
+
+# === FILTRO CRÍTICO: MANTÉM APENAS PRODUTOS PRINCIPAIS (PAIS) ===
+# Filtra: mantém apenas produtos principais (PAIID é nulo/NaN),
+# excluindo as variações que têm um PAIID preenchido.
+df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
+# =======================================
+
+categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
+categorias.sort()
+categorias.insert(0, "TODAS AS CATEGORIAS")
+
+# --- NOVO CABEÇALHO (INSPIRAÇÃO) ---
+termo = st.session_state.get('termo_pesquisa_barra', '').lower()
+
+with st.container():
+    col_logo, col_search, col_cats = st.columns([1, 2, 4], vertical_alignment="center")
+    
+    with col_logo:
+        st.image(LOGO_DOCEBELLA_URL, width=170) 
+    
+    with col_search:
+        st.text_input(
+            "Buscar...", 
+            key='termo_pesquisa_barra', 
+            label_visibility="collapsed", 
+            placeholder="Buscar produtos..."
+        )
+
+    with col_cats:
+        st.radio(
+            "Categorias",
+            options=categorias,
+            key='filtro_categoria_radio', 
+            horizontal=True,
+            label_visibility="collapsed",
+            # Desabilita o radio se a busca estiver ativa
+            disabled=bool(termo) 
+        )
+# --- FIM NOVO CABEÇALHO ---
 
 # URL do banner de Black Friday
 URL_BLACK_FRIDAY = "https://i.ibb.co/5Q6vsYc/Outdoor-de-esquenta-black-friday-amarelo-e-preto.png"
@@ -531,31 +648,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Barra de Busca (Movida para baixo do Banner) ---
-st.markdown("<div class='pink-bar-container'><div class='pink-bar-content'>", unsafe_allow_html=True)
-st.text_input("Buscar...", key='termo_pesquisa_barra', label_visibility="collapsed", placeholder="Buscar produtos...")
-st.markdown("</div></div>", unsafe_allow_html=True)
 
-
-# --- Filtros e Exibição dos Produtos ---
+# Recria o df_catalogo para a lista (a versão para filtros já foi usada no cabeçalho)
 df_catalogo = st.session_state.df_catalogo_indexado.reset_index()
-
-# === FILTRO CRÍTICO: MANTÉM APENAS PRODUTOS PRINCIPAIS (PAIS) ===
-# Filtra: mantém apenas produtos principais (PAIID é nulo/NaN),
-# excluindo as variações que têm um PAIID preenchido.
 df_catalogo = df_catalogo[df_catalogo['PAIID'].isna()].copy()
-# =======================================
 
-categorias = df_catalogo['CATEGORIA'].dropna().astype(str).unique().tolist() if 'CATEGORIA' in df_catalogo.columns else ["TODAS AS CATEGORIAS"]
-categorias.sort()
-categorias.insert(0, "TODAS AS CATEGORIAS")
+# Definimos as colunas SÓ para ordem e grade agora
+col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 2]) 
 
-col_filtro_cat, col_select_ordem, col_grade_opcoes, _ = st.columns([1, 1, 1, 2])
+# Pega o termo da barra de busca (definido no cabeçalho)
 termo = st.session_state.get('termo_pesquisa_barra', '').lower()
 
-categoria_selecionada = col_filtro_cat.selectbox("Filtrar por:", categorias, key='filtro_categoria_barra')
-if termo:
-    col_filtro_cat.markdown(f'<div style="font-size: 0.8rem; color: #E91E63;">Busca ativa desabilita filtro.</div>', unsafe_allow_html=True)
+# PEGA O VALOR DO NOVO RADIO (do cabeçalho)
+categoria_selecionada = st.session_state.get('filtro_categoria_radio', 'TODAS AS CATEGORIAS')
 
 df_filtrado = df_catalogo.copy()
 if not termo and categoria_selecionada != "TODAS AS CATEGORIAS":
@@ -619,6 +724,7 @@ else:
 # ==============================================
 from footer_ui import render_fixed_footer
 render_fixed_footer()
+
 
 
 
